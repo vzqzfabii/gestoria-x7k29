@@ -5,26 +5,39 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Panel de Gestoría</title>
 <script src="https://cdn.tailwindcss.com"></script>
+<script>tailwind.config={theme:{extend:{colors:{indigo:{50:'#e8f3f0',100:'#d1e9e3',200:'#a6d3c9',300:'#6fb5a6',400:'#37917f',500:'#16806e',600:'#0b6b5c',700:'#095548',800:'#073f35',900:'#052e27'}}}}}</script>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
-body{background:#f1f5f9;color:#0f172a;font-family:'IBM Plex Sans',system-ui,-apple-system,Segoe UI,sans-serif}
+body{background:#f3f1ec;color:#0f172a;font-family:'IBM Plex Sans',system-ui,-apple-system,Segoe UI,sans-serif}
 .chip{cursor:pointer;user-select:none}
+.tb{border:1px solid #cbd5e1;background:#fff;border-radius:.6rem;padding:.45rem .8rem;font-size:.875rem;cursor:pointer;display:inline-flex;gap:.4rem;align-items:center;transition:background .15s,color .15s}
+.tb:hover{background:#f1f5f9}
+.tb.on,.tb.sw:has(input:checked){background:#0b6b5c;border-color:#0b6b5c;color:#fff}
+.tb.on::before{content:"●";font-size:.6rem}
+.tb.wa{background:#16a34a;border-color:#16a34a;color:#fff}.tb.wa:hover{background:#15803d}
 @media print{#formSec,#admin,#btnAdm,#btnObl,#btnPrn,#btnVista,#btnIn,#btnBit,dialog{display:none!important}}
 </style>
 </head>
 <body class="min-h-screen">
 <header class="bg-slate-900 text-white border-b-4 border-indigo-500">
-  <div class="max-w-7xl mx-auto px-4 py-6">
-    <h1 class="text-2xl font-bold">📋 Panel de Gestoría</h1>
-    <p class="text-blue-100 text-sm">Hoy es <span id="hoy"></span> · <span id="modo"></span></p>
-    <button id="btnVista" onclick="VISTA=!VISTA;render()" class="mt-3 bg-white/20 hover:bg-white/30 text-white text-sm px-3 py-1.5 rounded-lg"></button>
-    <button id="btnIn" onclick="CAN ? salir() : entrar()" class="mt-3 ml-2 bg-white/20 hover:bg-white/30 text-white text-sm px-3 py-1.5 rounded-lg"></button>
+  <div class="max-w-7xl mx-auto px-4 py-4 flex items-start justify-between gap-3">
+    <div><h1 class="text-2xl font-bold">📋 Panel de Gestoría</h1><p class="text-slate-300 text-sm mt-0.5">Hoy es <span id="hoy"></span></p></div>
+    <div id="userBox" class="relative">
+      <button id="btnUser" type="button" onclick="menuUser()" title="Acceso"></button>
+      <div id="userMenu" class="hidden absolute right-0 mt-2 w-60 bg-white text-slate-800 rounded-xl shadow-lg p-2 text-sm z-30">
+        <div class="px-2 py-1 text-xs text-slate-500"><span id="modo"></span></div>
+        <button id="btnVista" type="button" onclick="VISTA=!VISTA;render();menuUser()" class="w-full text-left px-2 py-2 rounded-lg hover:bg-slate-100"></button>
+        <button id="btnIn" type="button" onclick="CAN ? salir() : entrar()" class="w-full text-left px-2 py-2 rounded-lg hover:bg-slate-100"></button>
+      </div>
+    </div>
   </div>
 </header>
-<nav id="tabs" class="max-w-7xl mx-auto px-4 pt-4 flex gap-2">
+<nav id="tabs" class="max-w-7xl mx-auto px-4 pt-4 flex flex-wrap gap-2">
   <button id="tabP" type="button" onclick="tab('panel')" class="px-4 py-2 rounded-lg font-semibold">📋 Panel</button>
   <button id="tabN" type="button" onclick="tab('nom')" class="px-4 py-2 rounded-lg font-semibold">💼 Nóminas <span id="tabNb" class="text-xs font-normal"></span></button>
+  <button id="tabC" type="button" onclick="tab('cer')" class="px-4 py-2 rounded-lg font-semibold">🧮 Ceros</button>
+  <button id="tabS" type="button" onclick="tab('sat')" class="px-4 py-2 rounded-lg font-semibold">🧾 Mi registro SAT</button>
 </nav>
 
 <main id="mainP" class="max-w-7xl mx-auto px-4 py-6 space-y-6">
@@ -56,7 +69,7 @@ body{background:#f1f5f9;color:#0f172a;font-family:'IBM Plex Sans',system-ui,-app
         <select id="dep" onchange="sugerir()" class="mt-1 w-full border rounded-lg px-3 py-2 bg-white"></select></label>
       <label class="block text-sm font-medium">Trámite o concepto
         <input id="tipo" list="sug" oninput="renderReq()" required class="mt-1 w-full border rounded-lg px-3 py-2" placeholder="Elige o escribe"><datalist id="sug"></datalist></label>
-      <label class="block text-sm font-medium">Fecha límite
+      <label class="block text-sm font-medium">Fecha límite <span class="text-slate-400 font-normal">(opcional en pagos, recoger y entregas)</span>
         <input id="limite" type="date" onchange="avisoFecha()" required class="mt-1 w-full border rounded-lg px-3 py-2">
       </label>
       <label class="block text-sm font-medium">Entregar el día <span class="text-slate-400 font-normal">(el que ella pida; vacío = no se cobra)</span><input id="asig" type="date" onchange="avisoFecha()" class="mt-1 w-full border rounded-lg px-3 py-2"></label>
@@ -86,25 +99,33 @@ body{background:#f1f5f9;color:#0f172a;font-family:'IBM Plex Sans',system-ui,-app
     </form>
   </section>
 
-  <section class="bg-white rounded-2xl shadow p-3 flex flex-wrap gap-2">
-    <input id="q" oninput="render()" placeholder="🔎 Buscar cliente o trámite" class="border rounded-lg px-3 py-2 flex-1 min-w-[180px]">
-    <select id="fDep" onchange="render()" class="border rounded-lg px-3 py-2 bg-white"><option value="">Todas las dependencias</option></select>
-    
-    <button id="btnAdm" type="button" onclick="admin.classList.toggle('hidden')" class="border rounded-lg px-3 py-2 bg-slate-900 text-white">⚙️ Requisitos</button>
-    <button id="btnBit" type="button" onclick="bitSec.classList.toggle('hidden')" class="border rounded-lg px-3 py-2">📜 Historial de intentos</button>
-    <button id="btnCob" type="button" onclick="cobSec.classList.toggle('hidden')" class="border rounded-lg px-3 py-2">💵 Mi cobranza</button>
-    <button id="btnWa" type="button" onclick="resumenWa()" class="border rounded-lg px-3 py-2">📲 Resumen por WhatsApp</button>
-    <label id="nomToggle" class="border rounded-lg px-3 py-2 bg-white flex items-center gap-2"><input type="checkbox" id="nomChk" onchange="nomActivar()"> 💼 Nóminas encargadas</label>
-    <button id="btnInh" type="button" onclick="inhSec.classList.toggle('hidden')" class="border rounded-lg px-3 py-2">📆 Días inhábiles</button>
-    <button id="btnObl" type="button" onclick="obligaciones()" class="border rounded-lg px-3 py-2">➕ Obligaciones del mes</button>
-    <button id="btnPrn" type="button" onclick="window.print()" class="border rounded-lg px-3 py-2">🖨️ Imprimir</button>
+  <section class="bg-white rounded-2xl shadow p-3 space-y-2">
+    <div class="flex flex-wrap gap-2">
+      <input id="q" oninput="render()" placeholder="🔎 Buscar cliente o trámite" class="border rounded-lg px-3 py-2 flex-1 min-w-[180px]">
+      <select id="fDep" onchange="render()" class="border rounded-lg px-3 py-2 bg-white"><option value="">Todas las dependencias</option></select>
+    </div>
+    <div class="flex flex-wrap gap-2 items-center"><span class="text-xs text-slate-400 w-16">Secciones</span>
+      <button id="btnBit" type="button" onclick="tog('bitSec','btnBit')" class="tb">📜 Historial de intentos</button>
+      <button id="btnTer" type="button" onclick="tog('terSec','btnTer')" class="tb">✔ Terminados</button>
+      <button id="btnInh" type="button" onclick="tog('inhSec','btnInh')" class="tb">📆 Días inhábiles</button>
+      <button id="btnCob" type="button" onclick="tog('cobSec','btnCob')" class="tb">💵 Mi cobranza</button>
+      <button id="btnAdm" type="button" onclick="tog('admin','btnAdm')" class="tb">⚙️ Requisitos</button>
+    </div>
+    <div class="flex flex-wrap gap-2 items-center"><span class="text-xs text-slate-400 w-16">Acciones</span>
+      <button id="btnWa" type="button" onclick="resumenWa()" class="tb wa">📲 Resumen por WhatsApp</button>
+      <button id="btnObl" type="button" onclick="obligaciones()" class="tb">➕ Obligaciones del mes</button>
+      <button id="btnPrn" type="button" onclick="window.print()" class="tb">🖨️ Imprimir</button>
+      <button id="btnResp" type="button" onclick="respaldo()" class="tb">💾 Respaldo</button>
+      <button id="btnCsv" type="button" onclick="respaldoCsv()" class="tb">📊 Excel (CSV)</button>
+      <label id="nomToggle" class="tb sw"><input type="checkbox" id="nomChk" onchange="nomActivar()"> <span>💼 Nóminas encargadas</span></label>
+    </div>
   </section>
   <section id="admin" class="hidden bg-white rounded-2xl shadow p-5">
     <h2 class="text-lg font-semibold">⚙️ Requisitos por trámite</h2>
     <p class="text-xs text-slate-500 mb-3">Un requisito por línea. Empieza con * los críticos: si faltan, la tarjeta se marca en rojo. Es una guía general; confirma siempre con la dependencia de tu municipio.</p>
     <input id="adC" list="adL" oninput="adCarga()" placeholder="Elige o escribe el trámite" class="border rounded-lg px-3 py-2 w-full mb-2"><datalist id="adL"></datalist>
     <textarea id="adT" rows="8" class="border rounded-lg px-3 py-2 w-full text-sm"></textarea>
-    <div class="mt-2 flex gap-2"><button type="button" onclick="adGuarda()" class="bg-indigo-600 text-white px-4 py-2 rounded-lg">Guardar lista</button><button type="button" onclick="adReset()" class="border px-4 py-2 rounded-lg">Restaurar original</button></div>
+    <div class="mt-2 flex gap-2"><button type="button" onclick="adGuarda()" class="bg-indigo-600 text-white px-4 py-2 rounded-lg">Guardar lista</button><button type="button" onclick="adReset()" class="border px-4 py-2 rounded-lg">Restaurar original</button><button type="button" onclick="adEliminar()" class="border border-red-300 text-red-700 px-4 py-2 rounded-lg">Eliminar lista</button></div>
   </section>
   <section id="bitSec" class="hidden bg-white rounded-2xl shadow p-5"><h2 class="text-lg font-semibold">📜 Historial de intentos de entrega</h2>
     <p class="text-xs text-slate-500">Lo ven el dueño y la contadora. <span id="bitRes"></span></p><div id="bitList" class="mt-2"></div></section>
@@ -114,6 +135,7 @@ body{background:#f1f5f9;color:#0f172a;font-family:'IBM Plex Sans',system-ui,-app
     <div id="inhList" class="text-sm space-y-1"></div>
     <div id="inhForm" class="mt-3 flex flex-wrap gap-2"><input id="inhF" type="date" class="border rounded-lg px-3 py-2"><input id="inhN" placeholder="Motivo (opcional)" class="border rounded-lg px-3 py-2 flex-1 min-w-[160px]"><button type="button" onclick="inhAdd()" class="bg-indigo-600 text-white px-4 py-2 rounded-lg">Agregar</button></div>
   </section>
+  <section id="terSec" class="hidden bg-white rounded-2xl shadow p-5"><h2 class="text-lg font-semibold">✔ Historial de terminados</h2><p class="text-xs text-slate-500 mb-2">Si marcaste uno por error, ábrelo otra vez con ↩ Reabrir. Los más recientes salen primero.</p><div id="terList" class="text-sm"></div></section>
   <!-- Tarjetas -->
   <section class="grid lg:grid-cols-3 gap-5">
     <div class="bg-red-50 rounded-2xl p-4 border border-red-200">
@@ -138,6 +160,8 @@ body{background:#f1f5f9;color:#0f172a;font-family:'IBM Plex Sans',system-ui,-app
   <section id="cobSec" class="hidden rounded-2xl p-5 border-2 border-emerald-300 bg-emerald-50">
     <h2 class="text-lg font-bold text-emerald-900">💵 Mi cobranza <span class="text-xs font-normal text-emerald-800">(privada: solo la ves con tu clave)</span></h2>
     <div id="cobRes" class="grid grid-cols-2 md:grid-cols-3 gap-2 my-3 text-center"></div>
+    <div class="bg-white rounded-xl p-3 mb-3"><h3 class="font-semibold text-sm mb-1">📊 Entregas: completas de origen vs. resueltas por mí</h3>
+      <p class="text-xs text-slate-500 mb-2">Completa de origen = ella te la dio completa. Resuelta por mí = salió porque tú completaste algo (imprimir, conseguir un papel). Se marca con 🛠️ en cada tarjeta.</p><div id="cobStat" class="overflow-x-auto"></div></div>
     <div class="text-xs text-slate-700 mb-3">Tarifa por día: $<input id="cobTar" type="number" onchange="cobTarifa()" class="border rounded px-2 py-1 w-24 mx-1"> Un día se cobra cuando entregas, ese mismo día, al menos un documento que ella te asignó para ese día. Lo que se te pasó de un día anterior no genera cobro por sí solo.</div>
     <div class="grid md:grid-cols-2 gap-4">
       <div><h3 class="font-semibold text-sm mb-1">Días</h3><div id="cobDias" class="text-sm space-y-2 max-h-80 overflow-auto"></div></div>
@@ -150,13 +174,14 @@ body{background:#f1f5f9;color:#0f172a;font-family:'IBM Plex Sans',system-ui,-app
     <div class="flex items-center justify-between mb-3"><h3 class="font-bold">🔥 Mapa de calor de intentos · <span id="heatMes" class="capitalize"></span></h3>
       <div class="flex gap-2"><button onclick="mesNav(-1)" class="border rounded-lg px-3 py-1">◀</button><button onclick="mesNav(1)" class="border rounded-lg px-3 py-1">▶</button></div></div>
     <div id="heatRes" class="mb-3"></div>
-    <div id="heatGrid" class="grid grid-cols-7 gap-1 max-w-md"></div>
+    <div id="heatWrap"><div><div id="heatGrid" class="grid grid-cols-7 gap-1 max-w-md"></div>
     <div class="flex flex-wrap gap-3 text-xs text-slate-600 mt-2 items-center">
       <span><i class="inline-block w-3 h-3 rounded align-middle" style="background:#f1f5f9;border:1px solid #cbd5e1"></i> sin intentos</span>
       <span><i class="inline-block w-3 h-3 rounded align-middle" style="background:#fed7aa"></i> 1</span>
       <span><i class="inline-block w-3 h-3 rounded align-middle" style="background:#fb923c"></i> 2</span>
       <span><i class="inline-block w-3 h-3 rounded align-middle" style="background:#dc2626"></i> 3 o más</span>
       <span><i class="inline-block w-3 h-3 rounded align-middle" style="background:repeating-linear-gradient(45deg,#cbd5e1,#cbd5e1 3px,#e2e8f0 3px,#e2e8f0 6px)"></i> fin de semana</span><span><i class="inline-block w-3 h-3 rounded align-middle" style="background:repeating-linear-gradient(45deg,#fca5a5,#fca5a5 3px,#fee2e2 3px,#fee2e2 6px)"></i> 🚫 no se trabaja (feriado o inhábil)</span></div>
+    </div><div id="graf" class="space-y-4"></div></div>
     <div id="heatDet" class="mt-3 text-sm"></div>
   </section>
   <!-- Todos -->
@@ -181,6 +206,43 @@ body{background:#f1f5f9;color:#0f172a;font-family:'IBM Plex Sans',system-ui,-app
     </div>
   </section>
 </main>
+<main id="mainSat" class="hidden max-w-4xl mx-auto px-4 py-6">
+  <div class="mb-3 flex flex-wrap items-center gap-2 text-sm">
+    <span class="text-slate-600">🔒 Los datos de tus empleados se guardan solo en este navegador. A la contadora solo le llega el avance: patrón y cuántos empleados llevas.</span>
+    <button type="button" onclick="syncSat(true)" class="border rounded-lg px-3 py-1 bg-white">🔄 Enviar avance ahora</button>
+    <a href="nomina-sat.html" target="_blank" class="border rounded-lg px-3 py-1 bg-white">↗ Abrir en pantalla completa</a>
+    <span id="satEst" class="text-emerald-700"></span>
+  </div>
+  <iframe id="satFrame" title="Registro SAT" class="w-full rounded-2xl border bg-white" style="height:85vh"></iframe>
+</main>
+<main id="mainCer" class="hidden max-w-5xl mx-auto px-4 py-6">
+  <section class="rounded-2xl p-5 border-2 border-teal-300 bg-teal-50">
+    <div class="flex flex-wrap items-center justify-between gap-2"><h2 class="text-lg font-bold text-teal-900">🧮 Declaraciones en ceros</h2>
+      <div class="flex items-center gap-2"><button onclick="cerMes(-1)" class="border rounded-lg px-3 py-1 bg-white">◀</button><b id="cerPer" class="capitalize"></b><button onclick="cerMes(1)" class="border rounded-lg px-3 py-1 bg-white">▶</button></div></div>
+    <p class="text-xs text-teal-800 mt-1">Cada cliente se identifica con un alias: las 4 primeras letras de su RFC (3 si es persona moral). Aquí no se guarda nada más.</p>
+    <div id="cerRes" class="grid grid-cols-2 gap-2 my-3 text-center"></div>
+    <div class="overflow-x-auto"><table class="w-full text-sm bg-white rounded-xl overflow-hidden"><thead class="bg-teal-100 text-left"><tr><th class="p-2">Cliente</th><th class="p-2">Régimen</th><th class="p-2">Mensual</th><th class="p-2">DIOT</th><th class="p-2"></th></tr></thead><tbody id="cerBody"></tbody></table></div>
+    <div id="cerFormBox" class="mt-4 bg-white rounded-xl p-3 text-sm">
+      <b id="cerFT">➕ Agregar cliente</b>
+      <div class="grid md:grid-cols-4 gap-2 mt-2">
+        <input id="cAlias" maxlength="4" placeholder="Alias (4 letras del RFC)" class="border rounded-lg px-3 py-2 uppercase">
+        <input id="cReg" list="regL" placeholder="Régimen" class="border rounded-lg px-3 py-2"><datalist id="regL"><option value="RESICO persona física"><option value="RESICO persona moral"><option value="Actividad empresarial"><option value="Persona moral (general)"><option value="Arrendamiento"><option value="Sueldos y salarios"></datalist>
+        <label class="flex items-center gap-2"><input type="checkbox" id="cDiot"> Lleva DIOT (cada 2 meses)</label>
+        <label class="text-xs text-slate-500">Mes en que toca la DIOT<input id="cBase" type="month" class="border rounded-lg px-3 py-2 w-full"></label>
+      </div>
+      <button type="button" id="cBtn" onclick="cerGuardar()" class="mt-2 bg-teal-700 text-white px-4 py-2 rounded-lg">Agregar cliente</button>
+      <button type="button" onclick="cerForm(null)" class="mt-2 ml-2 border px-4 py-2 rounded-lg">Cancelar</button>
+      <details class="mt-3"><summary class="cursor-pointer">📋 Pegar lista (alias ; régimen ; si/no DIOT ; AAAA-MM)</summary><textarea id="cerImp" rows="4" class="border rounded-lg px-3 py-2 w-full mt-2"></textarea><button type="button" onclick="cerImportar()" class="mt-1 border px-3 py-1 rounded-lg">Importar</button></details>
+    </div>
+  </section>
+</main>
+<div id="toastBox" class="hidden fixed bottom-4 left-1/2 -translate-x-1/2 bg-slate-900 text-white rounded-xl px-4 py-3 shadow-lg z-50 text-sm flex gap-3 items-center"><span id="toastMsg"></span><button id="toastUndo" type="button" onclick="deshacer()" class="underline font-semibold">Deshacer</button></div>
+<dialog id="dlgReq" class="rounded-2xl p-5 w-[min(92vw,460px)]">
+  <h3 class="font-semibold mb-1">Requisitos de este trámite</h3>
+  <p class="text-xs text-slate-500 mb-2">Uno por línea. Empieza con * los críticos. Para quitar uno, borra su línea.</p>
+  <textarea id="reqT" rows="8" class="border rounded-lg px-3 py-2 w-full text-sm"></textarea>
+  <div class="mt-3 flex gap-2"><button onclick="guardarReqs()" class="bg-indigo-600 text-white px-4 py-2 rounded-lg">Guardar</button><button onclick="dlgReq.close()" class="border px-4 py-2 rounded-lg">Cancelar</button></div>
+</dialog>
 <dialog id="dlgEnt" class="rounded-2xl p-5 w-[min(92vw,420px)]">
   <h3 class="font-semibold mb-2">Entregado en dependencia</h3>
   <label class="text-sm">¿Qué día te dijeron que regreses a recoger? <span class="text-slate-400">(opcional)</span><input id="entRec" type="date" class="border rounded-lg px-3 py-2 w-full mt-1"></label>
@@ -224,7 +286,8 @@ async function entrar() {
   catch (e) { alert('No se pudo verificar: ' + (e.message || e.code)); }
 }
 function salir() { try { localStorage.removeItem('gest_pin'); } catch (e) {} location.reload(); }
-let INH = [], MES = null, selDia = null, FIN = {tarifa: 300, dias: {}, pagos: [], efec: []};
+let INH = [], MES = null, selDia = null, FIN = {tarifa: 300, dias: {}, pagos: [], efec: [], comp: {}}, CEROS = [], CPER = null, satUltimo = '';
+const SATKEY = 'nomina-sat-db-v1';
 let NOMS = [], NOM = {activo: false}, NPER = null, TAB = 'panel'; const NOPEN = new Set(), NCOL = ['#7c3aed', '#0891b2', '#16a34a', '#d97706', '#db2777', '#2563eb', '#65a30d', '#dc2626']; const _fc = {};
 const FERN = ['Año Nuevo','Día de la Constitución','Natalicio de Benito Juárez','Día del Trabajo','Independencia de México','Transmisión del Poder Ejecutivo','Revolución Mexicana','Navidad'];
 function FER(y) {
@@ -278,11 +341,11 @@ function faltantes(t) {
 }
 const OPEN = new Set();
 function reqHtml(t) {
-  const r = t.reqs || []; if (!r.length) return '';
+  const r = t.reqs || []; if (!r.length) return puede() ? `<button onclick="editReqs('${t.id}')" class="mt-2 text-xs underline text-slate-500">➕ Agregar requisitos</button>` : '';
   const ok = r.filter(x => x.ok).length, p = Math.round(ok / r.length * 100);
   return `<details class="mt-2" ${OPEN.has(t.id) ? 'open' : ''} ontoggle="this.open ? OPEN.add('${t.id}') : OPEN.delete('${t.id}')"><summary class="cursor-pointer text-xs text-slate-600">📎 Requisitos ${ok}/${r.length}</summary>
     <div class="h-1.5 bg-slate-200 rounded mt-1"><div class="h-1.5 rounded bg-indigo-500" style="width:${p}%"></div></div>
-    <div class="mt-1 space-y-0.5 text-xs">${r.map((x, i) => `<label class="block"><input type="checkbox" ${x.ok ? 'checked' : ''} ${puede() ? `onchange="toggleReq('${t.id}',${i})"` : 'disabled'}> ${x.n[0] === '*' ? '★ ' : ''}${esc(rn(x.n))}</label>`).join('')}</div></details>`;
+    <div class="mt-1 space-y-0.5 text-xs">${r.map((x, i) => `<label class="block"><input type="checkbox" ${x.ok ? 'checked' : ''} ${puede() ? `onchange="toggleReq('${t.id}',${i})"` : 'disabled'}> ${x.n[0] === '*' ? '★ ' : ''}${esc(rn(x.n))}</label>`).join('')}</div>${puede() ? `<button onclick="editReqs('${t.id}')" class="mt-1 text-xs underline text-slate-500">✏️ Editar requisitos</button>` : ''}</details>`;
 }
 function toggleReq(id, i) { const o = find(id), r = o.reqs.map(x => ({...x})); r[i].ok = !r[i].ok; persist({...o, reqs: r}); }
 
@@ -291,20 +354,21 @@ const ICO = {tramite: '📄', pago: '💰', entrega: '📤', recoger: '📥', vi
 const lblTer = (t, c) => t.estado === 'firmas' ? '📥 Ya lo recogí (cerrar)' : ({tramite: '✔ Terminado', pago: '💰 Marcar pagado', entrega: '📤 Marcar entregado', recoger: '📥 Ya lo recogí', vigencia: '✔ Renovada'}[c] || '✔ Terminado');
 function card(t) {
   const c = t.clase || 'tramite', ints = t.intentos || [], nI = ints.length;
-  const lim = pd(t.limite), h = habiles(hoy(), lim), falt = faltantes(t);
+  const lim = t.limite ? pd(t.limite) : null, h = lim ? habiles(hoy(), lim) : 999, falt = faltantes(t);
   const ent = t.estado === 'firmas', inc = t.incompleto && !ent, hy0 = isoHoy();
   const incB = inc ? `<div class="mt-2 text-xs font-semibold rounded-lg px-2 py-1.5 text-white" style="background:#f97316">⚠️ INCOMPLETO${t.falta ? ': falta ' + esc(t.falta) : ''}</div>` : '';
   const intB = nI ? `<div class="mt-1 text-xs text-slate-700">🔁 Intentos de entrega: <b>${nI}</b> · último ${fmt(pd(ints[nI - 1].fecha))}</div>` : '';
   const planB = t.plan && !ent ? (t.plan === hy0 ? '<span class="text-indigo-700 font-semibold">📅 Para hoy</span>' : t.plan < hy0 ? `<span class="text-red-700 font-semibold">⏳ Se planeó para ${fmt(pd(t.plan))} y no se entregó</span>` : `<span class="text-indigo-700">📅 Planeado ${fmt(pd(t.plan))}</span>`) : '';
   let estado;
-  if (h < 0) estado = `<span class="text-red-700 font-semibold">Vencido hace ${-h} día(s) háb.</span>`;
+  if (!lim) estado = '<span class="text-slate-500">Sin fecha límite</span>';
+  else if (h < 0) estado = `<span class="text-red-700 font-semibold">Vencido hace ${-h} día(s) háb.</span>`;
   else if (h === 0) estado = `<span class="text-red-700 font-semibold">¡Vence HOY!</span>`;
   else estado = `<span class="text-slate-600">Faltan ${h} día(s) hábiles</span>`;
 
   let firmas = '';
   if (t.estado === 'firmas') {
     const ini = pd(t.firmaInicio), fin = sumaHabiles(ini, t.dias), trans = habiles(ini, hoy());
-    const resta = Math.max(t.dias - trans, 0), tarde = fin > lim;
+    const resta = Math.max(t.dias - trans, 0), tarde = lim && fin > lim;
     firmas = `<div class="mt-2 text-xs rounded-lg p-2 ${tarde ? 'bg-red-100 text-red-800' : 'bg-white text-slate-700'}">
       Entregado ${fmt(ini)} · Respuesta estimada: <b>${fmt(fin)}</b> · ${resta > 0 ? 'faltan ' + resta + ' días háb.' : '⏰ ya debió responder: da seguimiento'}
       ${tarde ? '<br>⚠️ La respuesta llegaría después de la fecha límite' : ''}</div>`;
@@ -320,7 +384,7 @@ function card(t) {
       <div><div class="font-semibold">${esc(t.cliente)}</div><div class="text-xs text-slate-500">${ICO[c]} ${esc(t.tipo)} <span class="bg-slate-100 rounded px-1">${esc(t.dep || '')}</span></div></div>
       ${puede() ? `<div class="flex gap-2 text-sm"><button onclick="editar('${t.id}')" title="Editar">✏️</button><button onclick="borrar('${t.id}')" title="Eliminar">🗑️</button></div>` : ''}
     </div>
-    <div class="text-sm mt-1">📅 ${fmt(lim)} · ${estado}</div>
+    <div class="text-sm mt-1">📅 ${lim ? fmt(lim) + ' · ' : ''}${estado}</div>
     <div class="text-xs text-slate-500 mt-1">${t.resp ? '👤 ' + esc(t.resp) : ''}${t.monto ? ' · 💲' + Number(t.monto).toLocaleString('es-MX') : ''}${t.repite ? ' · 🔁 mensual' : ''}${t.recibido ? ' · 📥 Recibido ' + fmt(pd(t.recibido)) : ''}</div>${planB ? `<div class="text-xs mt-1">${planB}</div>` : ''}
     ${firmas}${recB(t)}${lic}${alerta}${incB}${intB}${intHtml(t)}
     
@@ -331,6 +395,7 @@ function card(t) {
       <button onclick="abrirInt('${t.id}')" class="text-xs border border-orange-400 text-orange-700 px-2.5 py-1 rounded-md">⚠️ Registrar intento</button>
       ${t.incompleto ? `<button onclick="resolver('${t.id}')" class="text-xs border border-slate-300 px-2.5 py-1 rounded-md">✅ Ya está completo</button>` : ''}
       ${ent ? `<button onclick="fechaRec('${t.id}')" class="text-xs border border-amber-400 text-amber-800 px-2.5 py-1 rounded-md">📅 Fecha de recogida</button>` : ''}
+      <button onclick="resueltoPorMi('${t.id}')" class="text-xs border ${FIN.comp[t.id] ? 'bg-amber-100 border-amber-400' : 'border-slate-300'} text-slate-700 px-2.5 py-1 rounded-md">🛠️ Resuelto por mí${FIN.comp[t.id] ? ' ✔' : ''}</button>
       ${c === 'entrega' ? `<button onclick="cobrarEfectivo('${t.id}')" class="text-xs border border-emerald-500 text-emerald-700 px-2.5 py-1 rounded-md">💵 Cobré en efectivo</button>` : ''}
       ${t.plan === hy0 ? `<button onclick="quitarPlan('${t.id}')" class="text-xs border border-slate-300 px-2.5 py-1 rounded-md">Quitar de hoy</button>` : `<button onclick="plan('${t.id}','hoy')" class="text-xs border border-indigo-300 text-indigo-700 px-2.5 py-1 rounded-md">📅 Para hoy</button><button onclick="plan('${t.id}','man')" class="text-xs border border-indigo-300 text-indigo-700 px-2.5 py-1 rounded-md">📅 Mañana</button>`}
     </div>` : ''}</div>`;
@@ -355,16 +420,19 @@ async function guardarEnt() {
   const o = find(entId); if (!o) return;
   await persist(entSoloFecha ? {...o, fechaRecoger: entRec.value} : {...o, estado: 'firmas', firmaInicio: isoHoy(), fechaEntrega: isoHoy(), fechaRecoger: entRec.value, incompleto: false, falta: ''});
   dlgEnt.close();
+  if (!entSoloFecha) toast('📥 Marcado como entregado en dependencia', o);
 }
 const isoD = d => d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
 function mesSig(s) { const d = pd(s), n = new Date(d.getFullYear(), d.getMonth()+1, 1), u = new Date(d.getFullYear(), d.getMonth()+2, 0).getDate(); n.setDate(Math.min(d.getDate(), u)); return isoD(n); }
 async function terminar(id) {
-  const o = find(id), t = {...o, estado: 'listo', incompleto: false, fechaEntrega: o.fechaEntrega || o.firmaInicio || isoHoy()};
+  const o = find(id), t = {...o, estado: 'listo', previo: o.estado, cerradoEn: isoHoy(), incompleto: false, fechaEntrega: o.fechaEntrega || o.firmaInicio || isoHoy()};
   if (o.estado === 'firmas') t.recogidoEn = isoHoy();
   if (o.clase === 'pago') t.pagado = true;
   if (o.clase === 'entrega') t.entregado = true;
   await persist(t);
-  if (o.repite) await persist({...o, id: 'T' + Date.now(), limite: mesSig(o.limite), estado: 'proceso', pagado: false, entregado: false, firmaInicio: ''});
+  let extra = null;
+  if (o.repite) { extra = 'T' + Date.now(); await persist({...o, id: extra, limite: o.limite ? mesSig(o.limite) : '', estado: 'proceso', pagado: false, entregado: false, firmaInicio: '', fechaEntrega: '', fechaRecoger: '', recogidoEn: '', asignado: '', plan: '', intentos: [], incompleto: false, falta: '', previo: '', cerradoEn: '', reqs: (o.reqs || []).map(x => ({...x, ok: false}))}); }
+  toast('✔ Marcado como terminado', o, extra);
 }
 function borrar(id) { if (confirm('¿Eliminar este trámite?')) quitar(id); }
 
@@ -372,13 +440,13 @@ function borrar(id) { if (confirm('¿Eliminar este trámite?')) quitar(id); }
 function render() {
   document.getElementById('hoy').textContent = fmt(hoy());
   document.getElementById('formSec').style.display = puede() ? '' : 'none';
-  btnAdm.style.display = btnObl.style.display = btnCob.style.display = btnWa.style.display = puede() ? '' : 'none'; renderBit(); renderHeat(); renderInh(); renderCob(); renderBanner(); renderNom(); btnIn.textContent = CAN ? '🔓 Salir del modo dueño' : '🔑 Entrar como dueño'; if (!puede()) admin.classList.add('hidden');
+  btnAdm.style.display = btnObl.style.display = btnCob.style.display = btnWa.style.display = btnResp.style.display = btnCsv.style.display = puede() ? '' : 'none'; renderBit(); renderHeat(); renderInh(); renderCob(); renderBanner(); renderNom(); renderCer(); renderTer(); renderGraf(); btnIn.textContent = CAN ? '🔓 Salir del modo dueño' : '🔑 Entrar como dueño'; btnUser.textContent = CAN ? '👤' : '🔑'; btnUser.className = CAN ? 'text-xl px-2 py-1 rounded-lg bg-white/15 hover:bg-white/25' : 'text-lg px-2 py-1 rounded-lg opacity-40 hover:opacity-100'; syncToggles(); if (!puede()) admin.classList.add('hidden');
   document.getElementById('btnVista').style.display = CAN ? '' : 'none';
   document.getElementById('btnVista').textContent = VISTA ? '↩ Volver a mi vista' : '👀 Ver como contadora';
   document.getElementById('modo').textContent = (SNAP ? '📅 Actualizado: ' + window.__SNAP.fecha : DB ? '☁️ Se actualiza solo' : '💾 Datos solo en este navegador') + (puede() ? '' : ' · 👀 Vista de solo lectura');
   const B = filtrados();
-  const act = B.filter(t => t.estado !== 'listo' && t.clase !== 'vigencia').sort((a, b) => a.limite.localeCompare(b.limite));
-  const urg = act.filter(t => t.estado !== 'firmas' && habiles(hoy(), pd(t.limite)) <= 1);
+  const act = B.filter(t => t.estado !== 'listo' && t.clase !== 'vigencia').sort((a, b) => (a.limite || '9999').localeCompare(b.limite || '9999'));
+  const urg = act.filter(t => t.estado !== 'firmas' && t.limite && habiles(hoy(), pd(t.limite)) <= 1);
   const fir = act.filter(t => t.estado === 'firmas');
   const lic = B.filter(t => t.vence && (t.clase !== 'vigencia' || t.estado !== 'listo') && diasCal(pd(t.vence)) <= 60).sort((a, b) => a.vence.localeCompare(b.vence));
   const sinDoc = act.filter(t => faltantes(t).length).length;
@@ -454,7 +522,7 @@ const CAT = () => ({...DEF, ...OVR});
 function renderReq(prev) {
   const l = CAT()[tipo.value.trim()], m = {};
   (prev || []).forEach(r => m[r.n] = r.ok);
-  reqBox.innerHTML = l ? l.map(n => `<label class="block"><input type="checkbox" class="rq" data-n="${esc(n)}" ${m[n] ? 'checked' : ''}> ${n[0] === '*' ? '★ ' : ''}${esc(rn(n))}</label>`).join('') : '<span class="text-slate-400">Sin lista para este concepto. Agrégala en ⚙️ Requisitos.</span>';
+  reqBox.innerHTML = l && l.length ? l.map(n => `<label class="block"><input type="checkbox" class="rq" data-n="${esc(n)}" ${m[n] ? 'checked' : ''}> ${n[0] === '*' ? '★ ' : ''}${esc(rn(n))}</label>`).join('') : '<span class="text-slate-400">Sin lista para este concepto. Agrégala en ⚙️ Requisitos.</span>';
 }
 function adCarga() { const l = CAT()[adC.value.trim()]; adT.value = l ? l.join('\n') : ''; }
 async function saveOvr(o) {
@@ -468,7 +536,7 @@ async function adGuarda() {
   await saveOvr({...OVR, [c]: adT.value.split('\n').map(x => x.trim()).filter(Boolean)}); alert('Lista guardada ✅');
 }
 async function adReset() { const o = {...OVR}; delete o[adC.value.trim()]; await saveOvr(o); adCarga(); }
-function claseChange() { limite.required = clase.value !== 'vigencia'; vence.required = clase.value === 'vigencia'; }
+function claseChange() { limite.required = clase.value === 'tramite'; vence.required = clase.value === 'vigencia'; }
 function filtrados() {
   const x = q.value.toLowerCase();
   return T.filter(t => (!fDep.value || t.dep === fDep.value) && (!x || (t.cliente + ' ' + t.tipo).toLowerCase().includes(x)));
@@ -499,7 +567,7 @@ f.addEventListener('submit', e => {
   limpiarForm();
 });
 sugerir(); claseChange(); recibido.value = isoHoy(); asig.value = isoD(sumaHabiles(hoy(), 1));
-tab(location.hash === '#nominas' ? 'nom' : 'panel');
+tab({'#nominas': 'nom', '#registro': 'sat', '#ceros': 'cer'}[location.hash] || 'panel');
 render();
 
 let intId = null;
@@ -537,8 +605,8 @@ function obligaciones() {
   [mk('SAT', 'Pago provisional mensual'), mk('IMSS', 'Pago de cuotas IMSS (SUA)')].forEach(x => persist(x));
 }
 function finArmar(rows) {
-  const f = {tarifa: 300, dias: {}, pagos: [], efec: []};
-  (rows || []).forEach(d => { if (d.t === 'cfg') f.tarifa = d.tarifa || 300; else if (d.t === 'dia') f.dias[d.f] = d.forzar; else if (d.t === 'pago') f.pagos.push(d); else if (d.t === 'efec') f.efec.push(d); });
+  const f = {tarifa: 300, dias: {}, pagos: [], efec: [], comp: {}};
+  (rows || []).forEach(d => { if (d.t === 'cfg') f.tarifa = d.tarifa || 300; else if (d.t === 'dia') f.dias[d.f] = d.forzar; else if (d.t === 'pago') f.pagos.push(d); else if (d.t === 'efec') f.efec.push(d); else if (d.t === 'comp') f.comp[d.tid] = d; });
   return f;
 }
 async function finSave(d) { try { await sb('rpc/guardar_finanzas', {p_pin: PIN, p_doc: d}); refrescar(); } catch (e) { alert('No se pudo guardar: ' + (e.message || e.code)); } }
@@ -574,6 +642,8 @@ function renderCob() {
     <div class="mt-1 flex gap-2 text-xs">${d.forzar ? `<button onclick="diaAjuste('${d.f}','')" class="border rounded px-2 py-0.5">Quitar ajuste</button>` : d.cobra ? `<button onclick="diaAjuste('${d.f}','nocobrar')" class="border rounded px-2 py-0.5">No cobrar</button>` : `<button onclick="diaAjuste('${d.f}','cobrar')" class="border rounded px-2 py-0.5">Cobrar igual</button>`}</div></div>`).join('') || '<p class="text-xs text-slate-400">Aún no hay días. Se llenan solos cuando entregas lo asignado.</p>';
   cobPagos.innerHTML = [...FIN.pagos].sort((a, b) => b.f.localeCompare(a.f)).map(p => `<div>${fmt(pd(p.f))} · ${$(p.monto)} <button onclick="finDel('${p.id}', true)" class="text-red-600 ml-1">✖</button></div>`).join('') || '<p class="text-xs text-slate-400">Sin pagos registrados.</p>';
   cobEfec.innerHTML = ef.map(e => `<div>${fmt(pd(e.f))} · ${esc(e.cliente)} · ${esc(e.concepto)} · <b>${$(e.monto)}</b> <button onclick="efecEntregado('${e.id}')" class="border rounded px-2 py-0.5 text-xs">Ya se lo entregué</button> <button onclick="finDel('${e.id}', true)" class="text-red-600">✖</button></div>`).join('') || '<p class="text-xs text-slate-400">No debes entregarle efectivo.</p>';
+  const m6 = []; for (let i = 0; i < 6; i++) { const d = new Date(hoy().getFullYear(), hoy().getMonth() - i, 1); m6.push(d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0')); }
+  cobStat.innerHTML = '<table class="w-full text-xs"><thead><tr class="text-left text-slate-500"><th class="p-1.5">Mes</th><th>Entregados</th><th>Completos de origen</th><th>Resueltos por mí</th></tr></thead><tbody>' + m6.map(k => { const es = T.filter(t => fEnt(t).slice(0, 7) === k), r = es.filter(t => FIN.comp[t.id]).length, c = es.length - r, pc = x => es.length ? ' (' + Math.round(x / es.length * 100) + '%)' : ''; return `<tr class="border-t"><td class="p-1.5">${k}</td><td>${es.length}</td><td>${c}${pc(c)}</td><td>${r}${pc(r)}</td></tr>`; }).join('') + '</tbody></table>';
   const hd = dias.find(d => d.f === hy), asig = T.filter(t => t.asignado === hy && fEnt(t) !== hy).length;
   hoyCobro.textContent = hd && hd.cobra ? '· 💵 hoy ya es día cobrable' : asig ? '· 💵 hoy aún no cobra (te faltan ' + asig + ' asignado(s))' : '';
 }
@@ -608,7 +678,7 @@ function nomTodos(id, v) { const n = nomFind(id), k = nomKey(); nomSave({...n, d
 function nomAddEmp(id) { const nm = (prompt('Nombre o alias del empleado:') || '').trim(), n = nomFind(id); if (!nm || n.empleados.includes(nm)) return; nomSave({...n, empleados: [...n.empleados, nm]}); }
 function nomDelEmp(id, i) { const n = nomFind(id), e = n.empleados[i]; if (!confirm('¿Quitar a ' + e + '?')) return; const decl = {}; Object.entries(n.decl || {}).forEach(([k, l]) => decl[k] = l.filter(x => x !== e)); nomSave({...n, empleados: n.empleados.filter((_, j) => j !== i), decl}); }
 function nomUpsert(p, emp) {
-  const ex = NOMS.find(x => x.patron.toLowerCase() === p.toLowerCase());
+  const ex = NOMS.find(x => !x.src && x.patron.toLowerCase() === p.toLowerCase());
   return nomSave(ex ? {...ex, empleados: [...new Set([...ex.empleados, ...emp])]} : {id: 'N' + Date.now() + Math.random().toString(36).slice(2, 5), patron: p, empleados: emp, decl: {}});
 }
 function nomAdd() { const p = nomP.value.trim(); if (!p) return alert('Escribe el nombre del patrón.'); nomUpsert(p, [...new Set(nomE.value.split('\n').map(x => x.trim()).filter(Boolean))]); nomP.value = ''; nomE.value = ''; }
@@ -618,17 +688,9 @@ async function nomImportar() {
   for (const [p, e] of Object.entries(g)) await nomUpsert(p, e);
   nomImp.value = '';
 }
-function tab(t) {
-  TAB = t;
-  mainP.classList.toggle('hidden', t !== 'panel'); mainNom.classList.toggle('hidden', t !== 'nom');
-  tabP.className = 'px-4 py-2 rounded-lg font-semibold ' + (t === 'panel' ? 'bg-slate-900 text-white' : 'bg-white border');
-  tabN.className = 'px-4 py-2 rounded-lg font-semibold ' + (t === 'nom' ? 'bg-violet-700 text-white' : 'bg-white border');
-  try { history.replaceState(null, '', t === 'nom' ? '#nominas' : location.pathname + location.search); } catch (e) {}
-  window.scrollTo(0, 0);
-}
 function chipNom(vis) {
   const hm = new Date(hoy().getFullYear(), hoy().getMonth(), 1), k = hm.getFullYear() + '-' + String(hm.getMonth() + 1).padStart(2, '0');
-  const fs = NOMS.map(n => ({d: nomDecl(n, k).filter(e => n.empleados.includes(e)).length, t: n.empleados.length}));
+  const fs = NOMS.map(n => nomCuenta(n, k));
   const pt = fs.filter(f => f.t && f.d === f.t).length, dd = fs.reduce((a, f) => a + f.d, 0), tt = fs.reduce((a, f) => a + f.t, 0), pct = tt ? Math.round(dd / tt * 100) : 0;
   const mostrar = NOM.activo && fs.length > 0;
   nomChip.className = mostrar ? 'w-full text-left rounded-2xl p-4 bg-violet-50 border border-violet-300' : 'hidden';
@@ -638,20 +700,166 @@ function chipNom(vis) {
 function renderNom() {
   const vis = NOM.activo || puede();
   tabN.style.display = vis ? '' : 'none'; if (!vis && TAB === 'nom') tab('panel'); chipNom(vis);
+  tabS.style.display = puede() ? '' : 'none'; if (!puede() && TAB === 'sat') tab('panel');
+  tabC.style.display = (CEROS.length || puede()) ? '' : 'none'; if (!CEROS.length && !puede() && TAB === 'cer') tab('panel');
   nomToggle.style.display = puede() ? '' : 'none'; nomChk.checked = !!NOM.activo; nomForm.style.display = puede() ? '' : 'none';
   if (!vis) return;
   const k = nomKey(), edit = puede();
   nomPer.textContent = NPER.toLocaleDateString('es-MX', {month: 'long', year: 'numeric'});
   nomEst.textContent = NOM.activo ? '· Encargadas por la contadora' : '· Oculto para la contadora hasta que actives "Nóminas encargadas"';
-  const filas = NOMS.map((n, idx) => { const d = nomDecl(n, k).filter(e => n.empleados.includes(e)).length, t = n.empleados.length; return {n, idx, d, t, ok: t > 0 && d === t}; });
+  const filas = NOMS.map((n, idx) => { const {d, t} = nomCuenta(n, k); return {n, idx, d, t, ok: t > 0 && d === t}; });
   const pt = filas.filter(f => f.ok).length, dd = filas.reduce((a, f) => a + f.d, 0), tt = filas.reduce((a, f) => a + f.t, 0);
   nomRes.innerHTML = `<b>${pt} de ${filas.length}</b> patrones terminados · <b>${dd} de ${tt}</b> declaraciones hechas<div class="h-2 bg-white rounded mt-1"><div class="h-2 rounded bg-violet-600" style="width:${tt ? Math.round(dd / tt * 100) : 0}%"></div></div>`;
   const est = f => f.ok ? '✅ Terminado' : f.d ? '⏳ En proceso' : '⚪ Sin empezar';
   nomTabla.innerHTML = filas.map(f => { const c = NCOL[f.idx % NCOL.length], pct = f.t ? Math.round(f.d / f.t * 100) : 0;
     return `<details class="bg-white rounded-xl border-l-4" style="border-left-color:${c}" ${NOPEN.has(f.n.id) ? 'open' : ''} ontoggle="this.open ? NOPEN.add('${f.n.id}') : NOPEN.delete('${f.n.id}')"><summary class="cursor-pointer p-3 flex flex-wrap items-center gap-3"><b>${esc(f.n.patron)}</b><span class="text-xs text-slate-600">${f.d}/${f.t} declaradas</span><span class="flex-1 min-w-[80px] h-2 bg-slate-200 rounded"><span class="block h-2 rounded" style="width:${pct}%;background:${c}"></span></span><span class="text-sm font-semibold">${est(f)}</span></summary>
-      <div class="px-3 pb-3 text-sm">${f.n.empleados.map((e, i) => `<label class="flex items-center gap-2 py-0.5"><input type="checkbox" ${nomDecl(f.n, k).includes(e) ? 'checked' : ''} ${edit ? `onchange="nomToggleEmp('${f.n.id}',${i})"` : 'disabled'}> ${esc(e)} ${edit ? `<button onclick="nomDelEmp('${f.n.id}',${i})" class="text-red-600 text-xs ml-auto">✖</button>` : ''}</label>`).join('') || '<p class="text-xs text-slate-400">Sin empleados.</p>'}
-      ${edit ? `<div class="mt-2 flex flex-wrap gap-2 text-xs"><button onclick="nomAddEmp('${f.n.id}')" class="border rounded px-2 py-1">+ Empleado</button><button onclick="nomTodos('${f.n.id}',true)" class="border rounded px-2 py-1">✅ Marcar todos</button><button onclick="nomTodos('${f.n.id}',false)" class="border rounded px-2 py-1">Quitar marcas</button><button onclick="nomDel('${f.n.id}')" class="border rounded px-2 py-1 text-red-600">🗑️ Eliminar patrón</button></div>` : ''}</div></details>`; }).join('') || '<p class="text-sm text-slate-500">Aún no hay patrones.</p>';
-  nomTbl.innerHTML = filas.length ? `<table class="w-full text-sm bg-white rounded-xl overflow-hidden"><thead class="bg-violet-100 text-left"><tr><th class="p-2">Patrón</th><th class="p-2">Declarados</th><th class="p-2">Pendientes</th><th class="p-2">Estado</th></tr></thead><tbody>${filas.map(f => `<tr class="border-t"><td class="p-2 font-medium">${esc(f.n.patron)}</td><td class="p-2">${esc(nomDecl(f.n, k).filter(e => f.n.empleados.includes(e)).join(', ')) || '—'}</td><td class="p-2">${esc(f.n.empleados.filter(e => !nomDecl(f.n, k).includes(e)).join(', ')) || '—'}</td><td class="p-2 whitespace-nowrap">${est(f)}</td></tr>`).join('')}</tbody></table>` : '';
+      <div class="px-3 pb-3 text-sm">${f.n.src === 'app' ? '<p class="text-xs text-slate-500">Avance tomado de tu registro SAT: ' + f.d + ' de ' + f.t + ' empleados con factura generada.</p>' : ''}${(f.n.empleados || []).map((e, i) => `<label class="flex items-center gap-2 py-0.5"><input type="checkbox" ${nomDecl(f.n, k).includes(e) ? 'checked' : ''} ${edit ? `onchange="nomToggleEmp('${f.n.id}',${i})"` : 'disabled'}> ${esc(e)} ${edit ? `<button onclick="nomDelEmp('${f.n.id}',${i})" class="text-red-600 text-xs ml-auto">✖</button>` : ''}</label>`).join('') || (f.n.src === 'app' ? '' : '<p class="text-xs text-slate-400">Sin empleados.</p>')}
+      ${edit && f.n.src !== 'app' ? `<div class="mt-2 flex flex-wrap gap-2 text-xs"><button onclick="nomAddEmp('${f.n.id}')" class="border rounded px-2 py-1">+ Empleado</button><button onclick="nomTodos('${f.n.id}',true)" class="border rounded px-2 py-1">✅ Marcar todos</button><button onclick="nomTodos('${f.n.id}',false)" class="border rounded px-2 py-1">Quitar marcas</button><button onclick="nomDel('${f.n.id}')" class="border rounded px-2 py-1 text-red-600">🗑️ Eliminar patrón</button></div>` : ''}</div></details>`; }).join('') || '<p class="text-sm text-slate-500">Aún no hay patrones.</p>';
+  nomTbl.innerHTML = filas.length ? `<table class="w-full text-sm bg-white rounded-xl overflow-hidden"><thead class="bg-violet-100 text-left"><tr><th class="p-2">Patrón</th><th class="p-2">Declarados</th><th class="p-2">Pendientes</th><th class="p-2">Estado</th></tr></thead><tbody>${filas.map(f => `<tr class="border-t"><td class="p-2 font-medium">${esc(f.n.patron)}</td><td class="p-2">${nomDecTxt(f, k)}</td><td class="p-2">${nomPendTxt(f, k)}</td><td class="p-2 whitespace-nowrap">${est(f)}</td></tr>`).join('')}</tbody></table>` : '';
+}
+
+function tog(sec, btn) {
+  const e = document.getElementById(sec); e.classList.toggle('hidden');
+  const on = !e.classList.contains('hidden'); document.getElementById(btn).classList.toggle('on', on);
+  if (on) e.scrollIntoView({behavior: 'smooth', block: 'start'});
+}
+function syncToggles() { [['bitSec', 'btnBit'], ['inhSec', 'btnInh'], ['terSec', 'btnTer'], ['cobSec', 'btnCob'], ['admin', 'btnAdm']].forEach(([s, b]) => document.getElementById(b).classList.toggle('on', !document.getElementById(s).classList.contains('hidden'))); }
+function menuUser() { userMenu.classList.toggle('hidden'); }
+document.addEventListener('click', e => { if (!e.target.closest('#userBox')) userMenu.classList.add('hidden'); });
+let undoDoc = null, undoExtra = null, undoT = null;
+function toast(msg, prev, extra) { undoDoc = prev || null; undoExtra = extra || null; toastMsg.textContent = msg; toastUndo.style.display = prev ? '' : 'none'; toastBox.classList.remove('hidden'); clearTimeout(undoT); undoT = setTimeout(() => toastBox.classList.add('hidden'), 9000); }
+async function deshacer() { if (!undoDoc) return; const d = undoDoc, x = undoExtra; undoDoc = null; toastBox.classList.add('hidden'); await persist(d); if (x) await quitar(x); }
+function tab(t) {
+  TAB = t;
+  [['panel', 'mainP', 'tabP', 'bg-slate-900'], ['nom', 'mainNom', 'tabN', 'bg-violet-700'], ['sat', 'mainSat', 'tabS', 'bg-emerald-700'], ['cer', 'mainCer', 'tabC', 'bg-teal-700']].forEach(([k, m, b, c]) => {
+    document.getElementById(m).classList.toggle('hidden', t !== k);
+    document.getElementById(b).className = 'px-4 py-2 rounded-lg font-semibold ' + (t === k ? c + ' text-white' : 'bg-white border');
+  });
+  if (t === 'sat') { if (!satFrame.getAttribute('src')) satFrame.src = 'nomina-sat.html'; syncSat(); }
+  const h = {nom: '#nominas', sat: '#registro', cer: '#ceros'}[t];
+  try { history.replaceState(null, '', h || location.pathname + location.search); } catch (e) {}
+  window.scrollTo(0, 0);
+}
+// ---------- Registro SAT: manda solo el avance (sin datos personales) ----------
+async function syncSat(forzar) {
+  if (!CAN) return;
+  let d; try { d = JSON.parse(localStorage.getItem(SATKEY)); } catch (e) { return; }
+  if (!d || !Array.isArray(d.pats)) { if (forzar) satEst.textContent = 'Aún no hay datos en este navegador. Carga tu respaldo en "Patrones y empleados".'; return; }
+  const hm = hoy(), kHoy = hm.getFullYear() + '-' + String(hm.getMonth() + 1).padStart(2, '0'), ms = new Set([kHoy, ...Object.keys(d.meses || {})]);
+  const docs = d.pats.map(p => {
+    const es = (d.emps || []).filter(e => e.pat === p.id), m = {};
+    ms.forEach(k => { const o = (d.meses || {})[k] || {}, hechos = es.filter(e => (o[e.id] || {}).done).length; if (k === kHoy || hechos) m[k] = {t: es.length, d: hechos}; });
+    return {id: 'S' + p.id, src: 'app', patron: (p.nombre || 'Patrón').trim(), total: es.length, meses: m};
+  });
+  const firma = JSON.stringify(docs), vivos = new Set(docs.map(x => x.id));
+  try {
+    if (forzar || firma !== satUltimo) { for (const doc of docs) await sb('rpc/guardar_nomina', {p_pin: PIN, p_doc: doc}); satUltimo = firma; }
+    for (const n of NOMS.filter(n => n.src === 'app' && !vivos.has(n.id))) await sb('rpc/borrar_nomina', {p_pin: PIN, p_id: n.id});
+    satEst.textContent = '✅ Avance enviado a la contadora · ' + new Date().toLocaleTimeString('es-MX', {hour: '2-digit', minute: '2-digit'});
+    refrescar();
+  } catch (e) { satUltimo = ''; satEst.textContent = '⚠️ No se pudo enviar el avance'; console.error(e); }
+}
+function nomCuenta(n, k) {
+  if (n.meses) return n.meses[k] ? {d: n.meses[k].d, t: n.meses[k].t} : {d: 0, t: n.total || 0};
+  return {d: nomDecl(n, k).filter(e => n.empleados.includes(e)).length, t: n.empleados.length};
+}
+function nomDecTxt(f, k) { return f.n.src === 'app' ? f.d + ' de ' + f.t : (esc(nomDecl(f.n, k).filter(e => f.n.empleados.includes(e)).join(', ')) || '—'); }
+function nomPendTxt(f, k) { return f.n.src === 'app' ? String(f.t - f.d) : (esc(f.n.empleados.filter(e => !nomDecl(f.n, k).includes(e)).join(', ')) || '—'); }
+// ---------- Declaraciones en ceros ----------
+function mIdx(k) { const [y, m] = k.split('-').map(Number); return y * 12 + m; }
+function cerKey() { CPER = CPER || new Date(hoy().getFullYear(), hoy().getMonth(), 1); return CPER.getFullYear() + '-' + String(CPER.getMonth() + 1).padStart(2, '0'); }
+function diotToca(c, k) { return !!c.diot && !!c.base && (((mIdx(k) - mIdx(c.base)) % 2) + 2) % 2 === 0; }
+const cerEst = (c, k) => (c.meses || {})[k] || {};
+function cerResumen(k) { const due = CEROS.filter(c => diotToca(c, k)); return {tm: CEROS.length, dm: CEROS.filter(c => cerEst(c, k).m).length, td: due.length, dd: due.filter(c => cerEst(c, k).d).length}; }
+function cerMes(d) { cerKey(); CPER = new Date(CPER.getFullYear(), CPER.getMonth() + d, 1); renderCer(); }
+async function cerSave(doc) { try { await sb('rpc/guardar_nomina', {p_pin: PIN, p_doc: doc}); refrescar(); } catch (e) { alert('No se pudo guardar: ' + (e.message || e.code)); } }
+function cerToggle(id, campo) { const c = CEROS.find(x => x.id === id), k = cerKey(), m = {...(c.meses || {})}, cur = {...(m[k] || {})}; cur[campo] = !cur[campo]; m[k] = cur; cerSave({...c, meses: m}); }
+async function cerDel(id) { if (!confirm('¿Eliminar este cliente?')) return; try { await sb('rpc/borrar_nomina', {p_pin: PIN, p_id: id}); refrescar(); } catch (e) { alert('No se pudo borrar: ' + (e.message || e.code)); } }
+let cerEditId = null;
+function cerForm(id) {
+  const c = id ? CEROS.find(x => x.id === id) : null; cerEditId = id || null;
+  cAlias.value = c ? c.alias : ''; cReg.value = c ? (c.reg || '') : ''; cDiot.checked = !!(c && c.diot); cBase.value = c && c.base ? c.base : cerKey();
+  cBtn.textContent = c ? 'Guardar cambios' : 'Agregar cliente'; cerFT.textContent = c ? '✏️ Editar cliente' : '➕ Agregar cliente';
+  if (c) cerFormBox.scrollIntoView({behavior: 'smooth'});
+}
+function cerGuardar() {
+  const alias = cAlias.value.trim().toUpperCase();
+  if (alias.length < 3 || alias.length > 4) return alert('Usa las primeras 4 letras del RFC (3 si es persona moral).');
+  const prev = cerEditId ? CEROS.find(x => x.id === cerEditId) : null;
+  cerSave({id: cerEditId || 'Z' + Date.now() + Math.random().toString(36).slice(2, 5), kind: 'cero', alias, reg: cReg.value.trim(), diot: cDiot.checked, base: cDiot.checked ? (cBase.value || cerKey()) : '', meses: prev ? (prev.meses || {}) : {}});
+  cerForm(null);
+}
+async function cerImportar() {
+  for (const l of cerImp.value.split('\n')) {
+    const [a, r, d, b] = l.split(/\t|;|\|/).map(x => (x || '').trim()), alias = (a || '').toUpperCase();
+    if (alias.length < 3 || alias.length > 4) continue;
+    const dio = /^(s|si|sí|1|x)$/i.test(d || '');
+    await cerSave({id: 'Z' + Date.now() + Math.random().toString(36).slice(2, 5), kind: 'cero', alias, reg: r || '', diot: dio, base: dio ? (/^\d{4}-\d{2}$/.test(b || '') ? b : cerKey()) : '', meses: {}});
+  }
+  cerImp.value = '';
+}
+function renderCer() {
+  const k = cerKey(), r = cerResumen(k), edit = puede();
+  cerPer.textContent = CPER.toLocaleDateString('es-MX', {month: 'long', year: 'numeric'});
+  cerFormBox.style.display = edit ? '' : 'none';
+  const caja = (v, l) => `<div class="bg-white rounded-lg p-2"><div class="text-xl font-bold">${v}</div><div class="text-xs text-slate-500">${l}</div></div>`;
+  cerRes.innerHTML = caja(r.dm + ' de ' + r.tm, 'Declaraciones mensuales hechas') + caja(r.td ? r.dd + ' de ' + r.td : '—', 'DIOT hechas (las que tocan este mes)');
+  cerBody.innerHTML = CEROS.map(c => {
+    const m = cerEst(c, k), toca = diotToca(c, k);
+    return `<tr class="border-t"><td class="p-2 font-mono font-semibold">${esc(c.alias)}</td><td class="p-2">${esc(c.reg || '—')}</td>
+      <td class="p-2"><label class="flex items-center gap-2"><input type="checkbox" ${m.m ? 'checked' : ''} ${edit ? `onchange="cerToggle('${c.id}','m')"` : 'disabled'}> ${m.m ? '✅' : '⏳'}</label></td>
+      <td class="p-2">${toca ? `<label class="flex items-center gap-2"><input type="checkbox" ${m.d ? 'checked' : ''} ${edit ? `onchange="cerToggle('${c.id}','d')"` : 'disabled'}> ${m.d ? '✅' : '⏳'}</label>` : `<span class="text-slate-400">${c.diot ? 'no toca este mes' : '—'}</span>`}</td>
+      <td class="p-2 whitespace-nowrap">${edit ? `<button onclick="cerForm('${c.id}')" title="Editar">✏️</button> <button onclick="cerDel('${c.id}')" title="Eliminar">🗑️</button>` : ''}</td></tr>`;
+  }).join('') || '<tr><td colspan="5" class="p-3 text-slate-400">Aún no hay clientes.</td></tr>';
+}
+// ---------- Gráficas junto al mapa de calor ----------
+function barra(l, d, t, c) { const p = t ? Math.round(d / t * 100) : 0; return `<div class="text-xs mb-1"><div class="flex justify-between gap-2"><span class="truncate">${l}</span><b>${d}/${t}</b></div><div class="h-2 bg-slate-200 rounded"><div class="h-2 rounded" style="width:${p}%;background:${c}"></div></div></div>`; }
+function donut(p, c) { return `<svg viewBox="0 0 42 42" class="w-24 h-24 shrink-0"><circle cx="21" cy="21" r="15.9155" fill="none" stroke="#e2e8f0" stroke-width="5"/><circle cx="21" cy="21" r="15.9155" fill="none" stroke="${c}" stroke-width="5" stroke-dasharray="${p} ${100 - p}" stroke-dashoffset="25"/><text x="21" y="23.5" text-anchor="middle" font-size="8" font-weight="700" fill="#0f172a">${p}%</text></svg>`; }
+function renderGraf() {
+  const hm = new Date(hoy().getFullYear(), hoy().getMonth(), 1), k = hm.getFullYear() + '-' + String(hm.getMonth() + 1).padStart(2, '0'), mes = hm.toLocaleDateString('es-MX', {month: 'long'});
+  let h = '';
+  if (NOM.activo && NOMS.length) {
+    const fs = NOMS.map(n => ({n, ...nomCuenta(n, k)})), dd = fs.reduce((a, f) => a + f.d, 0), tt = fs.reduce((a, f) => a + f.t, 0);
+    h += `<div class="rounded-xl border border-violet-200 bg-violet-50 p-3"><div class="font-semibold text-sm text-violet-900 mb-2">💼 Avance de nóminas · ${mes}</div><div class="flex gap-3 items-center">${donut(tt ? Math.round(dd / tt * 100) : 0, '#7c3aed')}<div class="flex-1 min-w-0">${fs.slice(0, 6).map((f, i) => barra(esc(f.n.patron), f.d, f.t, NCOL[i % NCOL.length])).join('')}${fs.length > 6 ? '<div class="text-xs text-slate-500">y ' + (fs.length - 6) + ' más…</div>' : ''}</div></div></div>`;
+  }
+  if (CEROS.length) {
+    const r = cerResumen(k);
+    h += `<div class="rounded-xl border border-teal-200 bg-teal-50 p-3"><div class="font-semibold text-sm text-teal-900 mb-2">🧮 Declaraciones en ceros · ${mes}</div><div class="flex gap-3 items-center">${donut(r.tm ? Math.round(r.dm / r.tm * 100) : 0, '#0f766e')}<div class="flex-1 min-w-0">${barra('Mensuales', r.dm, r.tm, '#0f766e')}${barra('DIOT (las que tocan)', r.dd, r.td, '#0891b2')}</div></div></div>`;
+  }
+  graf.innerHTML = h; heatWrap.className = h ? 'grid lg:grid-cols-2 gap-6' : '';
+}
+// ---------- Terminados, reabrir y respaldo ----------
+function renderTer() {
+  const l = T.filter(t => t.estado === 'listo').sort((a, b) => (b.cerradoEn || b.firmaInicio || b.limite || '').localeCompare(a.cerradoEn || a.firmaInicio || a.limite || '')).slice(0, 80);
+  terList.innerHTML = l.map(t => `<div class="border-b py-2 flex flex-wrap items-center gap-2"><b>${esc(t.cliente)}</b><span class="text-slate-600">${ICO[t.clase || 'tramite'] || ''} ${esc(t.tipo)}</span><span class="bg-slate-100 rounded px-1 text-xs">${esc(t.dep || '')}</span><span class="text-xs text-slate-500">· cerrado ${t.cerradoEn ? fmt(pd(t.cerradoEn)) : 'sin fecha registrada'}</span>${puede() ? `<button onclick="reabrir('${t.id}')" class="ml-auto border rounded px-2 py-0.5 text-xs">↩ Reabrir</button>` : ''}</div>`).join('') || '<p class="text-xs text-slate-400">Aún no hay terminados.</p>';
+}
+function reabrir(id) { const o = find(id); if (!o || !confirm('¿Reabrir este trámite? Volverá a salir como pendiente.')) return; persist({...o, estado: o.previo || (o.firmaInicio ? 'firmas' : 'proceso'), cerradoEn: '', pagado: false, entregado: false}); }
+function bajar(nombre, texto, tipo) { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([texto], {type: tipo})); a.download = nombre; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 3000); }
+function respaldo() { const f = isoHoy(); bajar('gestoria-respaldo-' + f + '.json', JSON.stringify({version: 1, fecha: f, tramites: T, requisitos: OVR, inhabiles: INH, nominas: NOMS, ceros: CEROS, finanzas: FIN}, null, 1), 'application/json'); }
+function respaldoCsv() {
+  const f = isoHoy(), q = v => '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"', cols = ['cliente', 'clase', 'dep', 'tipo', 'estado', 'limite', 'asignado', 'recibido', 'fechaEntrega', 'fechaRecoger', 'cerradoEn', 'incompleto', 'falta'];
+  bajar('gestoria-tramites-' + f + '.csv', '\ufeff' + [[...cols, 'intentos'].join(',')].concat(T.map(t => [...cols.map(c => q(t[c])), (t.intentos || []).length].join(','))).join('\n'), 'text/csv;charset=utf-8');
+}
+// ---------- Requisitos por trámite y catálogo ----------
+let reqId = null;
+function editReqs(id) { const t = find(id); if (!t) return; reqId = id; reqT.value = (t.reqs || []).map(r => r.n).join('\n'); dlgReq.showModal(); }
+async function guardarReqs() {
+  const o = find(reqId); if (!o) return; const prev = {}; (o.reqs || []).forEach(r => prev[r.n] = r.ok);
+  await persist({...o, reqs: reqT.value.split('\n').map(x => x.trim()).filter(Boolean).map(n => ({n, ok: !!prev[n]}))}); dlgReq.close();
+}
+async function adEliminar() {
+  const c = adC.value.trim(); if (!c) return alert('Elige el trámite.');
+  if (!confirm('¿Eliminar la lista de requisitos de "' + c + '"?')) return;
+  const o = {...OVR}; if (DEF[c]) o[c] = []; else delete o[c];
+  await saveOvr(o); adCarga();
+}
+// ---------- "Resuelto por mí" (privado) ----------
+function resueltoPorMi(id) {
+  const t = find(id); if (!t) return;
+  if (FIN.comp[id]) { if (confirm('¿Quitar la marca "Resuelto por mí"?')) finDel('C' + id, false); return; }
+  const nota = prompt('¿Qué tuviste que resolver tú? (ej. imprimí el oficio). Es opcional.');
+  if (nota === null) return;
+  finSave({id: 'C' + id, t: 'comp', tid: id, cliente: t.cliente, tipo: t.tipo, f: isoHoy(), nota: (nota || '').trim()});
 }
 
 function mesNav(d) { MES = new Date(MES.getFullYear(), MES.getMonth() + d, 1); selDia = null; renderHeat(); }
@@ -703,7 +911,8 @@ function inhDel(f) { inhGuardar(INH.filter(x => x.f !== f)); }
   if (PIN) { try { CAN = await sb('rpc/verificar', {p_pin: PIN}) === true; if (!CAN) salir(); } catch (e) {} }
   col.onSnapshot(snap => { T = snap.docs.map(d => ({clase: 'tramite', dep: 'Otro', otros: [], ...d.data()})); render(); }, e => console.error(e));
   DB.doc().onSnapshot(s => { const it = (s.exists && s.data().items) || []; OVR = Object.fromEntries(it.map(x => [x.c, x.l])); sugerir(); }, e => console.error(e));
-  poll(() => sb('nominas?select=data'), rows => { NOMS = rows.map(r => r.data).sort((a, b) => a.patron.localeCompare(b.patron)); render(); }, e => console.error(e));
+  if (CAN) { syncSat(); setInterval(syncSat, 20000); window.addEventListener('storage', e => { if (e.key === SATKEY) syncSat(); }); }
+  poll(() => sb('nominas?select=data'), rows => { const all = rows.map(r => r.data); NOMS = all.filter(x => x.kind !== 'cero').sort((a, b) => a.patron.localeCompare(b.patron)); CEROS = all.filter(x => x.kind === 'cero').sort((a, b) => a.alias.localeCompare(b.alias)); render(); }, e => console.error(e));
   poll(() => sb('config?key=eq.nominas&select=data'), rows => { NOM = (rows[0] && rows[0].data.items) || {activo: false}; render(); }, e => console.error(e));
   if (CAN) poll(() => sb('rpc/leer_finanzas', {p_pin: PIN}), rows => { FIN = finArmar(rows); render(); }, e => console.error(e));
   poll(() => sb('config?key=eq.inhabiles&select=data'), rows => { INH = (rows[0] && rows[0].data.items) || []; render(); }, e => console.error(e));
