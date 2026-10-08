@@ -22,17 +22,24 @@ body{background:#f1f5f9;color:#0f172a;font-family:'IBM Plex Sans',system-ui,-app
     <button id="btnIn" onclick="CAN ? salir() : entrar()" class="mt-3 ml-2 bg-white/20 hover:bg-white/30 text-white text-sm px-3 py-1.5 rounded-lg"></button>
   </div>
 </header>
+<nav id="tabs" class="max-w-7xl mx-auto px-4 pt-4 flex gap-2">
+  <button id="tabP" type="button" onclick="tab('panel')" class="px-4 py-2 rounded-lg font-semibold">📋 Panel</button>
+  <button id="tabN" type="button" onclick="tab('nom')" class="px-4 py-2 rounded-lg font-semibold">💼 Nóminas <span id="tabNb" class="text-xs font-normal"></span></button>
+</nav>
 
-<main class="max-w-7xl mx-auto px-4 py-6 space-y-6">
+<main id="mainP" class="max-w-7xl mx-auto px-4 py-6 space-y-6">
 
+  <div id="bannerInh" class="hidden"></div>
+  <button id="nomChip" type="button" onclick="tab('nom')" class="hidden w-full text-left rounded-2xl p-4 bg-violet-50 border border-violet-300"></button>
   <!-- Resumen -->
   <section id="resumen" class="grid grid-cols-2 md:grid-cols-6 gap-3"></section>
 
   <section class="rounded-2xl p-4 border-2 border-indigo-300 bg-indigo-50">
-    <h2 class="font-bold text-indigo-900 mb-3">📅 Agenda de hoy <span id="hoyRes" class="text-sm font-normal text-indigo-700"></span></h2>
-    <div class="grid lg:grid-cols-3 gap-4">
+    <h2 class="font-bold text-indigo-900 mb-3">📅 Agenda de hoy <span id="hoyRes" class="text-sm font-normal text-indigo-700"></span> <span id="hoyCobro" class="text-sm font-normal text-emerald-700"></span></h2>
+    <div class="grid lg:grid-cols-4 gap-4">
       <div><h3 class="font-semibold text-sm mb-2">📤 Por entregar hoy <span id="nA" class="ml-1 text-xs bg-indigo-600 text-white rounded-full px-2 py-0.5"></span></h3><div id="cA" class="space-y-3"></div></div>
       <div><h3 class="font-semibold text-sm mb-2">⏳ No se entregaron (venían de antes) <span id="nB" class="ml-1 text-xs bg-red-600 text-white rounded-full px-2 py-0.5"></span></h3><div id="cB" class="space-y-3"></div></div>
+      <div><h3 class="font-semibold text-sm mb-2">📥 Por recoger hoy <span id="nD" class="ml-1 text-xs bg-amber-600 text-white rounded-full px-2 py-0.5"></span></h3><div id="cD" class="space-y-3"></div></div>
       <div><h3 class="font-semibold text-sm mb-2">⚠️ Incompletos <span id="nC" class="ml-1 text-xs text-white rounded-full px-2 py-0.5" style="background:#f97316"></span></h3><div id="cC" class="space-y-3"></div></div>
     </div>
   </section>
@@ -44,19 +51,20 @@ body{background:#f1f5f9;color:#0f172a;font-family:'IBM Plex Sans',system-ui,-app
         <input id="cliente" required class="mt-1 w-full border rounded-lg px-3 py-2" placeholder="Nombre del cliente">
       </label>
       <label class="block text-sm font-medium">Naturaleza
-        <select id="clase" onchange="claseChange()" class="mt-1 w-full border rounded-lg px-3 py-2 bg-white"><option value="tramite">📄 Trámite</option><option value="pago">💰 Pago</option><option value="entrega">📤 Entrega de documentos / acuses</option></select></label>
+        <select id="clase" onchange="claseChange()" class="mt-1 w-full border rounded-lg px-3 py-2 bg-white"><option value="tramite">📄 Trámite</option><option value="pago">💰 Pago</option><option value="entrega">📤 Entrega de documentos / acuses</option><option value="recoger">📥 Recoger documento</option><option value="vigencia">🔔 Vigencia (e.firma, CSD, poder…)</option></select></label>
       <label class="block text-sm font-medium">Dependencia / área
         <select id="dep" onchange="sugerir()" class="mt-1 w-full border rounded-lg px-3 py-2 bg-white"></select></label>
       <label class="block text-sm font-medium">Trámite o concepto
         <input id="tipo" list="sug" oninput="renderReq()" required class="mt-1 w-full border rounded-lg px-3 py-2" placeholder="Elige o escribe"><datalist id="sug"></datalist></label>
       <label class="block text-sm font-medium">Fecha límite
-        <input id="limite" type="date" required class="mt-1 w-full border rounded-lg px-3 py-2">
+        <input id="limite" type="date" onchange="avisoFecha()" required class="mt-1 w-full border rounded-lg px-3 py-2">
       </label>
-      <label class="block text-sm font-medium">Fecha de recepción<input id="recibido" type="date" class="mt-1 w-full border rounded-lg px-3 py-2"></label>
+      <label class="block text-sm font-medium">Entregar el día <span class="text-slate-400 font-normal">(el que ella pida; vacío = no se cobra)</span><input id="asig" type="date" onchange="avisoFecha()" class="mt-1 w-full border rounded-lg px-3 py-2"></label>
+      <label class="block text-sm font-medium">Fecha de recepción<input id="recibido" type="date" onchange="if (recibido.value) asig.value = isoD(sumaHabiles(pd(recibido.value), 1)); avisoFecha()" class="mt-1 w-full border rounded-lg px-3 py-2"></label>
       <label class="block text-sm font-medium">Días hábiles estimados de respuesta
         <input id="dias" type="number" min="0" value="3" required class="mt-1 w-full border rounded-lg px-3 py-2">
       </label>
-      <label class="block text-sm font-medium">Vencimiento de licencia <span class="text-slate-400 font-normal">(si aplica)</span>
+      <label class="block text-sm font-medium">Vencimiento / vigencia <span class="text-slate-400 font-normal">(si aplica)</span>
         <input id="vence" type="date" class="mt-1 w-full border rounded-lg px-3 py-2">
       </label>
 
@@ -65,6 +73,7 @@ body{background:#f1f5f9;color:#0f172a;font-family:'IBM Plex Sans',system-ui,-app
         <input id="monto" type="number" min="0" step="0.01" class="mt-1 w-full border rounded-lg px-3 py-2"></label>
       
       <label class="md:col-span-3 text-sm"><input type="checkbox" id="repite"> 🔁 Se repite cada mes (pagos SAT/IMSS, acuses)</label>
+      <div id="avisoInh" class="md:col-span-3 text-sm text-red-700 font-semibold"></div>
       <fieldset id="docsSet" class="md:col-span-3 border rounded-xl p-4 bg-slate-50">
         <legend class="px-2 text-sm font-semibold">Documentos requeridos</legend>
         <div class="grid md:grid-cols-2 gap-4">
@@ -83,6 +92,9 @@ body{background:#f1f5f9;color:#0f172a;font-family:'IBM Plex Sans',system-ui,-app
     
     <button id="btnAdm" type="button" onclick="admin.classList.toggle('hidden')" class="border rounded-lg px-3 py-2 bg-slate-900 text-white">⚙️ Requisitos</button>
     <button id="btnBit" type="button" onclick="bitSec.classList.toggle('hidden')" class="border rounded-lg px-3 py-2">📜 Historial de intentos</button>
+    <button id="btnCob" type="button" onclick="cobSec.classList.toggle('hidden')" class="border rounded-lg px-3 py-2">💵 Mi cobranza</button>
+    <button id="btnWa" type="button" onclick="resumenWa()" class="border rounded-lg px-3 py-2">📲 Resumen por WhatsApp</button>
+    <label id="nomToggle" class="border rounded-lg px-3 py-2 bg-white flex items-center gap-2"><input type="checkbox" id="nomChk" onchange="nomActivar()"> 💼 Nóminas encargadas</label>
     <button id="btnInh" type="button" onclick="inhSec.classList.toggle('hidden')" class="border rounded-lg px-3 py-2">📆 Días inhábiles</button>
     <button id="btnObl" type="button" onclick="obligaciones()" class="border rounded-lg px-3 py-2">➕ Obligaciones del mes</button>
     <button id="btnPrn" type="button" onclick="window.print()" class="border rounded-lg px-3 py-2">🖨️ Imprimir</button>
@@ -113,7 +125,7 @@ body{background:#f1f5f9;color:#0f172a;font-family:'IBM Plex Sans',system-ui,-app
       <div id="c2" class="space-y-3"></div>
     </div>
     <div class="bg-amber-50 rounded-2xl p-4 border border-amber-200">
-      <h3 class="font-bold text-amber-700 mb-3">🏪 Licencias por vencer (60 días) <span id="n3" class="ml-1 text-xs bg-amber-600 text-white rounded-full px-2 py-0.5"></span></h3>
+      <h3 class="font-bold text-amber-700 mb-3">🔔 Vigencias y licencias por vencer (60 días) <span id="n3" class="ml-1 text-xs bg-amber-600 text-white rounded-full px-2 py-0.5"></span></h3>
       <div id="c3" class="space-y-3"></div>
     </div>
   </section>
@@ -123,6 +135,17 @@ body{background:#f1f5f9;color:#0f172a;font-family:'IBM Plex Sans',system-ui,-app
     <div class="bg-emerald-50 rounded-2xl p-4 border border-emerald-200"><h3 class="font-bold text-emerald-700 mb-3">📤 Entregas pendientes (acuses, documentos) <span id="n5" class="ml-1 text-xs bg-emerald-600 text-white rounded-full px-2 py-0.5"></span></h3><div id="c5" class="space-y-3"></div></div>
   </section>
   <section class="bg-white rounded-2xl shadow p-5"><h3 class="font-bold mb-2">🗓️ Próximos 8 días</h3><div id="c6"></div></section>
+  <section id="cobSec" class="hidden rounded-2xl p-5 border-2 border-emerald-300 bg-emerald-50">
+    <h2 class="text-lg font-bold text-emerald-900">💵 Mi cobranza <span class="text-xs font-normal text-emerald-800">(privada: solo la ves con tu clave)</span></h2>
+    <div id="cobRes" class="grid grid-cols-2 md:grid-cols-3 gap-2 my-3 text-center"></div>
+    <div class="text-xs text-slate-700 mb-3">Tarifa por día: $<input id="cobTar" type="number" onchange="cobTarifa()" class="border rounded px-2 py-1 w-24 mx-1"> Un día se cobra cuando entregas, ese mismo día, al menos un documento que ella te asignó para ese día. Lo que se te pasó de un día anterior no genera cobro por sí solo.</div>
+    <div class="grid md:grid-cols-2 gap-4">
+      <div><h3 class="font-semibold text-sm mb-1">Días</h3><div id="cobDias" class="text-sm space-y-2 max-h-80 overflow-auto"></div></div>
+      <div><h3 class="font-semibold text-sm mb-1">Pagos que me ha hecho</h3><div id="cobPagos" class="text-sm"></div>
+        <div class="mt-1 flex gap-2 flex-wrap"><input id="pgM" type="number" placeholder="Monto $" class="border rounded px-2 py-1 w-28"><input id="pgF" type="date" class="border rounded px-2 py-1"><button type="button" onclick="pagoAdd()" class="bg-emerald-600 text-white px-3 py-1 rounded">Registrar pago</button></div>
+        <h3 class="font-semibold text-sm mt-4 mb-1">💵 Efectivo que debo entregarle a ella</h3><div id="cobEfec" class="text-sm"></div></div>
+    </div>
+  </section>
   <section id="heatSec" class="bg-white rounded-2xl shadow p-5">
     <div class="flex items-center justify-between mb-3"><h3 class="font-bold">🔥 Mapa de calor de intentos · <span id="heatMes" class="capitalize"></span></h3>
       <div class="flex gap-2"><button onclick="mesNav(-1)" class="border rounded-lg px-3 py-1">◀</button><button onclick="mesNav(1)" class="border rounded-lg px-3 py-1">▶</button></div></div>
@@ -133,7 +156,7 @@ body{background:#f1f5f9;color:#0f172a;font-family:'IBM Plex Sans',system-ui,-app
       <span><i class="inline-block w-3 h-3 rounded align-middle" style="background:#fed7aa"></i> 1</span>
       <span><i class="inline-block w-3 h-3 rounded align-middle" style="background:#fb923c"></i> 2</span>
       <span><i class="inline-block w-3 h-3 rounded align-middle" style="background:#dc2626"></i> 3 o más</span>
-      <span><i class="inline-block w-3 h-3 rounded align-middle" style="background:#e2e8f0"></i> inhábil</span></div>
+      <span><i class="inline-block w-3 h-3 rounded align-middle" style="background:repeating-linear-gradient(45deg,#cbd5e1,#cbd5e1 3px,#e2e8f0 3px,#e2e8f0 6px)"></i> fin de semana</span><span><i class="inline-block w-3 h-3 rounded align-middle" style="background:repeating-linear-gradient(45deg,#fca5a5,#fca5a5 3px,#fee2e2 3px,#fee2e2 6px)"></i> 🚫 no se trabaja (feriado o inhábil)</span></div>
     <div id="heatDet" class="mt-3 text-sm"></div>
   </section>
   <!-- Todos -->
@@ -142,6 +165,27 @@ body{background:#f1f5f9;color:#0f172a;font-family:'IBM Plex Sans',system-ui,-app
     <div id="todos" class="grid md:grid-cols-2 lg:grid-cols-3 gap-3"></div>
   </section>
 </main>
+<main id="mainNom" class="hidden max-w-7xl mx-auto px-4 py-6">
+  <section id="nomSec" class="rounded-2xl p-5 border-2 border-violet-300 bg-violet-50">
+    <div class="flex flex-wrap items-center justify-between gap-2"><h2 class="text-lg font-bold text-violet-900">💼 Nóminas <span id="nomEst" class="text-xs font-normal"></span></h2>
+      <div class="flex items-center gap-2"><button onclick="nomMes(-1)" class="border rounded-lg px-3 py-1 bg-white">◀</button><b id="nomPer" class="capitalize"></b><button onclick="nomMes(1)" class="border rounded-lg px-3 py-1 bg-white">▶</button></div></div>
+    <p class="text-xs text-violet-800 mt-1">⚠️ Módulo en prueba: cualquiera con el enlace puede verlo. No captures RFC, CURP, NSS ni sueldos; usa solo nombres o alias. Más adelante tendrá inicio de sesión.</p>
+    <div id="nomRes" class="my-3 text-sm"></div>
+    <div id="nomTabla" class="space-y-2"></div>
+    <div id="nomTbl" class="mt-4 overflow-x-auto"></div>
+    <div id="nomForm" class="mt-4 bg-white rounded-xl p-3 text-sm">
+      <b>➕ Agregar patrón</b>
+      <div class="grid md:grid-cols-2 gap-2 mt-2"><input id="nomP" placeholder="Nombre o alias del patrón" class="border rounded-lg px-3 py-2"><textarea id="nomE" rows="3" placeholder="Empleados, uno por línea" class="border rounded-lg px-3 py-2"></textarea></div>
+      <button type="button" onclick="nomAdd()" class="mt-2 bg-violet-600 text-white px-4 py-2 rounded-lg">Guardar patrón</button>
+      <details class="mt-3"><summary class="cursor-pointer">📋 Pegar lista desde Excel (patrón y empleado)</summary><textarea id="nomImp" rows="4" placeholder="Una fila por empleado: Patrón [Tab o ;] Empleado" class="border rounded-lg px-3 py-2 w-full mt-2"></textarea><button type="button" onclick="nomImportar()" class="mt-1 border px-3 py-1 rounded-lg">Importar</button></details>
+    </div>
+  </section>
+</main>
+<dialog id="dlgEnt" class="rounded-2xl p-5 w-[min(92vw,420px)]">
+  <h3 class="font-semibold mb-2">Entregado en dependencia</h3>
+  <label class="text-sm">¿Qué día te dijeron que regreses a recoger? <span class="text-slate-400">(opcional)</span><input id="entRec" type="date" class="border rounded-lg px-3 py-2 w-full mt-1"></label>
+  <div class="mt-3 flex gap-2"><button onclick="guardarEnt()" class="bg-indigo-600 text-white px-4 py-2 rounded-lg">Guardar</button><button onclick="dlgEnt.close()" class="border px-4 py-2 rounded-lg">Cancelar</button></div>
+</dialog>
 <dialog id="dlgInt" class="rounded-2xl p-5 w-[min(92vw,420px)]">
   <h3 class="font-semibold mb-2">Registrar intento de entrega</h3>
   <select id="intTipo" class="border rounded-lg px-3 py-2 w-full mb-2 bg-white"><option value="incompleto">⚠️ Se intentó entregar, pero estaba incompleto</option><option value="noentregado">🚫 No se alcanzó a entregar ese día</option></select>
@@ -180,7 +224,8 @@ async function entrar() {
   catch (e) { alert('No se pudo verificar: ' + (e.message || e.code)); }
 }
 function salir() { try { localStorage.removeItem('gest_pin'); } catch (e) {} location.reload(); }
-let INH = [], MES = null, selDia = null; const _fc = {};
+let INH = [], MES = null, selDia = null, FIN = {tarifa: 300, dias: {}, pagos: [], efec: []};
+let NOMS = [], NOM = {activo: false}, NPER = null, TAB = 'panel'; const NOPEN = new Set(), NCOL = ['#7c3aed', '#0891b2', '#16a34a', '#d97706', '#db2777', '#2563eb', '#65a30d', '#dc2626']; const _fc = {};
 const FERN = ['Año Nuevo','Día de la Constitución','Natalicio de Benito Juárez','Día del Trabajo','Independencia de México','Transmisión del Poder Ejecutivo','Revolución Mexicana','Navidad'];
 function FER(y) {
   if (_fc[y]) return _fc[y];
@@ -242,7 +287,8 @@ function reqHtml(t) {
 function toggleReq(id, i) { const o = find(id), r = o.reqs.map(x => ({...x})); r[i].ok = !r[i].ok; persist({...o, reqs: r}); }
 
 // ---------- Tarjeta ----------
-const ICO = {tramite: '📄', pago: '💰', entrega: '📤'};
+const ICO = {tramite: '📄', pago: '💰', entrega: '📤', recoger: '📥', vigencia: '🔔'};
+const lblTer = (t, c) => t.estado === 'firmas' ? '📥 Ya lo recogí (cerrar)' : ({tramite: '✔ Terminado', pago: '💰 Marcar pagado', entrega: '📤 Marcar entregado', recoger: '📥 Ya lo recogí', vigencia: '✔ Renovada'}[c] || '✔ Terminado');
 function card(t) {
   const c = t.clase || 'tramite', ints = t.intentos || [], nI = ints.length;
   const lim = pd(t.limite), h = habiles(hoy(), lim), falt = faltantes(t);
@@ -276,14 +322,16 @@ function card(t) {
     </div>
     <div class="text-sm mt-1">📅 ${fmt(lim)} · ${estado}</div>
     <div class="text-xs text-slate-500 mt-1">${t.resp ? '👤 ' + esc(t.resp) : ''}${t.monto ? ' · 💲' + Number(t.monto).toLocaleString('es-MX') : ''}${t.repite ? ' · 🔁 mensual' : ''}${t.recibido ? ' · 📥 Recibido ' + fmt(pd(t.recibido)) : ''}</div>${planB ? `<div class="text-xs mt-1">${planB}</div>` : ''}
-    ${firmas}${lic}${alerta}${incB}${intB}${intHtml(t)}
+    ${firmas}${recB(t)}${lic}${alerta}${incB}${intB}${intHtml(t)}
     
     ${reqHtml(t)}
     ${puede() ? `<div class="flex flex-wrap gap-2 mt-3">
       ${t.estado !== 'firmas' && c === 'tramite' ? `<button onclick="aFirmas('${t.id}')" class="text-xs bg-blue-600 text-white px-2.5 py-1 rounded-md">📥 Entregado en dependencia</button>` : ''}
-      <button onclick="terminar('${t.id}')" class="text-xs bg-green-600 text-white px-2.5 py-1 rounded-md">${{tramite: '✔ Terminado', pago: '💰 Marcar pagado', entrega: '📤 Marcar entregado'}[c]}</button>
+      <button onclick="terminar('${t.id}')" class="text-xs bg-green-600 text-white px-2.5 py-1 rounded-md">${lblTer(t, c)}</button>
       <button onclick="abrirInt('${t.id}')" class="text-xs border border-orange-400 text-orange-700 px-2.5 py-1 rounded-md">⚠️ Registrar intento</button>
       ${t.incompleto ? `<button onclick="resolver('${t.id}')" class="text-xs border border-slate-300 px-2.5 py-1 rounded-md">✅ Ya está completo</button>` : ''}
+      ${ent ? `<button onclick="fechaRec('${t.id}')" class="text-xs border border-amber-400 text-amber-800 px-2.5 py-1 rounded-md">📅 Fecha de recogida</button>` : ''}
+      ${c === 'entrega' ? `<button onclick="cobrarEfectivo('${t.id}')" class="text-xs border border-emerald-500 text-emerald-700 px-2.5 py-1 rounded-md">💵 Cobré en efectivo</button>` : ''}
       ${t.plan === hy0 ? `<button onclick="quitarPlan('${t.id}')" class="text-xs border border-slate-300 px-2.5 py-1 rounded-md">Quitar de hoy</button>` : `<button onclick="plan('${t.id}','hoy')" class="text-xs border border-indigo-300 text-indigo-700 px-2.5 py-1 rounded-md">📅 Para hoy</button><button onclick="plan('${t.id}','man')" class="text-xs border border-indigo-300 text-indigo-700 px-2.5 py-1 rounded-md">📅 Mañana</button>`}
     </div>` : ''}</div>`;
 }
@@ -300,11 +348,19 @@ function toggle(id, k) {
   } else t[k] = t[k] === 'si' ? 'no' : 'si';
   persist(t);
 }
-function aFirmas(id) { persist({...find(id), estado: 'firmas', firmaInicio: isoHoy(), incompleto: false, falta: ''}); }
+let entId = null, entSoloFecha = false;
+function aFirmas(id) { entId = id; entSoloFecha = false; entRec.value = ''; dlgEnt.showModal(); }
+function fechaRec(id) { entId = id; entSoloFecha = true; entRec.value = find(id).fechaRecoger || ''; dlgEnt.showModal(); }
+async function guardarEnt() {
+  const o = find(entId); if (!o) return;
+  await persist(entSoloFecha ? {...o, fechaRecoger: entRec.value} : {...o, estado: 'firmas', firmaInicio: isoHoy(), fechaEntrega: isoHoy(), fechaRecoger: entRec.value, incompleto: false, falta: ''});
+  dlgEnt.close();
+}
 const isoD = d => d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
 function mesSig(s) { const d = pd(s), n = new Date(d.getFullYear(), d.getMonth()+1, 1), u = new Date(d.getFullYear(), d.getMonth()+2, 0).getDate(); n.setDate(Math.min(d.getDate(), u)); return isoD(n); }
 async function terminar(id) {
-  const o = find(id), t = {...o, estado: 'listo', incompleto: false};
+  const o = find(id), t = {...o, estado: 'listo', incompleto: false, fechaEntrega: o.fechaEntrega || o.firmaInicio || isoHoy()};
+  if (o.estado === 'firmas') t.recogidoEn = isoHoy();
   if (o.clase === 'pago') t.pagado = true;
   if (o.clase === 'entrega') t.entregado = true;
   await persist(t);
@@ -316,15 +372,15 @@ function borrar(id) { if (confirm('¿Eliminar este trámite?')) quitar(id); }
 function render() {
   document.getElementById('hoy').textContent = fmt(hoy());
   document.getElementById('formSec').style.display = puede() ? '' : 'none';
-  btnAdm.style.display = btnObl.style.display = puede() ? '' : 'none'; renderBit(); renderHeat(); renderInh(); btnIn.textContent = CAN ? '🔓 Salir del modo dueño' : '🔑 Entrar como dueño'; if (!puede()) admin.classList.add('hidden');
+  btnAdm.style.display = btnObl.style.display = btnCob.style.display = btnWa.style.display = puede() ? '' : 'none'; renderBit(); renderHeat(); renderInh(); renderCob(); renderBanner(); renderNom(); btnIn.textContent = CAN ? '🔓 Salir del modo dueño' : '🔑 Entrar como dueño'; if (!puede()) admin.classList.add('hidden');
   document.getElementById('btnVista').style.display = CAN ? '' : 'none';
   document.getElementById('btnVista').textContent = VISTA ? '↩ Volver a mi vista' : '👀 Ver como contadora';
   document.getElementById('modo').textContent = (SNAP ? '📅 Actualizado: ' + window.__SNAP.fecha : DB ? '☁️ Se actualiza solo' : '💾 Datos solo en este navegador') + (puede() ? '' : ' · 👀 Vista de solo lectura');
   const B = filtrados();
-  const act = B.filter(t => t.estado !== 'listo').sort((a, b) => a.limite.localeCompare(b.limite));
+  const act = B.filter(t => t.estado !== 'listo' && t.clase !== 'vigencia').sort((a, b) => a.limite.localeCompare(b.limite));
   const urg = act.filter(t => t.estado !== 'firmas' && habiles(hoy(), pd(t.limite)) <= 1);
   const fir = act.filter(t => t.estado === 'firmas');
-  const lic = B.filter(t => t.vence && diasCal(pd(t.vence)) <= 60).sort((a, b) => a.vence.localeCompare(b.vence));
+  const lic = B.filter(t => t.vence && (t.clase !== 'vigencia' || t.estado !== 'listo') && diasCal(pd(t.vence)) <= 60).sort((a, b) => a.vence.localeCompare(b.vence));
   const sinDoc = act.filter(t => faltantes(t).length).length;
   const vacio = m => `<p class="text-sm text-slate-400 text-center py-4">${m}</p>`;
 
@@ -338,26 +394,29 @@ function render() {
   c5.innerHTML = ent.map(card).join('') || vacio('Sin entregas pendientes');
   n4.textContent = pag.length; n5.textContent = ent.length;
   const hy = isoHoy();
-  const A = act.filter(t => t.plan === hy && t.estado !== 'firmas'), Bn = act.filter(t => t.plan && t.plan < hy && t.estado !== 'firmas'), inc = act.filter(t => t.incompleto && t.estado !== 'firmas');
+  const A = act.filter(t => (t.plan || t.asignado) === hy && t.estado !== 'firmas'), Bn = act.filter(t => (t.plan || t.asignado) && (t.plan || t.asignado) < hy && t.estado !== 'firmas'), inc = act.filter(t => t.incompleto && t.estado !== 'firmas');
   const entH = B.filter(t => t.estado === 'firmas' && t.firmaInicio === hy).length;
   cA.innerHTML = A.map(card).join('') || vacio('Nada planeado para hoy. Usa 📅 Para hoy en una tarjeta.');
   cB.innerHTML = Bn.map(card).join('') || vacio('Nada pendiente de días anteriores 👍');
   cC.innerHTML = inc.map(card).join('') || vacio('Sin incompletos');
+  const Rc = act.filter(t => t.estado === 'firmas' && t.fechaRecoger && t.fechaRecoger <= hy);
+  cD.innerHTML = Rc.map(card).join('') || vacio('Nada por recoger hoy'); nD.textContent = Rc.length;
   nA.textContent = A.length; nB.textContent = Bn.length; nC.textContent = inc.length;
   hoyRes.textContent = '· ' + entH + ' entregado(s) hoy · ' + A.length + ' por entregar';
   const prox = [];
-  for (let i = 0; i < 8; i++) { const d = new Date(hoy()); d.setDate(d.getDate() + i); const its = act.filter(t => t.limite === isoD(d)); if (its.length) prox.push(`<div class="text-sm py-1 border-b"><b>${i === 0 ? 'Hoy' : i === 1 ? 'Mañana' : fmt(d)}</b> · ${its.map(t => esc(t.cliente) + ' (' + esc(t.tipo) + ')').join(' · ')}</div>`); }
+  for (let i = 0; i < 8; i++) { const d = new Date(hoy()); d.setDate(d.getDate() + i); const ni = nombreInh(d); if (ni) prox.push(`<div class="text-sm py-1 border-b text-red-700 font-semibold">🚫 ${i === 0 ? 'Hoy' : i === 1 ? 'Mañana' : fmt(d)} · No se trabaja: ${esc(ni)}</div>`);
+    const its = act.filter(t => t.limite === isoD(d) && t.estado !== 'firmas'), rcs = act.filter(t => t.estado === 'firmas' && t.fechaRecoger === isoD(d)); if (its.length || rcs.length) prox.push(`<div class="text-sm py-1 border-b"><b>${i === 0 ? 'Hoy' : i === 1 ? 'Mañana' : fmt(d)}</b> · ${its.map(t => esc(t.cliente) + ' (' + esc(t.tipo) + ')').join(' · ')}${rcs.map(t => ' 📥 recoger: ' + esc(t.cliente) + ' (' + esc(t.tipo) + ')').join('')}</div>`); }
   c6.innerHTML = prox.join('') || vacio('Nada vence en los próximos 8 días');
 
   const box = (v, l, c) => `<div class="bg-white rounded-xl shadow p-4"><div class="text-3xl font-bold ${c}">${v}</div><div class="text-xs text-slate-500">${l}</div></div>`;
   document.getElementById('resumen').innerHTML =
     box(act.length, 'Trámites activos', 'text-indigo-600') + box(urg.length, 'Urgentes', 'text-red-600') +
     box(sinDoc, 'Con documentos faltantes', 'text-orange-600') + box(inc.length, 'Incompletos', 'text-orange-500') + box(A.length, 'Por entregar hoy', 'text-indigo-600') +
-    box('$' + pag.reduce((x, t) => x + (+t.monto || 0), 0).toLocaleString('es-MX'), 'Por pagar', 'text-rose-600');
+    box('$' + pag.reduce((x, t) => x + (+t.monto || 0), 0).toLocaleString('es-MX'), 'Pagos pendientes (SAT, IMSS…)', 'text-rose-600');
 }
 
-const DEPS = ['Protección Civil','Medio Ambiente','Desarrollo Urbano','SARE','SAT','IMSS','CANACO','Otro'];
-const SUG = {'Protección Civil':['Dictamen de protección civil','Programa interno','Visto bueno'],'Medio Ambiente':['Licencia ambiental','Cédula de operación','Manejo de residuos'],'Desarrollo Urbano':['Uso de suelo','Licencia de construcción','Número oficial'],'SARE':['Apertura rápida (SARE)','Refrendo de licencia de funcionamiento'],'SAT':['Pago provisional mensual','Declaración anual','Entrega de acuse SAT','Alta / modificación RFC','Nómina (CFDI)'],'IMSS':['Pago de cuotas IMSS (SUA)','Alta de trabajador','Baja / modificación de salario'],'CANACO':['Membresía / SIEM','Constancia CANACO'],'Otro':[]};
+const DEPS = ['Protección Civil','Medio Ambiente','Desarrollo Urbano','SARE','SAT','IMSS','Fiscalización','CANACO','Otro'];
+const SUG = {'Protección Civil':['Dictamen de protección civil','Programa interno','Visto bueno'],'Medio Ambiente':['Licencia ambiental','Cédula de operación','Manejo de residuos'],'Desarrollo Urbano':['Uso de suelo','Licencia de construcción','Número oficial'],'SARE':['Apertura rápida (SARE)','Refrendo de licencia de funcionamiento'],'SAT':['Pago provisional mensual','Declaración anual','Entrega de acuse SAT','Alta / modificación RFC','Nómina (CFDI)','Vigencia e.firma','Vigencia sello digital (CSD)'],'IMSS':['Pago de cuotas IMSS (SUA)','Alta de trabajador','Baja / modificación de salario'],'Fiscalización':['Ingresar prórroga','Recoger prórroga','Ingresar solventación de folio','Recoger solventada'],'CANACO':['Membresía / SIEM','Constancia CANACO'],'Otro':['Vigencia de poder notarial','Vigencia de licencia']};
 const optDeps = DEPS.map(d => `<option>${d}</option>`).join('');
 dep.innerHTML = optDeps; fDep.innerHTML += optDeps;
 function sugerir() {
@@ -385,7 +444,11 @@ const DEF = {
 'Alta de trabajador':['*INE','*CURP','*Número de seguridad social','Comprobante de domicilio','Acta de nacimiento','Fecha de ingreso y salario'],
 'Baja / modificación de salario':['*INE','*Número de seguridad social','Fecha de baja o nuevo salario','Aviso en IDSE'],
 'Membresía / SIEM':['*INE','*Constancia de situación fiscal','Comprobante de domicilio del negocio','Formato de afiliación','Comprobante de pago'],
-'Constancia CANACO':['*INE','*Constancia de situación fiscal','Comprobante de pago de cuota']};
+'Constancia CANACO':['*INE','*Constancia de situación fiscal','Comprobante de pago de cuota'],
+'Ingresar prórroga':['*Folio de la notificación','*INE del representante','*Documento que piden (ej. permiso de anuncio)','Escrito de solicitud firmado'],
+'Recoger prórroga':['*Acuse o folio de ingreso','*INE de quien recoge','Carta poder (si aplica)'],
+'Ingresar solventación de folio':['*Folio de la notificación','*Documentos con los que se solventa','INE del representante','Escrito firmado'],
+'Recoger solventada':['*Acuse o folio de ingreso','*INE de quien recoge','Carta poder (si aplica)']};
 let OVR = {};
 const CAT = () => ({...DEF, ...OVR});
 function renderReq(prev) {
@@ -405,17 +468,17 @@ async function adGuarda() {
   await saveOvr({...OVR, [c]: adT.value.split('\n').map(x => x.trim()).filter(Boolean)}); alert('Lista guardada ✅');
 }
 async function adReset() { const o = {...OVR}; delete o[adC.value.trim()]; await saveOvr(o); adCarga(); }
-function claseChange() {}
+function claseChange() { limite.required = clase.value !== 'vigencia'; vence.required = clase.value === 'vigencia'; }
 function filtrados() {
   const x = q.value.toLowerCase();
   return T.filter(t => (!fDep.value || t.dep === fDep.value) && (!x || (t.cliente + ' ' + t.tipo).toLowerCase().includes(x)));
 }
 let editId = null;
-function limpiarForm() { f.reset(); recibido.value = isoHoy(); renderReq(); editId = null; dias.value = 3; sugerir(); claseChange(); btnG.textContent = 'Guardar'; btnC.classList.add('hidden'); }
+function limpiarForm() { f.reset(); recibido.value = isoHoy(); asig.value = isoD(sumaHabiles(hoy(), 1)); renderReq(); editId = null; dias.value = 3; sugerir(); claseChange(); btnG.textContent = 'Guardar'; btnC.classList.add('hidden'); }
 function editar(id) {
   const t = find(id); if (!t) return;
   editId = id; dep.value = t.dep || 'Otro'; sugerir(); clase.value = t.clase || 'tramite'; claseChange();
-  cliente.value = t.cliente; recibido.value = t.recibido || ''; tipo.value = t.tipo; limite.value = t.limite; dias.value = t.dias; vence.value = t.vence || '';
+  cliente.value = t.cliente; recibido.value = t.recibido || ''; asig.value = t.asignado || ''; tipo.value = t.tipo; limite.value = t.limite; dias.value = t.dias; vence.value = t.vence || '';
   monto.value = t.monto || ''; repite.checked = !!t.repite;
   renderReq(t.reqs);
   btnG.textContent = 'Guardar cambios'; btnC.classList.remove('hidden'); formSec.scrollIntoView({behavior: 'smooth'});
@@ -425,17 +488,18 @@ f.addEventListener('submit', e => {
   const o = editId ? find(editId) : null, pick = n => (document.querySelector(`input[name=${n}]:checked`) || {}).value || 'si';
   persist({
     id: editId || 'T' + Date.now(), clase: clase.value, dep: dep.value,
-    cliente: cliente.value.trim(), tipo: tipo.value.trim(), limite: limite.value,
+    cliente: cliente.value.trim(), tipo: tipo.value.trim(), limite: limite.value || vence.value,
     dias: parseInt(dias.value) || 0, vence: vence.value || '',
     monto: parseFloat(monto.value) || 0, repite: repite.checked,
     reqs: [...document.querySelectorAll('.rq')].map(c => ({n: c.dataset.n, ok: c.checked})),
     estado: o ? o.estado : 'proceso', firmaInicio: o ? o.firmaInicio : '',
     pagado: o ? !!o.pagado : false, entregado: o ? !!o.entregado : false,
-    recibido: recibido.value, intentos: o ? (o.intentos || []) : [], incompleto: o ? !!o.incompleto : false, falta: o ? (o.falta || '') : '', plan: o ? (o.plan || '') : ''
+    recibido: recibido.value, intentos: o ? (o.intentos || []) : [], incompleto: o ? !!o.incompleto : false, falta: o ? (o.falta || '') : '', plan: o ? (o.plan || '') : '', asignado: asig.value, fechaEntrega: o ? (o.fechaEntrega || '') : '', fechaRecoger: o ? (o.fechaRecoger || '') : ''
   });
   limpiarForm();
 });
-sugerir(); claseChange(); recibido.value = isoHoy();
+sugerir(); claseChange(); recibido.value = isoHoy(); asig.value = isoD(sumaHabiles(hoy(), 1));
+tab(location.hash === '#nominas' ? 'nom' : 'panel');
 render();
 
 let intId = null;
@@ -449,6 +513,11 @@ async function guardarInt() {
 function plan(id, d) { persist({...find(id), plan: d === 'hoy' ? isoHoy() : isoD(sumaHabiles(hoy(), 1))}); }
 function quitarPlan(id) { persist({...find(id), plan: ''}); }
 function resolver(id) { persist({...find(id), incompleto: false, falta: ''}); }
+function recB(t) {
+  if (t.estado !== 'firmas' || !t.fechaRecoger) return '';
+  const r = pd(t.fechaRecoger), hh = habiles(hoy(), r);
+  return `<div class="mt-2 text-xs rounded-lg p-2 ${hh <= 0 ? 'bg-amber-100 text-amber-900 font-semibold' : 'bg-white text-slate-700'}">📥 Regresar a recoger: <b>${fmt(r)}</b> · ${hh < 0 ? 'ya pasó, ve por él' : hh === 0 ? '¡es hoy!' : 'faltan ' + hh + ' día(s) háb.'}</div>`;
+}
 function intHtml(t) {
   const l = t.intentos || []; if (!l.length) return '';
   return `<details class="mt-1"><summary class="cursor-pointer text-xs text-slate-600">📜 Historial de intentos</summary><div class="mt-1 text-xs space-y-0.5">${l.map(x => `<div>#${x.n} · ${fmt(pd(x.fecha))} · ${x.res === 'incompleto' ? '⚠️ incompleto' : '🚫 no se entregó ese día'}${x.nota ? ': ' + esc(x.nota) : ''}</div>`).join('')}</div></details>`;
@@ -467,6 +536,124 @@ function obligaciones() {
   };
   [mk('SAT', 'Pago provisional mensual'), mk('IMSS', 'Pago de cuotas IMSS (SUA)')].forEach(x => persist(x));
 }
+function finArmar(rows) {
+  const f = {tarifa: 300, dias: {}, pagos: [], efec: []};
+  (rows || []).forEach(d => { if (d.t === 'cfg') f.tarifa = d.tarifa || 300; else if (d.t === 'dia') f.dias[d.f] = d.forzar; else if (d.t === 'pago') f.pagos.push(d); else if (d.t === 'efec') f.efec.push(d); });
+  return f;
+}
+async function finSave(d) { try { await sb('rpc/guardar_finanzas', {p_pin: PIN, p_doc: d}); refrescar(); } catch (e) { alert('No se pudo guardar: ' + (e.message || e.code)); } }
+async function finDel(id, ask) { if (ask && !confirm('¿Borrar este registro?')) return; try { await sb('rpc/borrar_finanzas', {p_pin: PIN, p_id: id}); refrescar(); } catch (e) { alert('No se pudo borrar: ' + (e.message || e.code)); } }
+const fEnt = t => t.fechaEntrega || ((t.estado === 'firmas' || t.estado === 'listo') ? (t.firmaInicio || '') : '');
+function diasCobro() {
+  const m = {}, hy = isoHoy(), get = f => m[f] = m[f] || {f, ok: [], falta: []};
+  T.forEach(t => {
+    if (!t.asignado) return;
+    const e = fEnt(t);
+    if (e && e === t.asignado) get(e).ok.push(t);
+    else if ((e && e > t.asignado) || (!e && t.asignado < hy)) get(t.asignado).falta.push({t, e});
+  });
+  Object.keys(FIN.dias).forEach(get);
+  return Object.values(m).map(d => ({...d, forzar: FIN.dias[d.f] || '', cobra: FIN.dias[d.f] === 'cobrar' ? true : FIN.dias[d.f] === 'nocobrar' ? false : d.ok.length > 0})).sort((a, b) => b.f.localeCompare(a.f));
+}
+function diaAjuste(f, v) { v ? finSave({id: 'D' + f, t: 'dia', f, forzar: v}) : finDel('D' + f, false); }
+function cobTarifa() { finSave({id: 'cfg', t: 'cfg', tarifa: parseFloat(cobTar.value) || 300}); }
+function pagoAdd() { const m = parseFloat(pgM.value); if (!m) return alert('Escribe el monto.'); finSave({id: 'P' + Date.now(), t: 'pago', f: pgF.value || isoHoy(), monto: m}); pgM.value = ''; }
+function cobrarEfectivo(id) { const t = find(id), m = parseFloat(prompt('¿Cuánto cobraste en efectivo?', '300')); if (!t || !m) return; finSave({id: 'E' + Date.now(), t: 'efec', tid: t.id, cliente: t.cliente, concepto: t.tipo, f: isoHoy(), monto: m, entregado: ''}); }
+function efecEntregado(id) { const e = FIN.efec.find(x => x.id === id); if (e) finSave({...e, entregado: isoHoy()}); }
+function renderCob() {
+  if (!puede()) { cobSec.classList.add('hidden'); hoyCobro.textContent = ''; return; }
+  const $ = v => '$' + Number(v).toLocaleString('es-MX'), dias = diasCobro(), hy = isoHoy();
+  const n = dias.filter(d => d.cobra).length, ganado = n * FIN.tarifa, pagado = FIN.pagos.reduce((x, p) => x + (+p.monto || 0), 0), debe = ganado - pagado;
+  const ef = FIN.efec.filter(e => !e.entregado), efT = ef.reduce((x, e) => x + (+e.monto || 0), 0), neto = debe - efT;
+  if (document.activeElement !== cobTar) cobTar.value = FIN.tarifa;
+  const caja = (v, l, c) => `<div class="bg-white rounded-lg p-2"><div class="text-xl font-bold ${c || ''}">${v}</div><div class="text-xs text-slate-500">${l}</div></div>`;
+  cobRes.innerHTML = caja(n, 'Días cobrables') + caja($(ganado), 'Ganado') + caja($(pagado), 'Me ha pagado') + caja($(debe), 'Me debe', 'text-emerald-700') + caja($(efT), 'Efectivo que le debo', 'text-rose-600') + caja($(Math.abs(neto)) + (neto < 0 ? ' (le debo)' : ''), 'Saldo neto', neto >= 0 ? 'text-emerald-700' : 'text-rose-600');
+  cobDias.innerHTML = dias.slice(0, 45).map(d => `<div class="bg-white rounded-lg p-2"><b>${fmt(pd(d.f))}</b> · ${d.cobra ? '✅ cobra' : '❌ no cobra'}${d.forzar ? ' <span class="text-slate-500">(ajuste manual)</span>' : ''}
+    ${d.ok.length ? `<div class="text-xs text-slate-600">Entregado ese día: ${d.ok.map(t => esc(t.cliente) + ' (' + esc(t.tipo) + ')').join(', ')}</div>` : ''}
+    ${d.falta.length ? `<div class="text-xs text-orange-700">Asignado a este día y no se entregó ese día: ${d.falta.map(x => esc(x.t.cliente) + (x.e ? ' (se entregó el ' + fmt(pd(x.e)) + ')' : ' (sigue pendiente)')).join(', ')}</div>` : ''}
+    <div class="mt-1 flex gap-2 text-xs">${d.forzar ? `<button onclick="diaAjuste('${d.f}','')" class="border rounded px-2 py-0.5">Quitar ajuste</button>` : d.cobra ? `<button onclick="diaAjuste('${d.f}','nocobrar')" class="border rounded px-2 py-0.5">No cobrar</button>` : `<button onclick="diaAjuste('${d.f}','cobrar')" class="border rounded px-2 py-0.5">Cobrar igual</button>`}</div></div>`).join('') || '<p class="text-xs text-slate-400">Aún no hay días. Se llenan solos cuando entregas lo asignado.</p>';
+  cobPagos.innerHTML = [...FIN.pagos].sort((a, b) => b.f.localeCompare(a.f)).map(p => `<div>${fmt(pd(p.f))} · ${$(p.monto)} <button onclick="finDel('${p.id}', true)" class="text-red-600 ml-1">✖</button></div>`).join('') || '<p class="text-xs text-slate-400">Sin pagos registrados.</p>';
+  cobEfec.innerHTML = ef.map(e => `<div>${fmt(pd(e.f))} · ${esc(e.cliente)} · ${esc(e.concepto)} · <b>${$(e.monto)}</b> <button onclick="efecEntregado('${e.id}')" class="border rounded px-2 py-0.5 text-xs">Ya se lo entregué</button> <button onclick="finDel('${e.id}', true)" class="text-red-600">✖</button></div>`).join('') || '<p class="text-xs text-slate-400">No debes entregarle efectivo.</p>';
+  const hd = dias.find(d => d.f === hy), asig = T.filter(t => t.asignado === hy && fEnt(t) !== hy).length;
+  hoyCobro.textContent = hd && hd.cobra ? '· 💵 hoy ya es día cobrable' : asig ? '· 💵 hoy aún no cobra (te faltan ' + asig + ' asignado(s))' : '';
+}
+function resumenWa() {
+  const hy = isoHoy(), act = T.filter(t => t.estado !== 'listo' && t.clase !== 'vigencia');
+  const hechos = T.filter(t => fEnt(t) === hy), pend = act.filter(t => t.estado !== 'firmas' && (t.plan || t.asignado) && (t.plan || t.asignado) <= hy);
+  const inc = act.filter(t => t.incompleto && t.estado !== 'firmas'), rec = act.filter(t => t.estado === 'firmas' && t.fechaRecoger && t.fechaRecoger <= hy);
+  const li = (a, f) => a.length ? a.map(t => '• ' + t.cliente + ' – ' + t.tipo + (f ? f(t) : '')).join('\n') : '• (ninguno)';
+  const txt = '📋 Resumen del ' + fmt(hoy()) + '\n\n✅ Entregados hoy:\n' + li(hechos) + '\n\n⏳ Pendientes por entregar:\n' + li(pend) + '\n\n⚠️ Incompletos:\n' + li(inc, t => t.falta ? ' (falta: ' + t.falta + ')' : '') + '\n\n📥 Por recoger:\n' + li(rec);
+  window.open('https://wa.me/?text=' + encodeURIComponent(txt), '_blank');
+}
+
+function renderBanner() {
+  const d0 = hoy(), n0 = nombreInh(d0), fin = d0.getDay() === 0 || d0.getDay() === 6;
+  let msg = '', cls = '';
+  if (n0 || fin) { msg = '🚫 Hoy no se trabaja' + (n0 ? ': ' + n0 : ' (fin de semana)'); cls = 'bg-red-600 text-white'; }
+  else for (let i = 1; i <= 7; i++) { const d = new Date(d0); d.setDate(d.getDate() + i); const n = nombreInh(d); if (n) { msg = '📆 Próximo día sin labores: ' + n + ' · ' + fmt(d) + (i === 1 ? ' (mañana)' : ' (en ' + i + ' días)'); cls = 'bg-amber-100 text-amber-900 border border-amber-300'; break; } }
+  bannerInh.className = 'rounded-2xl p-4 font-semibold ' + (msg ? cls : 'hidden'); bannerInh.textContent = msg;
+}
+function avisoFecha() {
+  avisoInh.textContent = [['Entregar el día', asig.value], ['Fecha límite', limite.value]].map(([l, v]) => { if (!v) return ''; const d = pd(v), n = nombreInh(d); return esHabil(d) ? '' : '🚫 ' + l + ' (' + fmt(d) + ') cae en ' + (n ? 'día inhábil: ' + n : 'fin de semana') + '. Ese día no se trabaja.'; }).filter(Boolean).join(' ');
+}
+const nomKey = () => { NPER = NPER || new Date(hoy().getFullYear(), hoy().getMonth(), 1); return NPER.getFullYear() + '-' + String(NPER.getMonth() + 1).padStart(2, '0'); };
+const nomDecl = (n, k) => (n.decl || {})[k] || [];
+const nomFind = id => NOMS.find(x => x.id === id);
+function nomMes(d) { nomKey(); NPER = new Date(NPER.getFullYear(), NPER.getMonth() + d, 1); renderNom(); }
+async function nomSave(doc) { try { await sb('rpc/guardar_nomina', {p_pin: PIN, p_doc: doc}); refrescar(); } catch (e) { alert('No se pudo guardar: ' + (e.message || e.code)); } }
+async function nomDel(id) { if (!confirm('¿Eliminar este patrón y sus empleados?')) return; try { await sb('rpc/borrar_nomina', {p_pin: PIN, p_id: id}); refrescar(); } catch (e) { alert('No se pudo borrar: ' + (e.message || e.code)); } }
+async function nomActivar() { try { await sb('rpc/guardar_ajuste', {p_pin: PIN, p_key: 'nominas', p_items: {activo: nomChk.checked}}); refrescar(); } catch (e) { alert('No se pudo guardar: ' + (e.message || e.code)); nomChk.checked = !!NOM.activo; } }
+function nomToggleEmp(id, i) { const n = nomFind(id), k = nomKey(), e = n.empleados[i], l = [...nomDecl(n, k)], j = l.indexOf(e); j >= 0 ? l.splice(j, 1) : l.push(e); nomSave({...n, decl: {...(n.decl || {}), [k]: l}}); }
+function nomTodos(id, v) { const n = nomFind(id), k = nomKey(); nomSave({...n, decl: {...(n.decl || {}), [k]: v ? [...n.empleados] : []}}); }
+function nomAddEmp(id) { const nm = (prompt('Nombre o alias del empleado:') || '').trim(), n = nomFind(id); if (!nm || n.empleados.includes(nm)) return; nomSave({...n, empleados: [...n.empleados, nm]}); }
+function nomDelEmp(id, i) { const n = nomFind(id), e = n.empleados[i]; if (!confirm('¿Quitar a ' + e + '?')) return; const decl = {}; Object.entries(n.decl || {}).forEach(([k, l]) => decl[k] = l.filter(x => x !== e)); nomSave({...n, empleados: n.empleados.filter((_, j) => j !== i), decl}); }
+function nomUpsert(p, emp) {
+  const ex = NOMS.find(x => x.patron.toLowerCase() === p.toLowerCase());
+  return nomSave(ex ? {...ex, empleados: [...new Set([...ex.empleados, ...emp])]} : {id: 'N' + Date.now() + Math.random().toString(36).slice(2, 5), patron: p, empleados: emp, decl: {}});
+}
+function nomAdd() { const p = nomP.value.trim(); if (!p) return alert('Escribe el nombre del patrón.'); nomUpsert(p, [...new Set(nomE.value.split('\n').map(x => x.trim()).filter(Boolean))]); nomP.value = ''; nomE.value = ''; }
+async function nomImportar() {
+  const g = {};
+  nomImp.value.split('\n').forEach(l => { const [p, ...r] = l.split(/\t|;|\|/), pt = (p || '').trim(), e = r.join(' ').trim(); if (pt) { g[pt] = g[pt] || []; if (e) g[pt].push(e); } });
+  for (const [p, e] of Object.entries(g)) await nomUpsert(p, e);
+  nomImp.value = '';
+}
+function tab(t) {
+  TAB = t;
+  mainP.classList.toggle('hidden', t !== 'panel'); mainNom.classList.toggle('hidden', t !== 'nom');
+  tabP.className = 'px-4 py-2 rounded-lg font-semibold ' + (t === 'panel' ? 'bg-slate-900 text-white' : 'bg-white border');
+  tabN.className = 'px-4 py-2 rounded-lg font-semibold ' + (t === 'nom' ? 'bg-violet-700 text-white' : 'bg-white border');
+  try { history.replaceState(null, '', t === 'nom' ? '#nominas' : location.pathname + location.search); } catch (e) {}
+  window.scrollTo(0, 0);
+}
+function chipNom(vis) {
+  const hm = new Date(hoy().getFullYear(), hoy().getMonth(), 1), k = hm.getFullYear() + '-' + String(hm.getMonth() + 1).padStart(2, '0');
+  const fs = NOMS.map(n => ({d: nomDecl(n, k).filter(e => n.empleados.includes(e)).length, t: n.empleados.length}));
+  const pt = fs.filter(f => f.t && f.d === f.t).length, dd = fs.reduce((a, f) => a + f.d, 0), tt = fs.reduce((a, f) => a + f.t, 0), pct = tt ? Math.round(dd / tt * 100) : 0;
+  const mostrar = NOM.activo && fs.length > 0;
+  nomChip.className = mostrar ? 'w-full text-left rounded-2xl p-4 bg-violet-50 border border-violet-300' : 'hidden';
+  nomChip.innerHTML = mostrar ? `<div class="font-semibold text-violet-900">💼 Nóminas de ${hm.toLocaleDateString('es-MX', {month: 'long'})}: ${pt} de ${fs.length} patrones terminados · ${dd} de ${tt} declaraciones ${pt === fs.length ? '· ✅ ¡Completo!' : ''}</div><div class="h-2 bg-white rounded mt-2"><div class="h-2 rounded bg-violet-600" style="width:${pct}%"></div></div><div class="text-xs text-violet-700 mt-1">Toca para ver el detalle</div>` : '';
+  tabNb.textContent = vis && fs.length ? '(' + pt + '/' + fs.length + ')' : '';
+}
+function renderNom() {
+  const vis = NOM.activo || puede();
+  tabN.style.display = vis ? '' : 'none'; if (!vis && TAB === 'nom') tab('panel'); chipNom(vis);
+  nomToggle.style.display = puede() ? '' : 'none'; nomChk.checked = !!NOM.activo; nomForm.style.display = puede() ? '' : 'none';
+  if (!vis) return;
+  const k = nomKey(), edit = puede();
+  nomPer.textContent = NPER.toLocaleDateString('es-MX', {month: 'long', year: 'numeric'});
+  nomEst.textContent = NOM.activo ? '· Encargadas por la contadora' : '· Oculto para la contadora hasta que actives "Nóminas encargadas"';
+  const filas = NOMS.map((n, idx) => { const d = nomDecl(n, k).filter(e => n.empleados.includes(e)).length, t = n.empleados.length; return {n, idx, d, t, ok: t > 0 && d === t}; });
+  const pt = filas.filter(f => f.ok).length, dd = filas.reduce((a, f) => a + f.d, 0), tt = filas.reduce((a, f) => a + f.t, 0);
+  nomRes.innerHTML = `<b>${pt} de ${filas.length}</b> patrones terminados · <b>${dd} de ${tt}</b> declaraciones hechas<div class="h-2 bg-white rounded mt-1"><div class="h-2 rounded bg-violet-600" style="width:${tt ? Math.round(dd / tt * 100) : 0}%"></div></div>`;
+  const est = f => f.ok ? '✅ Terminado' : f.d ? '⏳ En proceso' : '⚪ Sin empezar';
+  nomTabla.innerHTML = filas.map(f => { const c = NCOL[f.idx % NCOL.length], pct = f.t ? Math.round(f.d / f.t * 100) : 0;
+    return `<details class="bg-white rounded-xl border-l-4" style="border-left-color:${c}" ${NOPEN.has(f.n.id) ? 'open' : ''} ontoggle="this.open ? NOPEN.add('${f.n.id}') : NOPEN.delete('${f.n.id}')"><summary class="cursor-pointer p-3 flex flex-wrap items-center gap-3"><b>${esc(f.n.patron)}</b><span class="text-xs text-slate-600">${f.d}/${f.t} declaradas</span><span class="flex-1 min-w-[80px] h-2 bg-slate-200 rounded"><span class="block h-2 rounded" style="width:${pct}%;background:${c}"></span></span><span class="text-sm font-semibold">${est(f)}</span></summary>
+      <div class="px-3 pb-3 text-sm">${f.n.empleados.map((e, i) => `<label class="flex items-center gap-2 py-0.5"><input type="checkbox" ${nomDecl(f.n, k).includes(e) ? 'checked' : ''} ${edit ? `onchange="nomToggleEmp('${f.n.id}',${i})"` : 'disabled'}> ${esc(e)} ${edit ? `<button onclick="nomDelEmp('${f.n.id}',${i})" class="text-red-600 text-xs ml-auto">✖</button>` : ''}</label>`).join('') || '<p class="text-xs text-slate-400">Sin empleados.</p>'}
+      ${edit ? `<div class="mt-2 flex flex-wrap gap-2 text-xs"><button onclick="nomAddEmp('${f.n.id}')" class="border rounded px-2 py-1">+ Empleado</button><button onclick="nomTodos('${f.n.id}',true)" class="border rounded px-2 py-1">✅ Marcar todos</button><button onclick="nomTodos('${f.n.id}',false)" class="border rounded px-2 py-1">Quitar marcas</button><button onclick="nomDel('${f.n.id}')" class="border rounded px-2 py-1 text-red-600">🗑️ Eliminar patrón</button></div>` : ''}</div></details>`; }).join('') || '<p class="text-sm text-slate-500">Aún no hay patrones.</p>';
+  nomTbl.innerHTML = filas.length ? `<table class="w-full text-sm bg-white rounded-xl overflow-hidden"><thead class="bg-violet-100 text-left"><tr><th class="p-2">Patrón</th><th class="p-2">Declarados</th><th class="p-2">Pendientes</th><th class="p-2">Estado</th></tr></thead><tbody>${filas.map(f => `<tr class="border-t"><td class="p-2 font-medium">${esc(f.n.patron)}</td><td class="p-2">${esc(nomDecl(f.n, k).filter(e => f.n.empleados.includes(e)).join(', ')) || '—'}</td><td class="p-2">${esc(f.n.empleados.filter(e => !nomDecl(f.n, k).includes(e)).join(', ')) || '—'}</td><td class="p-2 whitespace-nowrap">${est(f)}</td></tr>`).join('')}</tbody></table>` : '';
+}
+
 function mesNav(d) { MES = new Date(MES.getFullYear(), MES.getMonth() + d, 1); selDia = null; renderHeat(); }
 function evDia(f) { return T.flatMap(t => (t.intentos || []).filter(x => x.fecha === f).map(x => ({...x, cliente: t.cliente, tipo: t.tipo}))); }
 function diaHeat(k) {
@@ -483,9 +670,9 @@ function renderHeat() {
   let h = ['L', 'M', 'M', 'J', 'V', 'S', 'D'].map(d => `<div class="text-center text-xs text-slate-500">${d}</div>`).join('') + '<div></div>'.repeat((new Date(y, m, 1).getDay() + 6) % 7);
   for (let d = 1; d <= nd; d++) {
     const dt = new Date(y, m, d), k = isoD(dt), l = ev[k] || [], n = l.length, hab = esHabil(dt);
-    const bg = n >= 3 ? '#dc2626' : n === 2 ? '#fb923c' : n === 1 ? '#fed7aa' : hab ? '#f1f5f9' : '#e2e8f0';
+    const fer = nombreInh(dt), bg = n >= 3 ? '#dc2626' : n === 2 ? '#fb923c' : n === 1 ? '#fed7aa' : hab ? '#f1f5f9' : fer ? 'repeating-linear-gradient(45deg,#fca5a5,#fca5a5 5px,#fee2e2 5px,#fee2e2 10px)' : 'repeating-linear-gradient(45deg,#cbd5e1,#cbd5e1 5px,#e2e8f0 5px,#e2e8f0 10px)';
     const tip = esc(l.map(x => x.cliente + ' (' + (x.res === 'incompleto' ? 'incompleto' : 'no se entregó') + ')').join(', ') || nombreInh(dt));
-    h += `<button onclick="diaHeat('${k}')" title="${tip}" class="rounded-md py-2 text-sm ${k === isoHoy() ? 'ring-2 ring-indigo-500' : ''} ${k === selDia ? 'ring-2 ring-slate-900' : ''}" style="background:${bg};color:${n >= 3 ? '#fff' : '#0f172a'}${hab ? '' : ';opacity:.65'}">${d}${n ? `<div class="text-[10px] font-bold">${n}</div>` : ''}</button>`;
+    h += `<button onclick="diaHeat('${k}')" title="${tip}" class="rounded-md py-2 text-sm ${k === isoHoy() ? 'ring-2 ring-indigo-500' : ''} ${k === selDia ? 'ring-2 ring-slate-900' : ''}" style="background:${bg};color:${n >= 3 ? '#fff' : '#0f172a'}${hab ? '' : ';color:#475569'}">${d}${!hab && !n && fer ? '<div class="text-[10px]">🚫</div>' : ''}${n ? `<div class="text-[10px] font-bold">${n}</div>` : ''}</button>`;
   }
   heatGrid.innerHTML = h;
   heatMes.textContent = MES.toLocaleDateString('es-MX', {month: 'long', year: 'numeric'});
@@ -516,6 +703,9 @@ function inhDel(f) { inhGuardar(INH.filter(x => x.f !== f)); }
   if (PIN) { try { CAN = await sb('rpc/verificar', {p_pin: PIN}) === true; if (!CAN) salir(); } catch (e) {} }
   col.onSnapshot(snap => { T = snap.docs.map(d => ({clase: 'tramite', dep: 'Otro', otros: [], ...d.data()})); render(); }, e => console.error(e));
   DB.doc().onSnapshot(s => { const it = (s.exists && s.data().items) || []; OVR = Object.fromEntries(it.map(x => [x.c, x.l])); sugerir(); }, e => console.error(e));
+  poll(() => sb('nominas?select=data'), rows => { NOMS = rows.map(r => r.data).sort((a, b) => a.patron.localeCompare(b.patron)); render(); }, e => console.error(e));
+  poll(() => sb('config?key=eq.nominas&select=data'), rows => { NOM = (rows[0] && rows[0].data.items) || {activo: false}; render(); }, e => console.error(e));
+  if (CAN) poll(() => sb('rpc/leer_finanzas', {p_pin: PIN}), rows => { FIN = finArmar(rows); render(); }, e => console.error(e));
   poll(() => sb('config?key=eq.inhabiles&select=data'), rows => { INH = (rows[0] && rows[0].data.items) || []; render(); }, e => console.error(e));
   render();
 })();
