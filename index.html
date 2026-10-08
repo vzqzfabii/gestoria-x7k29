@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Panel de Gestoría</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+body{background:#f1f5f9;color:#0f172a;font-family:'IBM Plex Sans',system-ui,-apple-system,Segoe UI,sans-serif}
+.chip{cursor:pointer;user-select:none}
+@media print{#formSec,#admin,#btnAdm,#btnObl,#btnPrn,#btnVista,#btnIn,#btnBit,dialog{display:none!important}}
+</style>
+</head>
+<body class="min-h-screen">
+<header class="bg-slate-900 text-white border-b-4 border-indigo-500">
+  <div class="max-w-7xl mx-auto px-4 py-6">
+    <h1 class="text-2xl font-bold">📋 Panel de Gestoría</h1>
+    <p class="text-blue-100 text-sm">Hoy es <span id="hoy"></span> · <span id="modo"></span></p>
+    <button id="btnVista" onclick="VISTA=!VISTA;render()" class="mt-3 bg-white/20 hover:bg-white/30 text-white text-sm px-3 py-1.5 rounded-lg"></button>
+    <button id="btnIn" onclick="CAN ? salir() : entrar()" class="mt-3 ml-2 bg-white/20 hover:bg-white/30 text-white text-sm px-3 py-1.5 rounded-lg"></button>
+  </div>
+</header>
+
+<main class="max-w-7xl mx-auto px-4 py-6 space-y-6">
+
+  <!-- Resumen -->
+  <section id="resumen" class="grid grid-cols-2 md:grid-cols-6 gap-3"></section>
+
+  <section class="rounded-2xl p-4 border-2 border-indigo-300 bg-indigo-50">
+    <h2 class="font-bold text-indigo-900 mb-3">📅 Agenda de hoy <span id="hoyRes" class="text-sm font-normal text-indigo-700"></span></h2>
+    <div class="grid lg:grid-cols-3 gap-4">
+      <div><h3 class="font-semibold text-sm mb-2">📤 Por entregar hoy <span id="nA" class="ml-1 text-xs bg-indigo-600 text-white rounded-full px-2 py-0.5"></span></h3><div id="cA" class="space-y-3"></div></div>
+      <div><h3 class="font-semibold text-sm mb-2">⏳ No se entregaron (venían de antes) <span id="nB" class="ml-1 text-xs bg-red-600 text-white rounded-full px-2 py-0.5"></span></h3><div id="cB" class="space-y-3"></div></div>
+      <div><h3 class="font-semibold text-sm mb-2">⚠️ Incompletos <span id="nC" class="ml-1 text-xs text-white rounded-full px-2 py-0.5" style="background:#f97316"></span></h3><div id="cC" class="space-y-3"></div></div>
+    </div>
+  </section>
+  <!-- Formulario -->
+  <section id="formSec" class="bg-white rounded-2xl shadow p-5">
+    <h2 class="text-lg font-semibold mb-4">➕ Registrar trámite, pago o entrega</h2>
+    <form id="f" class="grid md:grid-cols-3 gap-4">
+      <label class="block text-sm font-medium">Cliente
+        <input id="cliente" required class="mt-1 w-full border rounded-lg px-3 py-2" placeholder="Nombre del cliente">
+      </label>
+      <label class="block text-sm font-medium">Naturaleza
+        <select id="clase" onchange="claseChange()" class="mt-1 w-full border rounded-lg px-3 py-2 bg-white"><option value="tramite">📄 Trámite</option><option value="pago">💰 Pago</option><option value="entrega">📤 Entrega de documentos / acuses</option></select></label>
+      <label class="block text-sm font-medium">Dependencia / área
+        <select id="dep" onchange="sugerir()" class="mt-1 w-full border rounded-lg px-3 py-2 bg-white"></select></label>
+      <label class="block text-sm font-medium">Trámite o concepto
+        <input id="tipo" list="sug" oninput="renderReq()" required class="mt-1 w-full border rounded-lg px-3 py-2" placeholder="Elige o escribe"><datalist id="sug"></datalist></label>
+      <label class="block text-sm font-medium">Fecha límite
+        <input id="limite" type="date" required class="mt-1 w-full border rounded-lg px-3 py-2">
+      </label>
+      <label class="block text-sm font-medium">Fecha de recepción<input id="recibido" type="date" class="mt-1 w-full border rounded-lg px-3 py-2"></label>
+      <label class="block text-sm font-medium">Días hábiles estimados de respuesta
+        <input id="dias" type="number" min="0" value="3" required class="mt-1 w-full border rounded-lg px-3 py-2">
+      </label>
+      <label class="block text-sm font-medium">Vencimiento de licencia <span class="text-slate-400 font-normal">(si aplica)</span>
+        <input id="vence" type="date" class="mt-1 w-full border rounded-lg px-3 py-2">
+      </label>
+
+      
+      <label class="block text-sm font-medium">Monto $ <span class="text-slate-400 font-normal">(pagos)</span>
+        <input id="monto" type="number" min="0" step="0.01" class="mt-1 w-full border rounded-lg px-3 py-2"></label>
+      
+      <label class="md:col-span-3 text-sm"><input type="checkbox" id="repite"> 🔁 Se repite cada mes (pagos SAT/IMSS, acuses)</label>
+      <fieldset id="docsSet" class="md:col-span-3 border rounded-xl p-4 bg-slate-50">
+        <legend class="px-2 text-sm font-semibold">Documentos requeridos</legend>
+        <div class="grid md:grid-cols-2 gap-4">
+          <div class="text-sm"><b>Requisitos del trámite</b> <span class="text-slate-500">(★ = crítico)</span><div id="reqBox" class="mt-1 space-y-1 max-h-56 overflow-auto"></div></div>
+        </div>
+      </fieldset>
+      <div class="md:col-span-3">
+        <button id="btnG" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-6 py-2.5 rounded-lg">Guardar</button><button type="button" id="btnC" onclick="limpiarForm()" class="hidden ml-3 text-sm text-slate-500 underline">Cancelar edición</button>
+      </div>
+    </form>
+  </section>
+
+  <section class="bg-white rounded-2xl shadow p-3 flex flex-wrap gap-2">
+    <input id="q" oninput="render()" placeholder="🔎 Buscar cliente o trámite" class="border rounded-lg px-3 py-2 flex-1 min-w-[180px]">
+    <select id="fDep" onchange="render()" class="border rounded-lg px-3 py-2 bg-white"><option value="">Todas las dependencias</option></select>
+    
+    <button id="btnAdm" type="button" onclick="admin.classList.toggle('hidden')" class="border rounded-lg px-3 py-2 bg-slate-900 text-white">⚙️ Requisitos</button>
+    <button id="btnBit" type="button" onclick="bitSec.classList.toggle('hidden')" class="border rounded-lg px-3 py-2">📜 Historial de intentos</button>
+    <button id="btnInh" type="button" onclick="inhSec.classList.toggle('hidden')" class="border rounded-lg px-3 py-2">📆 Días inhábiles</button>
+    <button id="btnObl" type="button" onclick="obligaciones()" class="border rounded-lg px-3 py-2">➕ Obligaciones del mes</button>
+    <button id="btnPrn" type="button" onclick="window.print()" class="border rounded-lg px-3 py-2">🖨️ Imprimir</button>
+  </section>
+  <section id="admin" class="hidden bg-white rounded-2xl shadow p-5">
+    <h2 class="text-lg font-semibold">⚙️ Requisitos por trámite</h2>
+    <p class="text-xs text-slate-500 mb-3">Un requisito por línea. Empieza con * los críticos: si faltan, la tarjeta se marca en rojo. Es una guía general; confirma siempre con la dependencia de tu municipio.</p>
+    <input id="adC" list="adL" oninput="adCarga()" placeholder="Elige o escribe el trámite" class="border rounded-lg px-3 py-2 w-full mb-2"><datalist id="adL"></datalist>
+    <textarea id="adT" rows="8" class="border rounded-lg px-3 py-2 w-full text-sm"></textarea>
+    <div class="mt-2 flex gap-2"><button type="button" onclick="adGuarda()" class="bg-indigo-600 text-white px-4 py-2 rounded-lg">Guardar lista</button><button type="button" onclick="adReset()" class="border px-4 py-2 rounded-lg">Restaurar original</button></div>
+  </section>
+  <section id="bitSec" class="hidden bg-white rounded-2xl shadow p-5"><h2 class="text-lg font-semibold">📜 Historial de intentos de entrega</h2>
+    <p class="text-xs text-slate-500">Lo ven el dueño y la contadora. <span id="bitRes"></span></p><div id="bitList" class="mt-2"></div></section>
+  <section id="inhSec" class="hidden bg-white rounded-2xl shadow p-5">
+    <h2 class="text-lg font-semibold">📆 Días inhábiles</h2>
+    <p class="text-xs text-slate-500 mb-2">No cuentan como días hábiles en ningún cálculo. Los feriados oficiales ya vienen incluidos. Agrega los días que cierre cada dependencia (Semana Santa, puentes, etc.).</p>
+    <div id="inhList" class="text-sm space-y-1"></div>
+    <div id="inhForm" class="mt-3 flex flex-wrap gap-2"><input id="inhF" type="date" class="border rounded-lg px-3 py-2"><input id="inhN" placeholder="Motivo (opcional)" class="border rounded-lg px-3 py-2 flex-1 min-w-[160px]"><button type="button" onclick="inhAdd()" class="bg-indigo-600 text-white px-4 py-2 rounded-lg">Agregar</button></div>
+  </section>
+  <!-- Tarjetas -->
+  <section class="grid lg:grid-cols-3 gap-5">
+    <div class="bg-red-50 rounded-2xl p-4 border border-red-200">
+      <h3 class="font-bold text-red-700 mb-3">🔥 Sí o sí hoy / vencidos <span id="n1" class="ml-1 text-xs bg-red-600 text-white rounded-full px-2 py-0.5"></span></h3>
+      <div id="c1" class="space-y-3"></div>
+    </div>
+    <div class="bg-blue-50 rounded-2xl p-4 border border-blue-200">
+      <h3 class="font-bold text-blue-700 mb-3">📥 Entregados en dependencia <span id="n2" class="ml-1 text-xs bg-blue-600 text-white rounded-full px-2 py-0.5"></span></h3>
+      <div id="c2" class="space-y-3"></div>
+    </div>
+    <div class="bg-amber-50 rounded-2xl p-4 border border-amber-200">
+      <h3 class="font-bold text-amber-700 mb-3">🏪 Licencias por vencer (60 días) <span id="n3" class="ml-1 text-xs bg-amber-600 text-white rounded-full px-2 py-0.5"></span></h3>
+      <div id="c3" class="space-y-3"></div>
+    </div>
+  </section>
+
+  <section class="grid lg:grid-cols-2 gap-5">
+    <div class="bg-rose-50 rounded-2xl p-4 border border-rose-200"><h3 class="font-bold text-rose-700 mb-3">💰 Pagos pendientes (SAT, IMSS…) <span id="n4" class="ml-1 text-xs bg-rose-600 text-white rounded-full px-2 py-0.5"></span></h3><div id="c4" class="space-y-3"></div></div>
+    <div class="bg-emerald-50 rounded-2xl p-4 border border-emerald-200"><h3 class="font-bold text-emerald-700 mb-3">📤 Entregas pendientes (acuses, documentos) <span id="n5" class="ml-1 text-xs bg-emerald-600 text-white rounded-full px-2 py-0.5"></span></h3><div id="c5" class="space-y-3"></div></div>
+  </section>
+  <section class="bg-white rounded-2xl shadow p-5"><h3 class="font-bold mb-2">🗓️ Próximos 8 días</h3><div id="c6"></div></section>
+  <section id="heatSec" class="bg-white rounded-2xl shadow p-5">
+    <div class="flex items-center justify-between mb-3"><h3 class="font-bold">🔥 Mapa de calor de intentos · <span id="heatMes" class="capitalize"></span></h3>
+      <div class="flex gap-2"><button onclick="mesNav(-1)" class="border rounded-lg px-3 py-1">◀</button><button onclick="mesNav(1)" class="border rounded-lg px-3 py-1">▶</button></div></div>
+    <div id="heatRes" class="mb-3"></div>
+    <div id="heatGrid" class="grid grid-cols-7 gap-1 max-w-md"></div>
+    <div class="flex flex-wrap gap-3 text-xs text-slate-600 mt-2 items-center">
+      <span><i class="inline-block w-3 h-3 rounded align-middle" style="background:#f1f5f9;border:1px solid #cbd5e1"></i> sin intentos</span>
+      <span><i class="inline-block w-3 h-3 rounded align-middle" style="background:#fed7aa"></i> 1</span>
+      <span><i class="inline-block w-3 h-3 rounded align-middle" style="background:#fb923c"></i> 2</span>
+      <span><i class="inline-block w-3 h-3 rounded align-middle" style="background:#dc2626"></i> 3 o más</span>
+      <span><i class="inline-block w-3 h-3 rounded align-middle" style="background:#e2e8f0"></i> inhábil</span></div>
+    <div id="heatDet" class="mt-3 text-sm"></div>
+  </section>
+  <!-- Todos -->
+  <section class="bg-white rounded-2xl shadow p-5">
+    <h3 class="font-bold mb-3">📂 Todos los trámites activos</h3>
+    <div id="todos" class="grid md:grid-cols-2 lg:grid-cols-3 gap-3"></div>
+  </section>
+</main>
+<dialog id="dlgInt" class="rounded-2xl p-5 w-[min(92vw,420px)]">
+  <h3 class="font-semibold mb-2">Registrar intento de entrega</h3>
+  <select id="intTipo" class="border rounded-lg px-3 py-2 w-full mb-2 bg-white"><option value="incompleto">⚠️ Se intentó entregar, pero estaba incompleto</option><option value="noentregado">🚫 No se alcanzó a entregar ese día</option></select>
+  <textarea id="intNota" rows="3" placeholder="¿Qué documento faltó? (lo verá la contadora)" class="border rounded-lg px-3 py-2 w-full"></textarea>
+  <div class="mt-3 flex gap-2"><button onclick="guardarInt()" class="bg-indigo-600 text-white px-4 py-2 rounded-lg">Guardar</button><button onclick="dlgInt.close()" class="border px-4 py-2 rounded-lg">Cancelar</button></div>
+</dialog>
+
+<script>
+const SBU = 'https://pdpkykpvztfzhyrspnou.supabase.co', SBK = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBkcGt5a3B2enRmemh5cnNwbm91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE0MTY0NzMsImV4cCI6MjEwNjk5MjQ3M30.IOH8MCHvRe9-tN0_IqkHUZ511Mzt0SHMyi6iwICPGSs';
+const H = {apikey: SBK, Authorization: 'Bearer ' + SBK, 'Content-Type': 'application/json'};
+let PIN = ''; try { PIN = localStorage.getItem('gest_pin') || ''; } catch (e) {}
+async function sb(path, body) {
+  const r = await fetch(SBU + '/rest/v1/' + path, body ? {method: 'POST', headers: H, body: JSON.stringify(body)} : {headers: H});
+  if (!r.ok) throw {code: r.status, message: await r.text()};
+  const t = await r.text(); return t ? JSON.parse(t) : null;
+}
+const RUNS = []; const refrescar = () => RUNS.forEach(f => f());
+function poll(fn, cb, err) {
+  let last = null;
+  const run = async () => { try { const v = await fn(), j = JSON.stringify(v); if (j !== last) { last = j; cb(v); } } catch (e) { err && err(e); } };
+  RUNS.push(run); run(); setInterval(run, 15000);
+}
+const SB = {
+  collection: () => ({
+    doc: id => ({set: d => sb('rpc/guardar', {p_pin: PIN, p_doc: d}), delete: () => sb('rpc/borrar', {p_pin: PIN, p_id: id})}),
+    onSnapshot: (cb, err) => poll(() => sb('tramites?select=data'), rows => cb({docs: rows.map(r => ({data: () => r.data}))}), err)
+  }),
+  doc: () => ({
+    set: d => sb('rpc/guardar_config', {p_pin: PIN, p_items: d.items}),
+    onSnapshot: (cb, err) => poll(() => sb('config?key=eq.requisitos&select=data'), rows => cb({exists: rows.length > 0, data: () => rows[0].data}), err)
+  })
+};
+async function entrar() {
+  const p = (prompt('Clave del dueño:') || '').trim(); if (!p) return;
+  try { if (await sb('rpc/verificar', {p_pin: p}) === true) { localStorage.setItem('gest_pin', p); location.reload(); } else alert('Clave incorrecta.'); }
+  catch (e) { alert('No se pudo verificar: ' + (e.message || e.code)); }
+}
+function salir() { try { localStorage.removeItem('gest_pin'); } catch (e) {} location.reload(); }
+let INH = [], MES = null, selDia = null; const _fc = {};
+const FERN = ['Año Nuevo','Día de la Constitución','Natalicio de Benito Juárez','Día del Trabajo','Independencia de México','Transmisión del Poder Ejecutivo','Revolución Mexicana','Navidad'];
+function FER(y) {
+  if (_fc[y]) return _fc[y];
+  const nth = (m, n) => { const d = new Date(y, m, 1); d.setDate(1 + ((1 - d.getDay() + 7) % 7) + (n - 1) * 7); return d; };
+  const l = [[new Date(y, 0, 1), 0], [nth(1, 1), 1], [nth(2, 3), 2], [new Date(y, 4, 1), 3], [new Date(y, 8, 16), 4], [nth(10, 3), 6], [new Date(y, 11, 25), 7]];
+  if ((y - 2024) % 6 === 0) l.push([new Date(y, 9, 1), 5]);
+  return _fc[y] = l.map(([d, i]) => ({f: isoD(d), n: FERN[i]})).sort((a, b) => a.f.localeCompare(b.f));
+}
+function nombreInh(d) { const k = isoD(d); const x = FER(d.getFullYear()).find(z => z.f === k) || INH.find(z => z.f === k); return x ? (x.n || 'Día inhábil') : ''; }
+function esHabil(d) { const w = d.getDay(); return !(w === 0 || w === 6 || nombreInh(d)); }
+const K = 'gestoria_v1';
+let T = [], DB = null, col = null, CAN = false, VISTA = false, SNAP = false, UID = null, BIT = [];
+const puede = () => CAN && !VISTA;
+const localLoad = () => { try { return JSON.parse(localStorage.getItem(K)) || []; } catch (e) { return []; } };
+const saveLocal = () => { try { localStorage.setItem(K, JSON.stringify(T)); } catch (e) {} };
+async function persist(t) {            // guardar o actualizar un trámite
+  if (!DB) { T = T.filter(x => x.id !== t.id).concat(t); saveLocal(); render(); return; }
+  try { await col.doc(t.id).set(t); refrescar(); } catch (e) { alert('No se pudo guardar: ' + (e.message || e.code)); }
+}
+async function quitar(id) {
+  if (!DB) { T = T.filter(x => x.id !== id); saveLocal(); render(); return; }
+  try { await col.doc(id).delete(); refrescar(); } catch (e) { alert('No se pudo eliminar: ' + (e.message || e.code)); }
+}
+
+// ---------- Fechas ----------
+const hoy = () => { const d = new Date(); d.setHours(0,0,0,0); return d; };
+const pd = s => { const [y,m,d] = s.split('-').map(Number); return new Date(y, m-1, d); };
+const isoHoy = () => { const d = hoy(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); };
+const fmt = d => d.toLocaleDateString('es-MX', {day:'2-digit', month:'short', year:'numeric'});
+// Días hábiles (lun-vie) entre a y b. Negativo si b es anterior a a.
+function habiles(a, b) {
+  let s = 1; if (b < a) { [a, b] = [b, a]; s = -1; }
+  let n = 0; const d = new Date(a);
+  while (d < b) { d.setDate(d.getDate()+1); if (esHabil(d)) n++; }
+  return n * s;
+}
+function sumaHabiles(a, n) {
+  const d = new Date(a); let c = 0;
+  while (c < n) { d.setDate(d.getDate()+1); if (esHabil(d)) c++; }
+  return d;
+}
+const diasCal = (b) => Math.round((b - hoy()) / 864e5);
+
+// ---------- Alertas ----------
+const rn = n => n.replace(/^\*/, '');
+function faltantes(t) {
+  const f = [];
+    (t.reqs || []).forEach(r => { if (!r.ok && r.n[0] === '*') f.push(rn(r.n)); });
+  return f;
+}
+const OPEN = new Set();
+function reqHtml(t) {
+  const r = t.reqs || []; if (!r.length) return '';
+  const ok = r.filter(x => x.ok).length, p = Math.round(ok / r.length * 100);
+  return `<details class="mt-2" ${OPEN.has(t.id) ? 'open' : ''} ontoggle="this.open ? OPEN.add('${t.id}') : OPEN.delete('${t.id}')"><summary class="cursor-pointer text-xs text-slate-600">📎 Requisitos ${ok}/${r.length}</summary>
+    <div class="h-1.5 bg-slate-200 rounded mt-1"><div class="h-1.5 rounded bg-indigo-500" style="width:${p}%"></div></div>
+    <div class="mt-1 space-y-0.5 text-xs">${r.map((x, i) => `<label class="block"><input type="checkbox" ${x.ok ? 'checked' : ''} ${puede() ? `onchange="toggleReq('${t.id}',${i})"` : 'disabled'}> ${x.n[0] === '*' ? '★ ' : ''}${esc(rn(x.n))}</label>`).join('')}</div></details>`;
+}
+function toggleReq(id, i) { const o = find(id), r = o.reqs.map(x => ({...x})); r[i].ok = !r[i].ok; persist({...o, reqs: r}); }
+
+// ---------- Tarjeta ----------
+const ICO = {tramite: '📄', pago: '💰', entrega: '📤'};
+function card(t) {
+  const c = t.clase || 'tramite', ints = t.intentos || [], nI = ints.length;
+  const lim = pd(t.limite), h = habiles(hoy(), lim), falt = faltantes(t);
+  const ent = t.estado === 'firmas', inc = t.incompleto && !ent, hy0 = isoHoy();
+  const incB = inc ? `<div class="mt-2 text-xs font-semibold rounded-lg px-2 py-1.5 text-white" style="background:#f97316">⚠️ INCOMPLETO${t.falta ? ': falta ' + esc(t.falta) : ''}</div>` : '';
+  const intB = nI ? `<div class="mt-1 text-xs text-slate-700">🔁 Intentos de entrega: <b>${nI}</b> · último ${fmt(pd(ints[nI - 1].fecha))}</div>` : '';
+  const planB = t.plan && !ent ? (t.plan === hy0 ? '<span class="text-indigo-700 font-semibold">📅 Para hoy</span>' : t.plan < hy0 ? `<span class="text-red-700 font-semibold">⏳ Se planeó para ${fmt(pd(t.plan))} y no se entregó</span>` : `<span class="text-indigo-700">📅 Planeado ${fmt(pd(t.plan))}</span>`) : '';
+  let estado;
+  if (h < 0) estado = `<span class="text-red-700 font-semibold">Vencido hace ${-h} día(s) háb.</span>`;
+  else if (h === 0) estado = `<span class="text-red-700 font-semibold">¡Vence HOY!</span>`;
+  else estado = `<span class="text-slate-600">Faltan ${h} día(s) hábiles</span>`;
+
+  let firmas = '';
+  if (t.estado === 'firmas') {
+    const ini = pd(t.firmaInicio), fin = sumaHabiles(ini, t.dias), trans = habiles(ini, hoy());
+    const resta = Math.max(t.dias - trans, 0), tarde = fin > lim;
+    firmas = `<div class="mt-2 text-xs rounded-lg p-2 ${tarde ? 'bg-red-100 text-red-800' : 'bg-white text-slate-700'}">
+      Entregado ${fmt(ini)} · Respuesta estimada: <b>${fmt(fin)}</b> · ${resta > 0 ? 'faltan ' + resta + ' días háb.' : '⏰ ya debió responder: da seguimiento'}
+      ${tarde ? '<br>⚠️ La respuesta llegaría después de la fecha límite' : ''}</div>`;
+  }
+  let lic = '';
+  if (t.vence) { const d = diasCal(pd(t.vence)); lic = `<div class="mt-1 text-xs text-amber-800">🏪 Licencia vence ${fmt(pd(t.vence))} (${d < 0 ? 'vencida' : d + ' días'})</div>`; }
+
+  const alerta = falt.length ? `<div class="mt-2 text-xs font-semibold bg-red-600 text-white rounded-lg px-2 py-1.5">🚨 Falta: ${falt.join(', ')}</div>` : '';
+  const chip = (k, lbl, ok) => `<span class="${puede() ? 'chip ' : ''}text-xs px-2 py-0.5 rounded-full border ${ok ? 'bg-green-100 border-green-300 text-green-800' : 'bg-red-100 border-red-300 text-red-800'}" ${puede() ? `onclick="toggle('${t.id}','${k}')"` : ''}>${ok ? '✅' : '❌'} ${lbl}</span>`;
+
+  return `<div class="${inc ? 'bg-orange-50' : 'bg-white'} rounded-lg p-3 border border-l-4 border-slate-200" style="border-left-color:${(falt.length || h <= 0) && !ent ? '#dc2626' : inc ? '#f97316' : h <= 3 && !ent ? '#d97706' : '#059669'}">
+    <div class="flex justify-between gap-2">
+      <div><div class="font-semibold">${esc(t.cliente)}</div><div class="text-xs text-slate-500">${ICO[c]} ${esc(t.tipo)} <span class="bg-slate-100 rounded px-1">${esc(t.dep || '')}</span></div></div>
+      ${puede() ? `<div class="flex gap-2 text-sm"><button onclick="editar('${t.id}')" title="Editar">✏️</button><button onclick="borrar('${t.id}')" title="Eliminar">🗑️</button></div>` : ''}
+    </div>
+    <div class="text-sm mt-1">📅 ${fmt(lim)} · ${estado}</div>
+    <div class="text-xs text-slate-500 mt-1">${t.resp ? '👤 ' + esc(t.resp) : ''}${t.monto ? ' · 💲' + Number(t.monto).toLocaleString('es-MX') : ''}${t.repite ? ' · 🔁 mensual' : ''}${t.recibido ? ' · 📥 Recibido ' + fmt(pd(t.recibido)) : ''}</div>${planB ? `<div class="text-xs mt-1">${planB}</div>` : ''}
+    ${firmas}${lic}${alerta}${incB}${intB}${intHtml(t)}
+    
+    ${reqHtml(t)}
+    ${puede() ? `<div class="flex flex-wrap gap-2 mt-3">
+      ${t.estado !== 'firmas' && c === 'tramite' ? `<button onclick="aFirmas('${t.id}')" class="text-xs bg-blue-600 text-white px-2.5 py-1 rounded-md">📥 Entregado en dependencia</button>` : ''}
+      <button onclick="terminar('${t.id}')" class="text-xs bg-green-600 text-white px-2.5 py-1 rounded-md">${{tramite: '✔ Terminado', pago: '💰 Marcar pagado', entrega: '📤 Marcar entregado'}[c]}</button>
+      <button onclick="abrirInt('${t.id}')" class="text-xs border border-orange-400 text-orange-700 px-2.5 py-1 rounded-md">⚠️ Registrar intento</button>
+      ${t.incompleto ? `<button onclick="resolver('${t.id}')" class="text-xs border border-slate-300 px-2.5 py-1 rounded-md">✅ Ya está completo</button>` : ''}
+      ${t.plan === hy0 ? `<button onclick="quitarPlan('${t.id}')" class="text-xs border border-slate-300 px-2.5 py-1 rounded-md">Quitar de hoy</button>` : `<button onclick="plan('${t.id}','hoy')" class="text-xs border border-indigo-300 text-indigo-700 px-2.5 py-1 rounded-md">📅 Para hoy</button><button onclick="plan('${t.id}','man')" class="text-xs border border-indigo-300 text-indigo-700 px-2.5 py-1 rounded-md">📅 Mañana</button>`}
+    </div>` : ''}</div>`;
+}
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+// ---------- Acciones ----------
+const find = id => T.find(t => t.id === id);
+function toggle(id, k) {
+  const o = find(id); if (!o) return;
+  const t = {...o, otros: [...o.otros]};
+  if (k === 'const') {
+    const i = t.otros.indexOf('Constancia fiscal');
+    i >= 0 ? t.otros.splice(i, 1) : t.otros.push('Constancia fiscal');
+  } else t[k] = t[k] === 'si' ? 'no' : 'si';
+  persist(t);
+}
+function aFirmas(id) { persist({...find(id), estado: 'firmas', firmaInicio: isoHoy(), incompleto: false, falta: ''}); }
+const isoD = d => d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+function mesSig(s) { const d = pd(s), n = new Date(d.getFullYear(), d.getMonth()+1, 1), u = new Date(d.getFullYear(), d.getMonth()+2, 0).getDate(); n.setDate(Math.min(d.getDate(), u)); return isoD(n); }
+async function terminar(id) {
+  const o = find(id), t = {...o, estado: 'listo', incompleto: false};
+  if (o.clase === 'pago') t.pagado = true;
+  if (o.clase === 'entrega') t.entregado = true;
+  await persist(t);
+  if (o.repite) await persist({...o, id: 'T' + Date.now(), limite: mesSig(o.limite), estado: 'proceso', pagado: false, entregado: false, firmaInicio: ''});
+}
+function borrar(id) { if (confirm('¿Eliminar este trámite?')) quitar(id); }
+
+// ---------- Render ----------
+function render() {
+  document.getElementById('hoy').textContent = fmt(hoy());
+  document.getElementById('formSec').style.display = puede() ? '' : 'none';
+  btnAdm.style.display = btnObl.style.display = puede() ? '' : 'none'; renderBit(); renderHeat(); renderInh(); btnIn.textContent = CAN ? '🔓 Salir del modo dueño' : '🔑 Entrar como dueño'; if (!puede()) admin.classList.add('hidden');
+  document.getElementById('btnVista').style.display = CAN ? '' : 'none';
+  document.getElementById('btnVista').textContent = VISTA ? '↩ Volver a mi vista' : '👀 Ver como contadora';
+  document.getElementById('modo').textContent = (SNAP ? '📅 Actualizado: ' + window.__SNAP.fecha : DB ? '☁️ Se actualiza solo' : '💾 Datos solo en este navegador') + (puede() ? '' : ' · 👀 Vista de solo lectura');
+  const B = filtrados();
+  const act = B.filter(t => t.estado !== 'listo').sort((a, b) => a.limite.localeCompare(b.limite));
+  const urg = act.filter(t => t.estado !== 'firmas' && habiles(hoy(), pd(t.limite)) <= 1);
+  const fir = act.filter(t => t.estado === 'firmas');
+  const lic = B.filter(t => t.vence && diasCal(pd(t.vence)) <= 60).sort((a, b) => a.vence.localeCompare(b.vence));
+  const sinDoc = act.filter(t => faltantes(t).length).length;
+  const vacio = m => `<p class="text-sm text-slate-400 text-center py-4">${m}</p>`;
+
+  document.getElementById('c1').innerHTML = urg.map(card).join('') || vacio('Nada urgente 🎉');
+  document.getElementById('c2').innerHTML = fir.map(card).join('') || vacio('Sin trámites en firmas');
+  document.getElementById('c3').innerHTML = lic.map(card).join('') || vacio('Sin licencias por vencer');
+  document.getElementById('todos').innerHTML = act.map(card).join('') || vacio('Aún no hay trámites. Registra el primero arriba 👆');
+  n1.textContent = urg.length; n2.textContent = fir.length; n3.textContent = lic.length;
+  const pag = act.filter(t => t.clase === 'pago'), ent = act.filter(t => t.clase === 'entrega');
+  c4.innerHTML = pag.map(card).join('') || vacio('Sin pagos pendientes');
+  c5.innerHTML = ent.map(card).join('') || vacio('Sin entregas pendientes');
+  n4.textContent = pag.length; n5.textContent = ent.length;
+  const hy = isoHoy();
+  const A = act.filter(t => t.plan === hy && t.estado !== 'firmas'), Bn = act.filter(t => t.plan && t.plan < hy && t.estado !== 'firmas'), inc = act.filter(t => t.incompleto && t.estado !== 'firmas');
+  const entH = B.filter(t => t.estado === 'firmas' && t.firmaInicio === hy).length;
+  cA.innerHTML = A.map(card).join('') || vacio('Nada planeado para hoy. Usa 📅 Para hoy en una tarjeta.');
+  cB.innerHTML = Bn.map(card).join('') || vacio('Nada pendiente de días anteriores 👍');
+  cC.innerHTML = inc.map(card).join('') || vacio('Sin incompletos');
+  nA.textContent = A.length; nB.textContent = Bn.length; nC.textContent = inc.length;
+  hoyRes.textContent = '· ' + entH + ' entregado(s) hoy · ' + A.length + ' por entregar';
+  const prox = [];
+  for (let i = 0; i < 8; i++) { const d = new Date(hoy()); d.setDate(d.getDate() + i); const its = act.filter(t => t.limite === isoD(d)); if (its.length) prox.push(`<div class="text-sm py-1 border-b"><b>${i === 0 ? 'Hoy' : i === 1 ? 'Mañana' : fmt(d)}</b> · ${its.map(t => esc(t.cliente) + ' (' + esc(t.tipo) + ')').join(' · ')}</div>`); }
+  c6.innerHTML = prox.join('') || vacio('Nada vence en los próximos 8 días');
+
+  const box = (v, l, c) => `<div class="bg-white rounded-xl shadow p-4"><div class="text-3xl font-bold ${c}">${v}</div><div class="text-xs text-slate-500">${l}</div></div>`;
+  document.getElementById('resumen').innerHTML =
+    box(act.length, 'Trámites activos', 'text-indigo-600') + box(urg.length, 'Urgentes', 'text-red-600') +
+    box(sinDoc, 'Con documentos faltantes', 'text-orange-600') + box(inc.length, 'Incompletos', 'text-orange-500') + box(A.length, 'Por entregar hoy', 'text-indigo-600') +
+    box('$' + pag.reduce((x, t) => x + (+t.monto || 0), 0).toLocaleString('es-MX'), 'Por pagar', 'text-rose-600');
+}
+
+const DEPS = ['Protección Civil','Medio Ambiente','Desarrollo Urbano','SARE','SAT','IMSS','CANACO','Otro'];
+const SUG = {'Protección Civil':['Dictamen de protección civil','Programa interno','Visto bueno'],'Medio Ambiente':['Licencia ambiental','Cédula de operación','Manejo de residuos'],'Desarrollo Urbano':['Uso de suelo','Licencia de construcción','Número oficial'],'SARE':['Apertura rápida (SARE)','Refrendo de licencia de funcionamiento'],'SAT':['Pago provisional mensual','Declaración anual','Entrega de acuse SAT','Alta / modificación RFC','Nómina (CFDI)'],'IMSS':['Pago de cuotas IMSS (SUA)','Alta de trabajador','Baja / modificación de salario'],'CANACO':['Membresía / SIEM','Constancia CANACO'],'Otro':[]};
+const optDeps = DEPS.map(d => `<option>${d}</option>`).join('');
+dep.innerHTML = optDeps; fDep.innerHTML += optDeps;
+function sugerir() {
+  sug.innerHTML = [...(SUG[dep.value] || []), ...Object.keys(OVR).filter(k => !DEF[k])].map(x => `<option value="${esc(x)}">`).join('');
+  adL.innerHTML = [...new Set([...Object.keys(DEF), ...Object.keys(OVR)])].map(x => `<option value="${esc(x)}">`).join('');
+}
+const DEF = {
+'Dictamen de protección civil':['*INE del representante','*Comprobante de domicilio del local','Croquis de ubicación','Plano con rutas de evacuación','Extintores vigentes (factura o recarga)','Constancia de capacitación de brigadas','Licencia de uso de suelo'],
+'Programa interno':['*INE del representante','*Acta constitutiva o alta de persona física','Croquis y planos del inmueble','Análisis de riesgos','Calendario de capacitación y simulacros','Directorio de brigadas'],
+'Visto bueno':['*INE','*Comprobante de domicilio','Fotos del local','Extintores vigentes','Señalización instalada'],
+'Licencia ambiental':['*INE','*Constancia de situación fiscal','Uso de suelo','Memoria descriptiva de la actividad','Contrato con recolector de residuos','Planos del establecimiento'],
+'Cédula de operación':['*INE','*Constancia de situación fiscal','Licencia ambiental previa','Reporte anual de emisiones y residuos','Comprobante de pago de derechos'],
+'Manejo de residuos':['*INE','Plan de manejo de residuos','Contrato con empresa recolectora autorizada','Bitácoras de residuos'],
+'Uso de suelo':['*INE','*Comprobante de domicilio','*Escritura, contrato de arrendamiento o título','Pago predial al corriente','Croquis de ubicación','Fotografías del inmueble'],
+'Licencia de construcción':['*INE','*Escritura o contrato de propiedad','Pago predial al corriente','Planos firmados por perito','Responsiva del Director Responsable de Obra','Uso de suelo','Memoria de cálculo estructural'],
+'Número oficial':['*INE','*Escritura o contrato de propiedad','Pago predial al corriente','Croquis de ubicación'],
+'Apertura rápida (SARE)':['*INE','*Constancia de situación fiscal (RFC)','*Comprobante de domicilio del local','*Contrato de arrendamiento o escritura','Uso de suelo o consulta de factibilidad','Formato de solicitud SARE','Acta constitutiva y poder (personas morales)'],
+'Refrendo de licencia de funcionamiento':['*INE','*Licencia del año anterior','Comprobante de pago de derechos','Pago predial al corriente','Visto bueno de Protección Civil vigente','Constancia de situación fiscal'],
+'Pago provisional mensual':['*Constancia de situación fiscal','*e.firma o contraseña vigente','Declaraciones y acuses anteriores','Facturas emitidas y recibidas del mes','Estados de cuenta bancarios'],
+'Declaración anual':['*e.firma vigente','*Constancia de situación fiscal','Facturas emitidas y recibidas del año','Estados de cuenta bancarios','Constancias de retenciones y deducciones'],
+'Entrega de acuse SAT':['*Acuse de recibo o línea de captura','Comprobante de pago','Declaración presentada (PDF)'],
+'Alta / modificación RFC':['*INE','*CURP','*Comprobante de domicilio','*Correo y teléfono de contacto','Acta constitutiva (personas morales)','Poder del representante legal','e.firma o contraseña'],
+'Nómina (CFDI)':['*Constancia de situación fiscal del patrón','*Certificado de sello digital (CSD) vigente','Listado de empleados con RFC y CURP','Percepciones y deducciones del periodo','Registro patronal IMSS'],
+'Pago de cuotas IMSS (SUA)':['*Registro patronal','*Archivo SUA o IDSE actualizado','Altas, bajas y modificaciones del periodo','Línea de captura','Comprobante de pago'],
+'Alta de trabajador':['*INE','*CURP','*Número de seguridad social','Comprobante de domicilio','Acta de nacimiento','Fecha de ingreso y salario'],
+'Baja / modificación de salario':['*INE','*Número de seguridad social','Fecha de baja o nuevo salario','Aviso en IDSE'],
+'Membresía / SIEM':['*INE','*Constancia de situación fiscal','Comprobante de domicilio del negocio','Formato de afiliación','Comprobante de pago'],
+'Constancia CANACO':['*INE','*Constancia de situación fiscal','Comprobante de pago de cuota']};
+let OVR = {};
+const CAT = () => ({...DEF, ...OVR});
+function renderReq(prev) {
+  const l = CAT()[tipo.value.trim()], m = {};
+  (prev || []).forEach(r => m[r.n] = r.ok);
+  reqBox.innerHTML = l ? l.map(n => `<label class="block"><input type="checkbox" class="rq" data-n="${esc(n)}" ${m[n] ? 'checked' : ''}> ${n[0] === '*' ? '★ ' : ''}${esc(rn(n))}</label>`).join('') : '<span class="text-slate-400">Sin lista para este concepto. Agrégala en ⚙️ Requisitos.</span>';
+}
+function adCarga() { const l = CAT()[adC.value.trim()]; adT.value = l ? l.join('\n') : ''; }
+async function saveOvr(o) {
+  OVR = o;
+  if (DB) { try { await DB.doc('config/requisitos').set({items: Object.entries(o).map(([c, l]) => ({c, l}))}); refrescar(); } catch (e) { alert('No se pudo guardar: ' + (e.message || e.code)); } }
+  else { try { localStorage.setItem(K + '_req', JSON.stringify(o)); } catch (e) {} }
+  sugerir();
+}
+async function adGuarda() {
+  const c = adC.value.trim(); if (!c) return alert('Escribe o elige el trámite.');
+  await saveOvr({...OVR, [c]: adT.value.split('\n').map(x => x.trim()).filter(Boolean)}); alert('Lista guardada ✅');
+}
+async function adReset() { const o = {...OVR}; delete o[adC.value.trim()]; await saveOvr(o); adCarga(); }
+function claseChange() {}
+function filtrados() {
+  const x = q.value.toLowerCase();
+  return T.filter(t => (!fDep.value || t.dep === fDep.value) && (!x || (t.cliente + ' ' + t.tipo).toLowerCase().includes(x)));
+}
+let editId = null;
+function limpiarForm() { f.reset(); recibido.value = isoHoy(); renderReq(); editId = null; dias.value = 3; sugerir(); claseChange(); btnG.textContent = 'Guardar'; btnC.classList.add('hidden'); }
+function editar(id) {
+  const t = find(id); if (!t) return;
+  editId = id; dep.value = t.dep || 'Otro'; sugerir(); clase.value = t.clase || 'tramite'; claseChange();
+  cliente.value = t.cliente; recibido.value = t.recibido || ''; tipo.value = t.tipo; limite.value = t.limite; dias.value = t.dias; vence.value = t.vence || '';
+  monto.value = t.monto || ''; repite.checked = !!t.repite;
+  renderReq(t.reqs);
+  btnG.textContent = 'Guardar cambios'; btnC.classList.remove('hidden'); formSec.scrollIntoView({behavior: 'smooth'});
+}
+f.addEventListener('submit', e => {
+  e.preventDefault();
+  const o = editId ? find(editId) : null, pick = n => (document.querySelector(`input[name=${n}]:checked`) || {}).value || 'si';
+  persist({
+    id: editId || 'T' + Date.now(), clase: clase.value, dep: dep.value,
+    cliente: cliente.value.trim(), tipo: tipo.value.trim(), limite: limite.value,
+    dias: parseInt(dias.value) || 0, vence: vence.value || '',
+    monto: parseFloat(monto.value) || 0, repite: repite.checked,
+    reqs: [...document.querySelectorAll('.rq')].map(c => ({n: c.dataset.n, ok: c.checked})),
+    estado: o ? o.estado : 'proceso', firmaInicio: o ? o.firmaInicio : '',
+    pagado: o ? !!o.pagado : false, entregado: o ? !!o.entregado : false,
+    recibido: recibido.value, intentos: o ? (o.intentos || []) : [], incompleto: o ? !!o.incompleto : false, falta: o ? (o.falta || '') : '', plan: o ? (o.plan || '') : ''
+  });
+  limpiarForm();
+});
+sugerir(); claseChange(); recibido.value = isoHoy();
+render();
+
+let intId = null;
+function abrirInt(id) { intId = id; intNota.value = ''; intTipo.value = 'incompleto'; dlgInt.showModal(); }
+async function guardarInt() {
+  const o = find(intId); if (!o) return;
+  const l = o.intentos || [], inc = intTipo.value === 'incompleto', nota = intNota.value.trim();
+  await persist({...o, intentos: [...l, {n: l.length + 1, fecha: isoHoy(), res: intTipo.value, nota}], incompleto: inc ? true : !!o.incompleto, falta: inc ? nota : (o.falta || '')});
+  dlgInt.close();
+}
+function plan(id, d) { persist({...find(id), plan: d === 'hoy' ? isoHoy() : isoD(sumaHabiles(hoy(), 1))}); }
+function quitarPlan(id) { persist({...find(id), plan: ''}); }
+function resolver(id) { persist({...find(id), incompleto: false, falta: ''}); }
+function intHtml(t) {
+  const l = t.intentos || []; if (!l.length) return '';
+  return `<details class="mt-1"><summary class="cursor-pointer text-xs text-slate-600">📜 Historial de intentos</summary><div class="mt-1 text-xs space-y-0.5">${l.map(x => `<div>#${x.n} · ${fmt(pd(x.fecha))} · ${x.res === 'incompleto' ? '⚠️ incompleto' : '🚫 no se entregó ese día'}${x.nota ? ': ' + esc(x.nota) : ''}</div>`).join('')}</div></details>`;
+}
+function renderBit() {
+  const l = T.flatMap(t => (t.intentos || []).map(x => ({...x, cliente: t.cliente, tipo: t.tipo}))).sort((a, b) => b.fecha.localeCompare(a.fecha) || b.n - a.n);
+  bitList.innerHTML = l.map(b => `<div class="border-b py-2 text-sm"><b>${esc(b.cliente)}</b> · ${esc(b.tipo)} <span class="text-slate-500">— intento ${b.n} · ${fmt(pd(b.fecha))}</span><br>${b.res === 'incompleto' ? '⚠️ Se intentó entregar, pero estaba incompleto' : '🚫 No se alcanzó a entregar ese día'}${b.nota ? ': ' + esc(b.nota) : ''}</div>`).join('') || '<p class="text-sm text-slate-400">Sin registros.</p>';
+  bitRes.textContent = l.length + ' intento(s) · ' + l.filter(b => b.res === 'incompleto').length + ' incompleto(s)';
+}
+function obligaciones() {
+  const cl = (prompt('Cliente al que le creo sus obligaciones mensuales (pago SAT y pago IMSS):') || '').trim(); if (!cl) return;
+  const mk = (dep, tipo) => {
+    let d = new Date(hoy().getFullYear(), hoy().getMonth(), 17); if (d < hoy()) d = new Date(hoy().getFullYear(), hoy().getMonth() + 1, 17);
+    while (!esHabil(d)) d.setDate(d.getDate() + 1);
+    return {id: 'T' + Date.now() + Math.random().toString(36).slice(2, 6), clase: 'pago', dep, cliente: cl, tipo, limite: isoD(d), dias: 0, vence: '', monto: 0, repite: true, estado: 'proceso', firmaInicio: '', pagado: false, entregado: false, reqs: (CAT()[tipo] || []).map(n => ({n, ok: false})), intentos: [], recibido: isoHoy()};
+  };
+  [mk('SAT', 'Pago provisional mensual'), mk('IMSS', 'Pago de cuotas IMSS (SUA)')].forEach(x => persist(x));
+}
+function mesNav(d) { MES = new Date(MES.getFullYear(), MES.getMonth() + d, 1); selDia = null; renderHeat(); }
+function evDia(f) { return T.flatMap(t => (t.intentos || []).filter(x => x.fecha === f).map(x => ({...x, cliente: t.cliente, tipo: t.tipo}))); }
+function diaHeat(k) {
+  selDia = k;
+  if (!k) { heatDet.innerHTML = '<p class="text-xs text-slate-400">Toca un día para ver el detalle.</p>'; return; }
+  const d = pd(k), l = evDia(k), ni = nombreInh(d) || (esHabil(d) ? '' : 'Fin de semana');
+  heatDet.innerHTML = `<div class="font-semibold mb-1">${fmt(d)}${ni ? ' · <span class="text-slate-500">' + esc(ni) + '</span>' : ''}</div>` + (l.map(x => `<div class="border-b py-1"><b>${esc(x.cliente)}</b> · ${esc(x.tipo)} <span class="text-slate-500">— intento ${x.n}</span><br>${x.res === 'incompleto' ? '⚠️ Incompleto' : '🚫 No se alcanzó a entregar'}${x.nota ? ': ' + esc(x.nota) : ''}</div>`).join('') || '<p class="text-xs text-slate-400">Sin intentos ese día.</p>');
+}
+function renderHeat() {
+  MES = MES || new Date(hoy().getFullYear(), hoy().getMonth(), 1);
+  const y = MES.getFullYear(), m = MES.getMonth(), nd = new Date(y, m + 1, 0).getDate(), key = y + '-' + String(m + 1).padStart(2, '0');
+  const ev = {};
+  T.forEach(t => (t.intentos || []).forEach(x => { if (x.fecha.slice(0, 7) === key) (ev[x.fecha] = ev[x.fecha] || []).push({...x, cliente: t.cliente, tipo: t.tipo}); }));
+  let h = ['L', 'M', 'M', 'J', 'V', 'S', 'D'].map(d => `<div class="text-center text-xs text-slate-500">${d}</div>`).join('') + '<div></div>'.repeat((new Date(y, m, 1).getDay() + 6) % 7);
+  for (let d = 1; d <= nd; d++) {
+    const dt = new Date(y, m, d), k = isoD(dt), l = ev[k] || [], n = l.length, hab = esHabil(dt);
+    const bg = n >= 3 ? '#dc2626' : n === 2 ? '#fb923c' : n === 1 ? '#fed7aa' : hab ? '#f1f5f9' : '#e2e8f0';
+    const tip = esc(l.map(x => x.cliente + ' (' + (x.res === 'incompleto' ? 'incompleto' : 'no se entregó') + ')').join(', ') || nombreInh(dt));
+    h += `<button onclick="diaHeat('${k}')" title="${tip}" class="rounded-md py-2 text-sm ${k === isoHoy() ? 'ring-2 ring-indigo-500' : ''} ${k === selDia ? 'ring-2 ring-slate-900' : ''}" style="background:${bg};color:${n >= 3 ? '#fff' : '#0f172a'}${hab ? '' : ';opacity:.65'}">${d}${n ? `<div class="text-[10px] font-bold">${n}</div>` : ''}</button>`;
+  }
+  heatGrid.innerHTML = h;
+  heatMes.textContent = MES.toLocaleDateString('es-MX', {month: 'long', year: 'numeric'});
+  const all = Object.values(ev).flat(), inc = all.filter(x => x.res === 'incompleto').length;
+  const ents = T.filter(t => (t.estado === 'firmas' || t.estado === 'listo') && (t.firmaInicio || '').slice(0, 7) === key), prim = ents.filter(t => !(t.intentos || []).length).length;
+  const afect = new Set(all.map(x => x.cliente + '|' + x.tipo)).size, porCli = {};
+  all.forEach(x => porCli[x.cliente] = (porCli[x.cliente] || 0) + 1);
+  const top = Object.entries(porCli).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([c, n]) => esc(c) + ' (' + n + ')').join(', ');
+  const cajas = [[all.length, 'Intentos en el mes'], [inc, 'Incompletos'], [all.length - inc, 'No se entregaron ese día'], [ents.length ? Math.round(prim / ents.length * 100) + '%' : '—', 'Entregados a la primera (' + prim + '/' + ents.length + ')']];
+  heatRes.innerHTML = '<div class="grid grid-cols-2 md:grid-cols-4 gap-2 text-center">' + cajas.map(([v, l]) => `<div class="bg-slate-50 rounded-lg p-2"><div class="text-xl font-bold">${v}</div><div class="text-xs text-slate-500">${l}</div></div>`).join('') + '</div>'
+    + `<div class="text-xs text-slate-600 mt-2">${afect ? 'Trámites afectados: <b>' + afect + '</b> · promedio ' + (all.length / afect).toFixed(1) + ' intentos por trámite' + (top ? ' · Más intentos: ' + top : '') : 'Sin intentos registrados este mes.'}</div>`;
+  diaHeat(selDia && selDia.slice(0, 7) === key ? selDia : null);
+}
+function renderInh() {
+  const y = hoy().getFullYear(), fer = [...FER(y), ...FER(y + 1)];
+  inhList.innerHTML = '<div class="font-semibold">Feriados oficiales</div>' + fer.map(x => `<div class="text-slate-600">🇲🇽 ${fmt(pd(x.f))} · ${esc(x.n)}</div>`).join('')
+    + '<div class="font-semibold mt-2">Días que agregaste</div>' + ([...INH].sort((a, b) => a.f.localeCompare(b.f)).map(x => `<div>📌 ${fmt(pd(x.f))} · ${esc(x.n || 'Día inhábil')} ${puede() ? `<button onclick="inhDel('${x.f}')" class="text-red-600 ml-2">✖</button>` : ''}</div>`).join('') || '<div class="text-slate-400">Ninguno todavía.</div>');
+  inhForm.style.display = puede() ? '' : 'none';
+}
+async function inhGuardar(l) {
+  try { await sb('rpc/guardar_ajuste', {p_pin: PIN, p_key: 'inhabiles', p_items: l}); INH = l; refrescar(); render(); } catch (e) { alert('No se pudo guardar: ' + (e.message || e.code)); }
+}
+function inhAdd() { if (!inhF.value) return alert('Elige la fecha.'); inhGuardar([...INH.filter(x => x.f !== inhF.value), {f: inhF.value, n: inhN.value.trim()}]); inhF.value = ''; inhN.value = ''; }
+function inhDel(f) { inhGuardar(INH.filter(x => x.f !== f)); }
+// Arranque: ¿hay nube? ¿puede esta persona editar?
+(async () => {
+  DB = SB; col = DB.collection();
+  if (PIN) { try { CAN = await sb('rpc/verificar', {p_pin: PIN}) === true; if (!CAN) salir(); } catch (e) {} }
+  col.onSnapshot(snap => { T = snap.docs.map(d => ({clase: 'tramite', dep: 'Otro', otros: [], ...d.data()})); render(); }, e => console.error(e));
+  DB.doc().onSnapshot(s => { const it = (s.exists && s.data().items) || []; OVR = Object.fromEntries(it.map(x => [x.c, x.l])); sugerir(); }, e => console.error(e));
+  poll(() => sb('config?key=eq.inhabiles&select=data'), rows => { INH = (rows[0] && rows[0].data.items) || []; render(); }, e => console.error(e));
+  render();
+})();
+</script>
+</body>
+</html>
