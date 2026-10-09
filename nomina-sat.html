@@ -9,7 +9,7 @@
 @media (prefers-color-scheme:dark){:root{--onacc:#10201d;--bg:#171b1d;--panel:#21272a;--ink:#eceeed;--mute:#9aa4a8;--line:#363e42;--acc:#45c2a9;--accsoft:#1d3a35;--done:#6d7a7e}}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 "Segoe UI",system-ui,sans-serif;padding:16px}
-main{max-width:780px;margin:0 auto}
+main{max-width:780px;margin:0 auto}html.emb main{max-width:1500px}
 h1{font-size:1.25rem;margin:0 0 10px}h2{font-size:1.1rem;margin:0 0 6px}h3{margin:0 0 6px;font-size:1rem}
 .box,.card{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:12px;margin-bottom:10px}
 .box .card{background:var(--bg)}
@@ -43,6 +43,7 @@ li.clip{background:var(--acc);color:var(--onacc);font-weight:600}
 </style>
 </head>
 <body>
+<script>if(window.self!==window.top)document.documentElement.classList.add('emb')</script>
 <main>
 <h1>Nómina SAT</h1>
 <div class="row tabs"><button id="t1" class="on">Este mes</button><button id="t2">Patrones y empleados</button><button id="pip" hidden>Ventana flotante</button></div>

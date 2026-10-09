@@ -38,17 +38,29 @@ body{background:#f3f1ec;color:#0f172a;font-family:'IBM Plex Sans',system-ui,-app
   <button id="tabN" type="button" onclick="tab('nom')" class="px-4 py-2 rounded-lg font-semibold">💼 Nóminas <span id="tabNb" class="text-xs font-normal"></span></button>
   <button id="tabC" type="button" onclick="tab('cer')" class="px-4 py-2 rounded-lg font-semibold">🧮 Ceros</button>
   <button id="tabS" type="button" onclick="tab('sat')" class="px-4 py-2 rounded-lg font-semibold">🧾 Mi registro SAT</button>
+  <button id="tabA" type="button" onclick="tab('ape')" class="px-4 py-2 rounded-lg font-semibold">🏪 Aperturas</button>
 </nav>
 
 <main id="mainP" class="max-w-7xl mx-auto px-4 py-6 space-y-6">
 
   <div id="bannerInh" class="hidden"></div>
   <button id="nomChip" type="button" onclick="tab('nom')" class="hidden w-full text-left rounded-2xl p-4 bg-violet-50 border border-violet-300"></button>
+  <details class="bg-white rounded-2xl shadow p-3 text-sm"><summary class="cursor-pointer font-semibold">❓ ¿Qué significan las fechas de las tarjetas?</summary>
+    <ul class="mt-2 space-y-1 text-slate-700">
+      <li>📅 <b>Fecha límite:</b> el último día para tener el trámite listo. "Quedan N días hábiles" no cuenta fines de semana, feriados ni días inhábiles.</li>
+      <li>📥 <b>Te lo dio ella:</b> el día que la contadora te entregó el documento.</li>
+      <li>📤 <b>Entregado:</b> el día que lo llevaste a la dependencia.</li>
+      <li>⏳ <b>La dependencia debería responder:</b> la fecha de entrega más los días hábiles de espera que calculaste.</li>
+      <li>⚠️ <b>Cuidado:</b> avisa si esa respuesta estimada cae después de tu fecha límite.</li>
+      <li>📥 <b>Te dijeron que regreses a recoger:</b> el día que la dependencia te dio para volver por el papel.</li>
+      <li>✅ <b>Recogido:</b> el día que lo recogiste y quedó cerrado. Arriba de cada tarjeta ves la línea completa: te lo dio → entregado → recogido.</li>
+    </ul></details>
   <!-- Resumen -->
   <section id="resumen" class="grid grid-cols-2 md:grid-cols-6 gap-3"></section>
 
   <section class="rounded-2xl p-4 border-2 border-indigo-300 bg-indigo-50">
     <h2 class="font-bold text-indigo-900 mb-3">📅 Agenda de hoy <span id="hoyRes" class="text-sm font-normal text-indigo-700"></span> <span id="hoyCobro" class="text-sm font-normal text-emerald-700"></span></h2>
+    <div id="prioHoy" class="mb-3 bg-white/60 rounded-xl p-2"></div>
     <div class="grid lg:grid-cols-4 gap-4">
       <div><h3 class="font-semibold text-sm mb-2">📤 Por entregar hoy <span id="nA" class="ml-1 text-xs bg-indigo-600 text-white rounded-full px-2 py-0.5"></span></h3><div id="cA" class="space-y-3"></div></div>
       <div><h3 class="font-semibold text-sm mb-2">⏳ No se entregaron (venían de antes) <span id="nB" class="ml-1 text-xs bg-red-600 text-white rounded-full px-2 py-0.5"></span></h3><div id="cB" class="space-y-3"></div></div>
@@ -56,12 +68,18 @@ body{background:#f3f1ec;color:#0f172a;font-family:'IBM Plex Sans',system-ui,-app
       <div><h3 class="font-semibold text-sm mb-2">⚠️ Incompletos <span id="nC" class="ml-1 text-xs text-white rounded-full px-2 py-0.5" style="background:#f97316"></span></h3><div id="cC" class="space-y-3"></div></div>
     </div>
   </section>
+  <section id="segSec" class="bg-white rounded-2xl shadow p-5"><div class="grid lg:grid-cols-2 gap-6">
+    <div><h3 class="font-bold">📥 Por recoger <span id="nSegR" class="ml-1 text-xs bg-amber-600 text-white rounded-full px-2 py-0.5"></span></h3><p class="text-xs text-slate-500">Ya los entregamos y falta que la dependencia los dé. Ordenado por dependencia: primero las que cierran más temprano.</p><div id="segRec"></div></div>
+    <div><h3 class="font-bold">⏳ En espera <span id="nSegE" class="ml-1 text-xs bg-orange-500 text-white rounded-full px-2 py-0.5"></span></h3><p class="text-xs text-slate-500">Aún no se pueden entregar: falta una firma o un documento de otra dependencia.</p><div id="segEsp"></div></div>
+  </div></section>
+  <section id="pagSec" class="hidden bg-white rounded-2xl shadow p-5"><h2 class="text-lg font-semibold">💵 Días por pagar al gestor <span id="pagRes" class="text-sm font-normal text-slate-600"></span></h2><p class="text-xs text-slate-500 mb-2">Informativo: cada día en que entregó documentos y si ya está liquidado.</p><div id="pagLista" class="max-h-80 overflow-auto"></div></section>
+  <section id="horSec" class="hidden bg-white rounded-2xl shadow p-5"><h2 class="text-lg font-semibold">🕒 Horarios de dependencias <span class="text-xs font-normal text-slate-500">(Playa del Carmen; confirma siempre, pueden cambiar)</span></h2>
+    <div class="overflow-x-auto mt-2"><table class="w-full text-sm"><thead class="text-left text-slate-500"><tr><th class="p-2">Dependencia</th><th class="p-2">Abre</th><th class="p-2">Cierra (recepción)</th><th class="p-2">Notas</th></tr></thead><tbody id="horBody"></tbody></table></div></section>
   <!-- Formulario -->
-  <section id="formSec" class="bg-white rounded-2xl shadow p-5">
-    <h2 class="text-lg font-semibold mb-4">➕ Registrar trámite, pago o entrega</h2>
+  <section id="formSec" class="bg-white rounded-2xl shadow p-5"><details id="formDet"><summary class="cursor-pointer text-lg font-semibold">➕ Registrar trámite, pago o entrega <span class="text-xs font-normal text-slate-500">(toca para abrir)</span></summary><div class="mt-4">
     <form id="f" class="grid md:grid-cols-3 gap-4">
       <label class="block text-sm font-medium">Cliente
-        <input id="cliente" required class="mt-1 w-full border rounded-lg px-3 py-2" placeholder="Nombre del cliente">
+        <input id="cliente" list="clL" required class="mt-1 w-full border rounded-lg px-3 py-2" placeholder="Nombre del cliente">
       </label>
       <label class="block text-sm font-medium">Naturaleza
         <select id="clase" onchange="claseChange()" class="mt-1 w-full border rounded-lg px-3 py-2 bg-white"><option value="tramite">📄 Trámite</option><option value="pago">💰 Pago</option><option value="entrega">📤 Entrega de documentos / acuses</option><option value="recoger">📥 Recoger documento</option><option value="vigencia">🔔 Vigencia (e.firma, CSD, poder…)</option></select></label>
@@ -72,6 +90,8 @@ body{background:#f3f1ec;color:#0f172a;font-family:'IBM Plex Sans',system-ui,-app
       <label class="block text-sm font-medium">Fecha límite <span class="text-slate-400 font-normal">(opcional en pagos, recoger y entregas)</span>
         <input id="limite" type="date" onchange="avisoFecha()" required class="mt-1 w-full border rounded-lg px-3 py-2">
       </label>
+      <label class="block text-sm font-medium">Negocio / sucursal <span class="text-slate-400 font-normal">(si el cliente tiene varios)</span><input id="negocio" list="negL" class="mt-1 w-full border rounded-lg px-3 py-2"></label>
+      <label class="block text-sm font-medium">Folio u oficio <span class="text-slate-400 font-normal">(opcional)</span><input id="folio" class="mt-1 w-full border rounded-lg px-3 py-2" placeholder="Ej. folio de Fiscalización"></label>
       <label class="block text-sm font-medium">Entregar el día <span class="text-slate-400 font-normal">(el que ella pida; vacío = no se cobra)</span><input id="asig" type="date" onchange="avisoFecha()" class="mt-1 w-full border rounded-lg px-3 py-2"></label>
       <label class="block text-sm font-medium">Fecha de recepción<input id="recibido" type="date" onchange="if (recibido.value) asig.value = isoD(sumaHabiles(pd(recibido.value), 1)); avisoFecha()" class="mt-1 w-full border rounded-lg px-3 py-2"></label>
       <label class="block text-sm font-medium">Días hábiles estimados de respuesta
@@ -97,18 +117,20 @@ body{background:#f3f1ec;color:#0f172a;font-family:'IBM Plex Sans',system-ui,-app
         <button id="btnG" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-6 py-2.5 rounded-lg">Guardar</button><button type="button" id="btnC" onclick="limpiarForm()" class="hidden ml-3 text-sm text-slate-500 underline">Cancelar edición</button>
       </div>
     </form>
-  </section>
+  </div></details></section>
 
   <section class="bg-white rounded-2xl shadow p-3 space-y-2">
     <div class="flex flex-wrap gap-2">
-      <input id="q" oninput="render()" placeholder="🔎 Buscar cliente o trámite" class="border rounded-lg px-3 py-2 flex-1 min-w-[180px]">
+      <input id="q" oninput="render()" placeholder="🔎 Buscar cliente, trámite o folio" class="border rounded-lg px-3 py-2 flex-1 min-w-[180px]">
       <select id="fDep" onchange="render()" class="border rounded-lg px-3 py-2 bg-white"><option value="">Todas las dependencias</option></select>
+      <select id="fGrp" onchange="render()" class="border rounded-lg px-3 py-2 bg-white"><option value="">Sin agrupar</option><option value="cliente">Agrupar por cliente / negocio</option><option value="dep">Agrupar por dependencia</option></select>
     </div>
     <div class="flex flex-wrap gap-2 items-center"><span class="text-xs text-slate-400 w-16">Secciones</span>
       <button id="btnBit" type="button" onclick="tog('bitSec','btnBit')" class="tb">📜 Historial de intentos</button>
       <button id="btnTer" type="button" onclick="tog('terSec','btnTer')" class="tb">✔ Terminados</button>
       <button id="btnInh" type="button" onclick="tog('inhSec','btnInh')" class="tb">📆 Días inhábiles</button>
       <button id="btnCob" type="button" onclick="tog('cobSec','btnCob')" class="tb">💵 Mi cobranza</button>
+      <button id="btnHor" type="button" onclick="tog('horSec','btnHor')" class="tb">🕒 Horarios</button>
       <button id="btnAdm" type="button" onclick="tog('admin','btnAdm')" class="tb">⚙️ Requisitos</button>
     </div>
     <div class="flex flex-wrap gap-2 items-center"><span class="text-xs text-slate-400 w-16">Acciones</span>
@@ -118,6 +140,7 @@ body{background:#f3f1ec;color:#0f172a;font-family:'IBM Plex Sans',system-ui,-app
       <button id="btnResp" type="button" onclick="respaldo()" class="tb">💾 Respaldo</button>
       <button id="btnCsv" type="button" onclick="respaldoCsv()" class="tb">📊 Excel (CSV)</button>
       <label id="nomToggle" class="tb sw"><input type="checkbox" id="nomChk" onchange="nomActivar()"> <span>💼 Nóminas encargadas</span></label>
+      <label id="pagToggle" class="tb sw"><input type="checkbox" id="pagChk" onchange="pagActivar()"> <span>💵 Mostrarle pagos a ella</span></label>
     </div>
   </section>
   <section id="admin" class="hidden bg-white rounded-2xl shadow p-5">
@@ -160,13 +183,16 @@ body{background:#f3f1ec;color:#0f172a;font-family:'IBM Plex Sans',system-ui,-app
   <section id="cobSec" class="hidden rounded-2xl p-5 border-2 border-emerald-300 bg-emerald-50">
     <h2 class="text-lg font-bold text-emerald-900">💵 Mi cobranza <span class="text-xs font-normal text-emerald-800">(privada: solo la ves con tu clave)</span></h2>
     <div id="cobRes" class="grid grid-cols-2 md:grid-cols-3 gap-2 my-3 text-center"></div>
+    <div class="bg-white rounded-xl p-3 mb-3"><div class="flex items-center justify-between"><h3 class="font-semibold text-sm">🟩 Mi actividad del mes</h3><div class="flex items-center gap-2"><button onclick="actNav(-1)" class="border rounded px-2">◀</button><b id="actMes" class="capitalize text-sm"></b><button onclick="actNav(1)" class="border rounded px-2">▶</button></div></div>
+      <p class="text-xs text-slate-500 mb-2">Cada día pinta cuántos documentos entregaste o recogiste. Sirve para ver si trabajas todos los días hábiles de la semana. Toca un día para ver el detalle.</p>
+      <div id="actGrid" class="grid grid-cols-7 gap-1 max-w-sm"></div><div id="actSem" class="mt-2 space-y-0.5"></div><div id="actDet" class="mt-2"></div></div>
     <div class="bg-white rounded-xl p-3 mb-3"><h3 class="font-semibold text-sm mb-1">📊 Entregas: completas de origen vs. resueltas por mí</h3>
       <p class="text-xs text-slate-500 mb-2">Completa de origen = ella te la dio completa. Resuelta por mí = salió porque tú completaste algo (imprimir, conseguir un papel). Se marca con 🛠️ en cada tarjeta.</p><div id="cobStat" class="overflow-x-auto"></div></div>
     <div class="text-xs text-slate-700 mb-3">Tarifa por día: $<input id="cobTar" type="number" onchange="cobTarifa()" class="border rounded px-2 py-1 w-24 mx-1"> Un día se cobra cuando entregas, ese mismo día, al menos un documento que ella te asignó para ese día. Lo que se te pasó de un día anterior no genera cobro por sí solo.</div>
     <div class="grid md:grid-cols-2 gap-4">
       <div><h3 class="font-semibold text-sm mb-1">Días</h3><div id="cobDias" class="text-sm space-y-2 max-h-80 overflow-auto"></div></div>
       <div><h3 class="font-semibold text-sm mb-1">Pagos que me ha hecho</h3><div id="cobPagos" class="text-sm"></div>
-        <div class="mt-1 flex gap-2 flex-wrap"><input id="pgM" type="number" placeholder="Monto $" class="border rounded px-2 py-1 w-28"><input id="pgF" type="date" class="border rounded px-2 py-1"><button type="button" onclick="pagoAdd()" class="bg-emerald-600 text-white px-3 py-1 rounded">Registrar pago</button></div>
+        <div class="mt-1 flex gap-2 flex-wrap"><input id="pgM" type="number" placeholder="Monto $" class="border rounded px-2 py-1 w-28"><input id="pgN" placeholder="Nota (ej. cubre hoy y mañana)" class="border rounded px-2 py-1 w-52"><input id="pgF" type="date" class="border rounded px-2 py-1"><button type="button" onclick="pagoAdd()" class="bg-emerald-600 text-white px-3 py-1 rounded">Registrar pago</button><button type="button" onclick="pgM.value=FIN.tarifa" class="border rounded px-2 py-1 text-xs">1 día</button><button type="button" onclick="pgM.value=FIN.tarifa*2" class="border rounded px-2 py-1 text-xs">2 días</button></div>
         <h3 class="font-semibold text-sm mt-4 mb-1">💵 Efectivo que debo entregarle a ella</h3><div id="cobEfec" class="text-sm"></div></div>
     </div>
   </section>
@@ -194,7 +220,7 @@ body{background:#f3f1ec;color:#0f172a;font-family:'IBM Plex Sans',system-ui,-app
   <section id="nomSec" class="rounded-2xl p-5 border-2 border-violet-300 bg-violet-50">
     <div class="flex flex-wrap items-center justify-between gap-2"><h2 class="text-lg font-bold text-violet-900">💼 Nóminas <span id="nomEst" class="text-xs font-normal"></span></h2>
       <div class="flex items-center gap-2"><button onclick="nomMes(-1)" class="border rounded-lg px-3 py-1 bg-white">◀</button><b id="nomPer" class="capitalize"></b><button onclick="nomMes(1)" class="border rounded-lg px-3 py-1 bg-white">▶</button></div></div>
-    <p class="text-xs text-violet-800 mt-1">⚠️ Módulo en prueba: cualquiera con el enlace puede verlo. No captures RFC, CURP, NSS ni sueldos; usa solo nombres o alias. Más adelante tendrá inicio de sesión.</p>
+    <p class="text-xs text-violet-800 mt-1">El avance se toma solo de la hoja de nómina SAT: cuando se marca un trabajador como terminado, aquí se actualiza. Aparece únicamente el nombre del patrón y cuántos empleados lleva.</p>
     <div id="nomRes" class="my-3 text-sm"></div>
     <div id="nomTabla" class="space-y-2"></div>
     <div id="nomTbl" class="mt-4 overflow-x-auto"></div>
@@ -206,14 +232,14 @@ body{background:#f3f1ec;color:#0f172a;font-family:'IBM Plex Sans',system-ui,-app
     </div>
   </section>
 </main>
-<main id="mainSat" class="hidden max-w-4xl mx-auto px-4 py-6">
+<main id="mainSat" class="hidden w-full px-3 py-4">
   <div class="mb-3 flex flex-wrap items-center gap-2 text-sm">
     <span class="text-slate-600">🔒 Los datos de tus empleados se guardan solo en este navegador. A la contadora solo le llega el avance: patrón y cuántos empleados llevas.</span>
     <button type="button" onclick="syncSat(true)" class="border rounded-lg px-3 py-1 bg-white">🔄 Enviar avance ahora</button>
     <a href="nomina-sat.html" target="_blank" class="border rounded-lg px-3 py-1 bg-white">↗ Abrir en pantalla completa</a>
     <span id="satEst" class="text-emerald-700"></span>
   </div>
-  <iframe id="satFrame" title="Registro SAT" class="w-full rounded-2xl border bg-white" style="height:85vh"></iframe>
+  <iframe id="satFrame" title="Registro SAT" class="w-full rounded-2xl border bg-white" style="height:92vh"></iframe>
 </main>
 <main id="mainCer" class="hidden max-w-5xl mx-auto px-4 py-6">
   <section class="rounded-2xl p-5 border-2 border-teal-300 bg-teal-50">
@@ -243,6 +269,31 @@ body{background:#f3f1ec;color:#0f172a;font-family:'IBM Plex Sans',system-ui,-app
   <textarea id="reqT" rows="8" class="border rounded-lg px-3 py-2 w-full text-sm"></textarea>
   <div class="mt-3 flex gap-2"><button onclick="guardarReqs()" class="bg-indigo-600 text-white px-4 py-2 rounded-lg">Guardar</button><button onclick="dlgReq.close()" class="border px-4 py-2 rounded-lg">Cancelar</button></div>
 </dialog>
+<datalist id="clL"></datalist><datalist id="negL"></datalist>
+<dialog id="dlgEsp" class="rounded-2xl p-5 w-[min(92vw,440px)]">
+  <h3 class="font-semibold mb-2">⏳ Poner en espera</h3>
+  <p class="text-xs text-slate-500 mb-2">Úsalo cuando no puedes avanzar porque falta algo: una firma o un documento de otra dependencia.</p>
+  <input id="espTxt" placeholder="¿Qué estás esperando? (ej. anuencia de Protección Civil)" class="border rounded-lg px-3 py-2 w-full mb-2">
+  <label class="text-sm">¿De qué dependencia?<select id="espDep" class="border rounded-lg px-3 py-2 w-full mt-1 bg-white"></select></label>
+  <div class="mt-3 flex gap-2"><button onclick="guardarEsp()" class="bg-indigo-600 text-white px-4 py-2 rounded-lg">Guardar</button><button onclick="dlgEsp.close()" class="border px-4 py-2 rounded-lg">Cancelar</button></div>
+</dialog>
+<main id="mainApe" class="hidden max-w-5xl mx-auto px-4 py-6 space-y-4">
+  <section class="rounded-2xl p-5 border-2 border-rose-300 bg-rose-50">
+    <h2 class="text-lg font-bold text-rose-900">🏪 Aperturas: ruta, tiempos y costos <span class="text-xs font-normal">(solo tú; Playa del Carmen)</span></h2>
+    <p class="text-sm text-rose-900 mt-1">Aprende el proceso para abrir un negocio, ve en qué etapa va cada cliente y cuándo terminaría todo si varios trámites avanzan a la vez. Los datos salen del Registro Municipal de Trámites y Servicios de Playa del Carmen. Los tiempos marcados como "estimado" son míos: ajústalos con lo que te digan en cada oficina. Los costos están en UMA y cambian cada año: confirma siempre antes de cotizar.</p>
+    <div class="mt-3 bg-white rounded-xl p-3 text-sm"><b>➕ Nuevo proyecto</b>
+      <div class="grid md:grid-cols-4 gap-2 mt-2">
+        <input id="apCli" list="clL" placeholder="Cliente" class="border rounded-lg px-3 py-2">
+        <input id="apNeg" list="negL" placeholder="Negocio" class="border rounded-lg px-3 py-2">
+        <select id="apTpl" class="border rounded-lg px-3 py-2 bg-white"><option value="sare">Negocio de bajo riesgo (SARE)</option><option value="med">Negocio de mediano o alto riesgo</option></select>
+        <label class="text-xs text-slate-500">Empieza el<input id="apIni" type="date" class="border rounded-lg px-3 py-2 w-full"></label></div>
+      <button type="button" onclick="apeNuevo()" class="mt-2 bg-rose-700 text-white px-4 py-2 rounded-lg">Crear proyecto</button></div>
+  </section>
+  <div id="apLista" class="space-y-3"></div>
+  <section class="bg-white rounded-2xl shadow p-5"><h3 class="font-bold">📚 Costos de referencia (oficiales, Playa del Carmen)</h3>
+    <p class="text-xs text-slate-500 mb-2">UMA de hoy: $<input id="apUma" type="number" step="0.01" onchange="apeUma()" class="border rounded px-2 py-0.5 w-24"> (el portal municipal usa este valor en sus ejemplos de 2026; las fichas más viejas citan $108.57 de 2024). Donde dice "o más" es el mínimo publicado.</p>
+    <div class="overflow-x-auto"><table class="w-full text-sm"><thead class="text-left text-slate-500"><tr><th class="p-2">Trámite</th><th class="p-2">Costo oficial</th><th class="p-2">En pesos</th></tr></thead><tbody id="apCostos"></tbody></table></div></section>
+</main>
 <dialog id="dlgEnt" class="rounded-2xl p-5 w-[min(92vw,420px)]">
   <h3 class="font-semibold mb-2">Entregado en dependencia</h3>
   <label class="text-sm">¿Qué día te dijeron que regreses a recoger? <span class="text-slate-400">(opcional)</span><input id="entRec" type="date" class="border rounded-lg px-3 py-2 w-full mt-1"></label>
@@ -286,7 +337,7 @@ async function entrar() {
   catch (e) { alert('No se pudo verificar: ' + (e.message || e.code)); }
 }
 function salir() { try { localStorage.removeItem('gest_pin'); } catch (e) {} location.reload(); }
-let INH = [], MES = null, selDia = null, FIN = {tarifa: 300, dias: {}, pagos: [], efec: [], comp: {}}, CEROS = [], CPER = null, satUltimo = '';
+let INH = [], MES = null, selDia = null, HORS = {}, PAG = {visible: false, dias: []}, pagUltimo = null, pagWanted = null, AMES = null, FIN = {tarifa: 300, dias: {}, pagos: [], efec: [], comp: {}, proy: [], uma: 117.31}, CEROS = [], CPER = null, satUltimo = '';
 const SATKEY = 'nomina-sat-db-v1';
 let NOMS = [], NOM = {activo: false}, NPER = null, TAB = 'panel'; const NOPEN = new Set(), NCOL = ['#7c3aed', '#0891b2', '#16a34a', '#d97706', '#db2777', '#2563eb', '#65a30d', '#dc2626']; const _fc = {};
 const FERN = ['Año Nuevo','Día de la Constitución','Natalicio de Benito Juárez','Día del Trabajo','Independencia de México','Transmisión del Poder Ejecutivo','Revolución Mexicana','Navidad'];
@@ -363,15 +414,15 @@ function card(t) {
   if (!lim) estado = '<span class="text-slate-500">Sin fecha límite</span>';
   else if (h < 0) estado = `<span class="text-red-700 font-semibold">Vencido hace ${-h} día(s) háb.</span>`;
   else if (h === 0) estado = `<span class="text-red-700 font-semibold">¡Vence HOY!</span>`;
-  else estado = `<span class="text-slate-600">Faltan ${h} día(s) hábiles</span>`;
+  else estado = `<span class="text-slate-600">quedan ${h} día(s) hábil(es)</span>`;
 
   let firmas = '';
   if (t.estado === 'firmas') {
     const ini = pd(t.firmaInicio), fin = sumaHabiles(ini, t.dias), trans = habiles(ini, hoy());
     const resta = Math.max(t.dias - trans, 0), tarde = lim && fin > lim;
     firmas = `<div class="mt-2 text-xs rounded-lg p-2 ${tarde ? 'bg-red-100 text-red-800' : 'bg-white text-slate-700'}">
-      Entregado ${fmt(ini)} · Respuesta estimada: <b>${fmt(fin)}</b> · ${resta > 0 ? 'faltan ' + resta + ' días háb.' : '⏰ ya debió responder: da seguimiento'}
-      ${tarde ? '<br>⚠️ La respuesta llegaría después de la fecha límite' : ''}</div>`;
+      📤 Lo entregaste el ${fmt(ini)} · La dependencia debería responder el <b>${fmt(fin)}</b> (${resta > 0 ? 'en ' + resta + ' día(s) hábil(es)' : '⏰ ya debió responder: da seguimiento'})
+      ${tarde ? '<br>⚠️ Cuidado: la respuesta estimada cae después de tu fecha límite' : ''}</div>`;
   }
   let lic = '';
   if (t.vence) { const d = diasCal(pd(t.vence)); lic = `<div class="mt-1 text-xs text-amber-800">🏪 Licencia vence ${fmt(pd(t.vence))} (${d < 0 ? 'vencida' : d + ' días'})</div>`; }
@@ -381,12 +432,12 @@ function card(t) {
 
   return `<div class="${inc ? 'bg-orange-50' : 'bg-white'} rounded-lg p-3 border border-l-4 border-slate-200" style="border-left-color:${(falt.length || h <= 0) && !ent ? '#dc2626' : inc ? '#f97316' : h <= 3 && !ent ? '#d97706' : '#059669'}">
     <div class="flex justify-between gap-2">
-      <div><div class="font-semibold">${esc(t.cliente)}</div><div class="text-xs text-slate-500">${ICO[c]} ${esc(t.tipo)} <span class="bg-slate-100 rounded px-1">${esc(t.dep || '')}</span></div></div>
+      <div><div class="font-semibold">${esc(t.cliente)}</div><div class="text-xs text-slate-500">${ICO[c]} ${esc(t.tipo)} <span class="bg-slate-100 rounded px-1">${esc(t.dep || '')}</span>${t.negocio ? ' <span class="text-slate-700">🏬 ' + esc(t.negocio) + '</span>' : ''}${t.folio ? ' <span class="font-mono bg-amber-50 border border-amber-200 rounded px-1">🔖 ' + esc(t.folio) + '</span>' : ''}${!ent && cierraDe(t.dep || 'Otro') ? ' <span class="text-amber-700">🕑 cierra ' + cierraDe(t.dep || 'Otro') + '</span>' : ''}</div></div>
       ${puede() ? `<div class="flex gap-2 text-sm"><button onclick="editar('${t.id}')" title="Editar">✏️</button><button onclick="borrar('${t.id}')" title="Eliminar">🗑️</button></div>` : ''}
     </div>
-    <div class="text-sm mt-1">📅 ${lim ? fmt(lim) + ' · ' : ''}${estado}</div>
-    <div class="text-xs text-slate-500 mt-1">${t.resp ? '👤 ' + esc(t.resp) : ''}${t.monto ? ' · 💲' + Number(t.monto).toLocaleString('es-MX') : ''}${t.repite ? ' · 🔁 mensual' : ''}${t.recibido ? ' · 📥 Recibido ' + fmt(pd(t.recibido)) : ''}</div>${planB ? `<div class="text-xs mt-1">${planB}</div>` : ''}
-    ${firmas}${recB(t)}${lic}${alerta}${incB}${intB}${intHtml(t)}
+    <div class="text-sm mt-1">📅 ${lim ? 'Fecha límite: ' + fmt(lim) + ' · ' : ''}${estado}</div>
+    <div class="text-xs text-slate-500 mt-1">${t.resp ? '👤 ' + esc(t.resp) : ''}${t.monto ? ' · 💲' + Number(t.monto).toLocaleString('es-MX') : ''}${t.repite ? ' · 🔁 mensual' : ''}</div>${lineaTiempo(t)}${planB ? `<div class="text-xs mt-1">${planB}</div>` : ''}
+    ${firmas}${recB(t)}${lic}${alerta}${incB}${intB}${intHtml(t)}${t.resuelto ? '<div class="mt-1 text-xs rounded px-2 py-1 bg-amber-50 text-amber-900 border border-amber-200">🛠️ Resuelto por mí: ' + esc(t.resuelto.nota || 'completado por el gestor') + '</div>' : ''}${t.espera ? '<div class="mt-1 text-xs rounded px-2 py-1 bg-orange-50 text-orange-900 border border-orange-200">⏳ En espera: ' + esc(t.espera.txt) + ' (' + esc(t.espera.dep || '') + ')</div>' : ''}
     
     ${reqHtml(t)}
     ${puede() ? `<div class="flex flex-wrap gap-2 mt-3">
@@ -395,7 +446,8 @@ function card(t) {
       <button onclick="abrirInt('${t.id}')" class="text-xs border border-orange-400 text-orange-700 px-2.5 py-1 rounded-md">⚠️ Registrar intento</button>
       ${t.incompleto ? `<button onclick="resolver('${t.id}')" class="text-xs border border-slate-300 px-2.5 py-1 rounded-md">✅ Ya está completo</button>` : ''}
       ${ent ? `<button onclick="fechaRec('${t.id}')" class="text-xs border border-amber-400 text-amber-800 px-2.5 py-1 rounded-md">📅 Fecha de recogida</button>` : ''}
-      <button onclick="resueltoPorMi('${t.id}')" class="text-xs border ${FIN.comp[t.id] ? 'bg-amber-100 border-amber-400' : 'border-slate-300'} text-slate-700 px-2.5 py-1 rounded-md">🛠️ Resuelto por mí${FIN.comp[t.id] ? ' ✔' : ''}</button>
+      ${!ent && !t.espera ? `<button onclick="abrirEsp('${t.id}')" class="text-xs border border-orange-300 text-orange-800 px-2.5 py-1 rounded-md">⏳ En espera</button>` : ''}${t.espera ? `<button onclick="quitarEsp('${t.id}')" class="text-xs border border-slate-300 px-2.5 py-1 rounded-md">✅ Ya llegó lo que esperaba</button>` : ''}
+      <button onclick="resueltoPorMi('${t.id}')" class="text-xs border ${t.resuelto ? 'bg-amber-100 border-amber-400' : 'border-slate-300'} text-slate-700 px-2.5 py-1 rounded-md">🛠️ Resuelto por mí${t.resuelto ? ' ✔' : ''}</button>
       ${c === 'entrega' ? `<button onclick="cobrarEfectivo('${t.id}')" class="text-xs border border-emerald-500 text-emerald-700 px-2.5 py-1 rounded-md">💵 Cobré en efectivo</button>` : ''}
       ${t.plan === hy0 ? `<button onclick="quitarPlan('${t.id}')" class="text-xs border border-slate-300 px-2.5 py-1 rounded-md">Quitar de hoy</button>` : `<button onclick="plan('${t.id}','hoy')" class="text-xs border border-indigo-300 text-indigo-700 px-2.5 py-1 rounded-md">📅 Para hoy</button><button onclick="plan('${t.id}','man')" class="text-xs border border-indigo-300 text-indigo-700 px-2.5 py-1 rounded-md">📅 Mañana</button>`}
     </div>` : ''}</div>`;
@@ -440,7 +492,7 @@ function borrar(id) { if (confirm('¿Eliminar este trámite?')) quitar(id); }
 function render() {
   document.getElementById('hoy').textContent = fmt(hoy());
   document.getElementById('formSec').style.display = puede() ? '' : 'none';
-  btnAdm.style.display = btnObl.style.display = btnCob.style.display = btnWa.style.display = btnResp.style.display = btnCsv.style.display = puede() ? '' : 'none'; renderBit(); renderHeat(); renderInh(); renderCob(); renderBanner(); renderNom(); renderCer(); renderTer(); renderGraf(); btnIn.textContent = CAN ? '🔓 Salir del modo dueño' : '🔑 Entrar como dueño'; btnUser.textContent = CAN ? '👤' : '🔑'; btnUser.className = CAN ? 'text-xl px-2 py-1 rounded-lg bg-white/15 hover:bg-white/25' : 'text-lg px-2 py-1 rounded-lg opacity-40 hover:opacity-100'; syncToggles(); if (!puede()) admin.classList.add('hidden');
+  btnAdm.style.display = btnObl.style.display = btnInh.style.display = pagToggle.style.display = btnCob.style.display = btnWa.style.display = btnResp.style.display = btnCsv.style.display = puede() ? '' : 'none'; if (!puede()) inhSec.classList.add('hidden'); renderBit(); renderHeat(); renderInh(); renderCob(); renderBanner(); renderNom(); renderCer(); renderTer(); renderGraf(); renderSeg(); renderHor(); renderPrio(); renderPag(); renderAct(); renderApe(); if (pagWanted !== null && !!PAG.visible === pagWanted) pagWanted = null; pagChk.checked = pagWanted !== null ? pagWanted : !!PAG.visible; if (CAN && pagChk.checked) syncPagos(false); btnIn.textContent = CAN ? '🔓 Salir del modo dueño' : '🔑 Entrar como dueño'; btnUser.textContent = CAN ? '👤' : '🔑'; btnUser.className = CAN ? 'text-xl px-2 py-1 rounded-lg bg-white/15 hover:bg-white/25' : 'text-lg px-2 py-1 rounded-lg opacity-40 hover:opacity-100'; syncToggles(); if (!puede()) admin.classList.add('hidden');
   document.getElementById('btnVista').style.display = CAN ? '' : 'none';
   document.getElementById('btnVista').textContent = VISTA ? '↩ Volver a mi vista' : '👀 Ver como contadora';
   document.getElementById('modo').textContent = (SNAP ? '📅 Actualizado: ' + window.__SNAP.fecha : DB ? '☁️ Se actualiza solo' : '💾 Datos solo en este navegador') + (puede() ? '' : ' · 👀 Vista de solo lectura');
@@ -455,14 +507,14 @@ function render() {
   document.getElementById('c1').innerHTML = urg.map(card).join('') || vacio('Nada urgente 🎉');
   document.getElementById('c2').innerHTML = fir.map(card).join('') || vacio('Sin trámites en firmas');
   document.getElementById('c3').innerHTML = lic.map(card).join('') || vacio('Sin licencias por vencer');
-  document.getElementById('todos').innerHTML = act.map(card).join('') || vacio('Aún no hay trámites. Registra el primero arriba 👆');
+  document.getElementById('todos').innerHTML = grupos(act) || vacio('Aún no hay trámites. Abre ➕ Registrar para agregar el primero.');
   n1.textContent = urg.length; n2.textContent = fir.length; n3.textContent = lic.length;
   const pag = act.filter(t => t.clase === 'pago'), ent = act.filter(t => t.clase === 'entrega');
   c4.innerHTML = pag.map(card).join('') || vacio('Sin pagos pendientes');
   c5.innerHTML = ent.map(card).join('') || vacio('Sin entregas pendientes');
   n4.textContent = pag.length; n5.textContent = ent.length;
   const hy = isoHoy();
-  const A = act.filter(t => (t.plan || t.asignado) === hy && t.estado !== 'firmas'), Bn = act.filter(t => (t.plan || t.asignado) && (t.plan || t.asignado) < hy && t.estado !== 'firmas'), inc = act.filter(t => t.incompleto && t.estado !== 'firmas');
+  const A = act.filter(t => (t.plan || t.asignado) === hy && t.estado !== 'firmas' && !t.espera), Bn = act.filter(t => (t.plan || t.asignado) && (t.plan || t.asignado) < hy && t.estado !== 'firmas' && !t.espera), inc = act.filter(t => t.incompleto && t.estado !== 'firmas');
   const entH = B.filter(t => t.estado === 'firmas' && t.firmaInicio === hy).length;
   cA.innerHTML = A.map(card).join('') || vacio('Nada planeado para hoy. Usa 📅 Para hoy en una tarjeta.');
   cB.innerHTML = Bn.map(card).join('') || vacio('Nada pendiente de días anteriores 👍');
@@ -483,10 +535,55 @@ function render() {
     box('$' + pag.reduce((x, t) => x + (+t.monto || 0), 0).toLocaleString('es-MX'), 'Pagos pendientes (SAT, IMSS…)', 'text-rose-600');
 }
 
-const DEPS = ['Protección Civil','Medio Ambiente','Desarrollo Urbano','SARE','SAT','IMSS','Fiscalización','CANACO','Otro'];
-const SUG = {'Protección Civil':['Dictamen de protección civil','Programa interno','Visto bueno'],'Medio Ambiente':['Licencia ambiental','Cédula de operación','Manejo de residuos'],'Desarrollo Urbano':['Uso de suelo','Licencia de construcción','Número oficial'],'SARE':['Apertura rápida (SARE)','Refrendo de licencia de funcionamiento'],'SAT':['Pago provisional mensual','Declaración anual','Entrega de acuse SAT','Alta / modificación RFC','Nómina (CFDI)','Vigencia e.firma','Vigencia sello digital (CSD)'],'IMSS':['Pago de cuotas IMSS (SUA)','Alta de trabajador','Baja / modificación de salario'],'Fiscalización':['Ingresar prórroga','Recoger prórroga','Ingresar solventación de folio','Recoger solventada'],'CANACO':['Membresía / SIEM','Constancia CANACO'],'Otro':['Vigencia de poder notarial','Vigencia de licencia']};
+const DEPS = ['Protección Civil','Medio Ambiente','Desarrollo Urbano','SARE','SAT','IMSS','Fiscalización','Tesorería (Ingresos)','CANACO','Otro'];
+const SUG = {'Protección Civil':['Dictamen de protección civil','Programa interno','Visto bueno'],'Medio Ambiente':['Licencia ambiental','Cédula de operación','Manejo de residuos'],'Desarrollo Urbano':['Uso de suelo','Licencia de construcción','Número oficial'],'SARE':['Apertura rápida (SARE)','Refrendo de licencia de funcionamiento'],'SAT':['Pago provisional mensual','Declaración anual','Entrega de acuse SAT','Alta / modificación RFC','Nómina (CFDI)','Vigencia e.firma','Vigencia sello digital (CSD)'],'IMSS':['Pago de cuotas IMSS (SUA)','Alta de trabajador','Baja / modificación de salario'],'Fiscalización':['Ingresar prórroga','Recoger prórroga','Ingresar solventación de folio','Recoger solventada'],'Tesorería (Ingresos)':['Licencia de funcionamiento (primera vez)','Renovación de licencia de funcionamiento','Pago de predial'],'CANACO':['Membresía / SIEM','Constancia CANACO'],'Otro':['Vigencia de poder notarial','Vigencia de licencia']};
+const APEOPEN = new Set();
+const COSTOS = [
+ {n: 'Anuencia de Protección Civil · bajo riesgo (vía SARE)', dep: 'Protección Civil', txt: '19 UMA', u: 19, src: 'MPDC-SPCPRYB-DT-AAEBR-001'},
+ {n: 'Anuencia de Protección Civil · mediano riesgo', dep: 'Protección Civil', txt: 'desde 40 UMA', u: 40, mas: 1, src: 'MPDC-SPCPRYB-DT-AAEMR-002'},
+ {n: 'Anuencia de Protección Civil · alto riesgo', dep: 'Protección Civil', txt: 'desde 120 UMA', u: 120, mas: 1, src: 'MPDC-SPCPRYB-DT-AEAR-003'},
+ {n: 'Dictamen de no riesgo de obra', dep: 'Protección Civil', txt: 'desde 30 UMA', u: 30, mas: 1, src: 'MPDC-SPCPRYB-DT-AMSC-012'},
+ {n: 'Dictamen de riesgo para antenas / anuncios espectaculares', dep: 'Protección Civil', txt: 'desde 50 UMA', u: 50, mas: 1, src: 'MPDC-SPCPRYB-DT-DRMPCAAE-009'},
+ {n: 'Licencia de anuncio permanente, temporal o renovación', dep: 'Desarrollo Urbano', txt: 'desde 3.5 UMA (según dimensiones)', u: 3.5, mas: 1, src: 'MPDC-SOT-DDUYF-SEU-LAPT-014'},
+ {n: 'Constancia de alineamiento', dep: 'Desarrollo Urbano', txt: '3 a 15 UMA', u: 3, mas: 1, src: 'MPDC-SOT-DDUYF-SPU-CA-032'},
+ {n: 'Autorización de zonificación y uso de suelo', dep: 'Desarrollo Urbano', txt: '0.08 UMA por m² de proyecto', u: 0.08, src: 'MPDC-SOT-DDUYF-SPU-AZUS-029'},
+ {n: 'Constancia de uso de suelo de giro comercial', dep: 'Desarrollo Urbano', txt: 'el portal indica de 10 a 7,500 UMA según el caso', u: 0, src: 'Portal de Trámites y Servicios'},
+ {n: 'Licencia de construcción (ampliación o modificación)', dep: 'Desarrollo Urbano', txt: '0.20 a 0.75 UMA por m²', u: 0.2, src: 'MPDC-SOT-DDUYF-SOAYC-LCMA/M-004'},
+ {n: 'Permiso ambiental de desarrollo', dep: 'Medio Ambiente', txt: '0.15 UMA por m²', u: 0.15, src: 'MPDC-SDMASyCC-PAD-008'},
+ {n: 'Alta en el RFC y e.firma (SAT)', dep: 'SAT', txt: 'sin costo', u: 0, src: 'SAT'},
+ {n: 'Registro patronal (IMSS)', dep: 'IMSS', txt: 'sin costo', u: 0, src: 'IMSS'}
+];
+const TPL = {
+ sare: {nombre: 'Negocio de BAJO riesgo (vía SARE)', etapas: [
+  {id: 'rfc', n: 'Alta en el SAT (RFC) y e.firma', dep: 'SAT', d: 3, req: [], uma: [0, 0], q: 'Registrar a la persona o empresa ante el SAT con la actividad del negocio y su domicilio. La Constancia de Situación Fiscal que te dan se pide en casi todos los demás trámites. El alta y la e.firma no tienen costo.', docs: 'INE, CURP, comprobante de domicilio, correo y teléfono. Persona moral: acta constitutiva y poder del representante.'},
+  {id: 'pos', n: 'Contrato de arrendamiento o escritura del local + predial al corriente', dep: 'Otro', d: 5, req: [], uma: null, c: 'Depende del local (renta, depósito, predial).', q: 'La licencia exige comprobar que puedes usar el local. Se pide contrato de arrendamiento o documento de posesión y el recibo del predial vigente.'},
+  {id: 'cat', n: 'Revisar giro en el Catálogo SARE y sus condiciones', dep: 'SARE', d: 1, req: [], uma: [0, 0], q: 'El SARE solo aplica a giros de bajo riesgo. En el trámite de renovación el municipio pide: local de hasta 350 m², sin venta de bebidas alcohólicas y con menos de 10 personas de afluencia incluyendo empleados. Confirma las condiciones vigentes antes de ir.'},
+  {id: 'sare', n: 'Ingreso SARE: uso de suelo + anuencia de Protección Civil + licencia de funcionamiento', dep: 'SARE', d: 3, req: ['rfc', 'pos', 'cat'], uma: [19, 19], c: 'La anuencia de Protección Civil cuesta 19 UMA. Además se pagan derechos de licencia, recolección de basura y gastos administrativos (varían por giro; confirma en la ventanilla).', q: 'Un solo ingreso en la Ventanilla Única. El municipio indica respuesta máxima de 3 días hábiles después de entregar los requisitos y pagar los derechos.'},
+  {id: 'imss', n: 'Registro patronal en el IMSS (si habrá empleados)', dep: 'IMSS', d: 3, req: ['rfc'], uma: [0, 0], opc: true, q: 'Es obligatorio si contratas personal: alta como patrón y luego alta de cada trabajador. El registro no tiene costo.'},
+  {id: 'anu', n: 'Licencia de anuncio (si pondrás letrero)', dep: 'Desarrollo Urbano', d: 10, est: true, req: ['sare'], uma: [3.5, null], opc: true, c: 'Desde 3.5 UMA; el costo final depende de las dimensiones.', q: 'Pide como requisito la constancia de uso de suelo de giro comercial vigente, por eso va después del SARE. Los 10 días son un estimado mío: ajústalo con lo que te digan en la dependencia.'}
+ ]},
+ med: {nombre: 'Negocio de MEDIANO o ALTO riesgo (sin SARE)', etapas: [
+  {id: 'rfc', n: 'Alta en el SAT (RFC) y e.firma', dep: 'SAT', d: 3, req: [], uma: [0, 0], q: 'Registrar a la persona o empresa ante el SAT. La Constancia de Situación Fiscal se pide en casi todos los trámites. Sin costo.', docs: 'INE, CURP, comprobante de domicilio, correo y teléfono. Persona moral: acta constitutiva y poder.'},
+  {id: 'pos', n: 'Contrato de arrendamiento o escritura del local + predial al corriente', dep: 'Otro', d: 5, req: [], uma: null, c: 'Depende del local.', q: 'Se pide comprobar que puedes usar el local y tener el predial vigente.'},
+  {id: 'uso', n: 'Constancia de uso de suelo de giro comercial', dep: 'Desarrollo Urbano', d: 10, est: true, req: ['pos'], uma: null, c: 'El portal municipal indica derechos de 10 a 7,500 UMA según el caso: confirma tu giro y superficie.', q: 'Dice si en ese predio se permite tu giro. Casi todo lo demás (licencia, anuncio) la pide. El tiempo es un estimado mío.'},
+  {id: 'pc', n: 'Anuencia de Protección Civil (riesgo mediano o alto)', dep: 'Protección Civil', d: 20, req: ['rfc', 'pos'], uma: [40, null], c: 'Mediano riesgo desde 40 UMA; alto riesgo desde 120 UMA.', q: 'Verifica que el negocio cumpla las medidas de seguridad. El municipio indica hasta 30 días naturales (unos 20 hábiles) si cumples todo, y puede haber visita de inspección.'},
+  {id: 'amb', n: 'Permiso ambiental de operación (según tu giro)', dep: 'Medio Ambiente', d: 15, est: true, req: ['uso'], uma: null, opc: true, c: 'Varía según el giro: consulta la tarifa en el trámite.', q: 'Regula condiciones ambientales del establecimiento (agua, suelo y, si hay música o equipos, ruido/atmósfera). Se hace antes de iniciar operaciones. Los 15 días son estimados.'},
+  {id: 'lic', n: 'Licencia de funcionamiento municipal', dep: 'Tesorería (Ingresos)', d: 3, est: true, req: ['uso', 'pc'], uma: null, c: 'Derechos según el giro (Ley de Hacienda municipal).', q: 'La expide la Dirección de Ingresos. Piden formato, constancia fiscal, predial, documento de posesión y pago de derechos. Se renueva cada año en enero y febrero. El orden y el tiempo son estimados: confirma con Ingresos.'},
+  {id: 'imss', n: 'Registro patronal en el IMSS (si habrá empleados)', dep: 'IMSS', d: 3, req: ['rfc'], uma: [0, 0], opc: true, q: 'Obligatorio si contratas personal. Sin costo.'},
+  {id: 'anu', n: 'Licencia de anuncio (si pondrás letrero)', dep: 'Desarrollo Urbano', d: 10, est: true, req: ['uso'], uma: [3.5, null], opc: true, c: 'Desde 3.5 UMA según dimensiones.', q: 'Pide la constancia de uso de suelo de giro comercial vigente. Tiempo estimado.'}
+ ]}
+};
+
+const STX = {pagado: '💵 Pagado', parcial: '◑ Pago parcial', pendiente: '⏳ Pendiente de pago'};
+const HOR_DEF = {
+ 'SARE': {dir: 'Ventanilla Única SARE · Calle 10 Norte entre 20 Av.', abre: '09:00', cierra: '14:00', nota: 'Trámites L–V 9:00–14:00. Asesorías L–V 9:00–17:00 y sábados 9:00–12:00.'},
+ 'Desarrollo Urbano': {dir: 'Dirección de Desarrollo Urbano y Fisonomía · Palacio Municipal, Av. CTM entre 115 y 125 Norte', abre: '09:00', cierra: '14:00', nota: 'L–V 9:00–14:00.'},
+ 'Protección Civil': {dir: 'Secretaría de Protección Civil · Av. Tecnológico s/n esq. Caoba, Misión Villamar II', abre: '09:00', cierra: '15:00', nota: 'Atención general hasta 17:00. Documentación de riesgo mediano/alto hasta 15:00. Bajo riesgo (por SARE): entrega hasta 14:00.'},
+ 'Medio Ambiente': {dir: 'Dirección de Normatividad y Evaluación de Impacto Ambiental · Palacio Municipal', abre: '09:00', cierra: '15:00', nota: 'L–V 9:00–15:00.'},
+ 'Tesorería (Ingresos)': {dir: 'Dirección de Ingresos (licencias de funcionamiento) · Palacio Municipal', abre: '09:00', cierra: '17:00', nota: 'L–V 9:00–17:00. La renovación de licencias es en enero y febrero.'}
+};
 const optDeps = DEPS.map(d => `<option>${d}</option>`).join('');
-dep.innerHTML = optDeps; fDep.innerHTML += optDeps;
+dep.innerHTML = optDeps; fDep.innerHTML += optDeps; espDep.innerHTML = optDeps;
 function sugerir() {
   sug.innerHTML = [...(SUG[dep.value] || []), ...Object.keys(OVR).filter(k => !DEF[k])].map(x => `<option value="${esc(x)}">`).join('');
   adL.innerHTML = [...new Set([...Object.keys(DEF), ...Object.keys(OVR)])].map(x => `<option value="${esc(x)}">`).join('');
@@ -539,17 +636,17 @@ async function adReset() { const o = {...OVR}; delete o[adC.value.trim()]; await
 function claseChange() { limite.required = clase.value === 'tramite'; vence.required = clase.value === 'vigencia'; }
 function filtrados() {
   const x = q.value.toLowerCase();
-  return T.filter(t => (!fDep.value || t.dep === fDep.value) && (!x || (t.cliente + ' ' + t.tipo).toLowerCase().includes(x)));
+  return T.filter(t => (!fDep.value || t.dep === fDep.value) && (!x || (t.cliente + ' ' + t.tipo + ' ' + (t.folio || '') + ' ' + (t.negocio || '')).toLowerCase().includes(x)));
 }
 let editId = null;
-function limpiarForm() { f.reset(); recibido.value = isoHoy(); asig.value = isoD(sumaHabiles(hoy(), 1)); renderReq(); editId = null; dias.value = 3; sugerir(); claseChange(); btnG.textContent = 'Guardar'; btnC.classList.add('hidden'); }
+function limpiarForm() { f.reset(); formDet.open = false; recibido.value = isoHoy(); asig.value = isoD(sumaHabiles(hoy(), 1)); renderReq(); editId = null; dias.value = 3; sugerir(); claseChange(); btnG.textContent = 'Guardar'; btnC.classList.add('hidden'); }
 function editar(id) {
   const t = find(id); if (!t) return;
   editId = id; dep.value = t.dep || 'Otro'; sugerir(); clase.value = t.clase || 'tramite'; claseChange();
-  cliente.value = t.cliente; recibido.value = t.recibido || ''; asig.value = t.asignado || ''; tipo.value = t.tipo; limite.value = t.limite; dias.value = t.dias; vence.value = t.vence || '';
+  cliente.value = t.cliente; recibido.value = t.recibido || ''; asig.value = t.asignado || ''; folio.value = t.folio || ''; negocio.value = t.negocio || ''; tipo.value = t.tipo; limite.value = t.limite; dias.value = t.dias; vence.value = t.vence || '';
   monto.value = t.monto || ''; repite.checked = !!t.repite;
   renderReq(t.reqs);
-  btnG.textContent = 'Guardar cambios'; btnC.classList.remove('hidden'); formSec.scrollIntoView({behavior: 'smooth'});
+  btnG.textContent = 'Guardar cambios'; formDet.open = true; btnC.classList.remove('hidden'); formSec.scrollIntoView({behavior: 'smooth'});
 }
 f.addEventListener('submit', e => {
   e.preventDefault();
@@ -562,7 +659,7 @@ f.addEventListener('submit', e => {
     reqs: [...document.querySelectorAll('.rq')].map(c => ({n: c.dataset.n, ok: c.checked})),
     estado: o ? o.estado : 'proceso', firmaInicio: o ? o.firmaInicio : '',
     pagado: o ? !!o.pagado : false, entregado: o ? !!o.entregado : false,
-    recibido: recibido.value, intentos: o ? (o.intentos || []) : [], incompleto: o ? !!o.incompleto : false, falta: o ? (o.falta || '') : '', plan: o ? (o.plan || '') : '', asignado: asig.value, fechaEntrega: o ? (o.fechaEntrega || '') : '', fechaRecoger: o ? (o.fechaRecoger || '') : ''
+    recibido: recibido.value, intentos: o ? (o.intentos || []) : [], incompleto: o ? !!o.incompleto : false, falta: o ? (o.falta || '') : '', plan: o ? (o.plan || '') : '', asignado: asig.value, folio: folio.value.trim(), negocio: negocio.value.trim(), resuelto: o ? (o.resuelto || null) : null, espera: o ? (o.espera || null) : null, recogidoEn: o ? (o.recogidoEn || '') : '', previo: o ? (o.previo || '') : '', cerradoEn: o ? (o.cerradoEn || '') : '', fechaEntrega: o ? (o.fechaEntrega || '') : '', fechaRecoger: o ? (o.fechaRecoger || '') : ''
   });
   limpiarForm();
 });
@@ -584,7 +681,7 @@ function resolver(id) { persist({...find(id), incompleto: false, falta: ''}); }
 function recB(t) {
   if (t.estado !== 'firmas' || !t.fechaRecoger) return '';
   const r = pd(t.fechaRecoger), hh = habiles(hoy(), r);
-  return `<div class="mt-2 text-xs rounded-lg p-2 ${hh <= 0 ? 'bg-amber-100 text-amber-900 font-semibold' : 'bg-white text-slate-700'}">📥 Regresar a recoger: <b>${fmt(r)}</b> · ${hh < 0 ? 'ya pasó, ve por él' : hh === 0 ? '¡es hoy!' : 'faltan ' + hh + ' día(s) háb.'}</div>`;
+  return `<div class="mt-2 text-xs rounded-lg p-2 ${hh <= 0 ? 'bg-amber-100 text-amber-900 font-semibold' : 'bg-white text-slate-700'}">📥 Te dijeron que regreses a recoger el <b>${fmt(r)}</b> · ${hh < 0 ? 'ya pasó, ve por él' : hh === 0 ? '¡es hoy!' : 'en ' + hh + ' día(s) hábil(es)'}</div>`;
 }
 function intHtml(t) {
   const l = t.intentos || []; if (!l.length) return '';
@@ -593,6 +690,7 @@ function intHtml(t) {
 function renderBit() {
   const l = T.flatMap(t => (t.intentos || []).map(x => ({...x, cliente: t.cliente, tipo: t.tipo}))).sort((a, b) => b.fecha.localeCompare(a.fecha) || b.n - a.n);
   bitList.innerHTML = l.map(b => `<div class="border-b py-2 text-sm"><b>${esc(b.cliente)}</b> · ${esc(b.tipo)} <span class="text-slate-500">— intento ${b.n} · ${fmt(pd(b.fecha))}</span><br>${b.res === 'incompleto' ? '⚠️ Se intentó entregar, pero estaba incompleto' : '🚫 No se alcanzó a entregar ese día'}${b.nota ? ': ' + esc(b.nota) : ''}</div>`).join('') || '<p class="text-sm text-slate-400">Sin registros.</p>';
+  bitList.innerHTML += T.filter(t => t.resuelto).map(t => `<div class="border-b py-2 text-sm"><b>${esc(t.cliente)}</b> · ${esc(t.tipo)} <span class="text-slate-500">— ${fmt(pd(t.resuelto.f))}</span><br>🛠️ Resuelto por mí${t.resuelto.nota ? ': ' + esc(t.resuelto.nota) : ''}</div>`).join('');
   bitRes.textContent = l.length + ' intento(s) · ' + l.filter(b => b.res === 'incompleto').length + ' incompleto(s)';
 }
 function obligaciones() {
@@ -605,8 +703,8 @@ function obligaciones() {
   [mk('SAT', 'Pago provisional mensual'), mk('IMSS', 'Pago de cuotas IMSS (SUA)')].forEach(x => persist(x));
 }
 function finArmar(rows) {
-  const f = {tarifa: 300, dias: {}, pagos: [], efec: [], comp: {}};
-  (rows || []).forEach(d => { if (d.t === 'cfg') f.tarifa = d.tarifa || 300; else if (d.t === 'dia') f.dias[d.f] = d.forzar; else if (d.t === 'pago') f.pagos.push(d); else if (d.t === 'efec') f.efec.push(d); else if (d.t === 'comp') f.comp[d.tid] = d; });
+  const f = {tarifa: 300, dias: {}, pagos: [], efec: [], comp: {}, proy: [], uma: 117.31};
+  (rows || []).forEach(d => { if (d.t === 'cfg') f.tarifa = d.tarifa || 300; else if (d.t === 'dia') f.dias[d.f] = d.forzar; else if (d.t === 'pago') f.pagos.push(d); else if (d.t === 'efec') f.efec.push(d); else if (d.t === 'comp') f.comp[d.tid] = d; else if (d.t === 'proy') f.proy.push(d); else if (d.t === 'uma') f.uma = d.v || 117.31; });
   return f;
 }
 async function finSave(d) { try { await sb('rpc/guardar_finanzas', {p_pin: PIN, p_doc: d}); refrescar(); } catch (e) { alert('No se pudo guardar: ' + (e.message || e.code)); } }
@@ -625,25 +723,26 @@ function diasCobro() {
 }
 function diaAjuste(f, v) { v ? finSave({id: 'D' + f, t: 'dia', f, forzar: v}) : finDel('D' + f, false); }
 function cobTarifa() { finSave({id: 'cfg', t: 'cfg', tarifa: parseFloat(cobTar.value) || 300}); }
-function pagoAdd() { const m = parseFloat(pgM.value); if (!m) return alert('Escribe el monto.'); finSave({id: 'P' + Date.now(), t: 'pago', f: pgF.value || isoHoy(), monto: m}); pgM.value = ''; }
+function pagoAdd() { const m = parseFloat(pgM.value); if (!m) return alert('Escribe el monto.'); finSave({id: 'P' + Date.now(), t: 'pago', f: pgF.value || isoHoy(), monto: m, nota: pgN.value.trim()}); pgM.value = ''; pgN.value = ''; }
 function cobrarEfectivo(id) { const t = find(id), m = parseFloat(prompt('¿Cuánto cobraste en efectivo?', '300')); if (!t || !m) return; finSave({id: 'E' + Date.now(), t: 'efec', tid: t.id, cliente: t.cliente, concepto: t.tipo, f: isoHoy(), monto: m, entregado: ''}); }
 function efecEntregado(id) { const e = FIN.efec.find(x => x.id === id); if (e) finSave({...e, entregado: isoHoy()}); }
 function renderCob() {
   if (!puede()) { cobSec.classList.add('hidden'); hoyCobro.textContent = ''; return; }
   const $ = v => '$' + Number(v).toLocaleString('es-MX'), dias = diasCobro(), hy = isoHoy();
   const n = dias.filter(d => d.cobra).length, ganado = n * FIN.tarifa, pagado = FIN.pagos.reduce((x, p) => x + (+p.monto || 0), 0), debe = ganado - pagado;
+  const {st: stP} = asignarPagos(dias);
   const ef = FIN.efec.filter(e => !e.entregado), efT = ef.reduce((x, e) => x + (+e.monto || 0), 0), neto = debe - efT;
   if (document.activeElement !== cobTar) cobTar.value = FIN.tarifa;
   const caja = (v, l, c) => `<div class="bg-white rounded-lg p-2"><div class="text-xl font-bold ${c || ''}">${v}</div><div class="text-xs text-slate-500">${l}</div></div>`;
-  cobRes.innerHTML = caja(n, 'Días cobrables') + caja($(ganado), 'Ganado') + caja($(pagado), 'Me ha pagado') + caja($(debe), 'Me debe', 'text-emerald-700') + caja($(efT), 'Efectivo que le debo', 'text-rose-600') + caja($(Math.abs(neto)) + (neto < 0 ? ' (le debo)' : ''), 'Saldo neto', neto >= 0 ? 'text-emerald-700' : 'text-rose-600');
-  cobDias.innerHTML = dias.slice(0, 45).map(d => `<div class="bg-white rounded-lg p-2"><b>${fmt(pd(d.f))}</b> · ${d.cobra ? '✅ cobra' : '❌ no cobra'}${d.forzar ? ' <span class="text-slate-500">(ajuste manual)</span>' : ''}
+  cobRes.innerHTML = caja(n, 'Días cobrables') + caja($(ganado), 'Ganado') + caja($(pagado), 'Me ha pagado') + (debe >= 0 ? caja($(debe), 'Me debe', 'text-emerald-700') : caja($(-debe), 'Anticipo (te pagó de más)', 'text-sky-700')) + caja($(efT), 'Efectivo que le debo', 'text-rose-600') + caja($(Math.abs(neto)) + (neto < 0 ? ' (le debo)' : ''), 'Saldo neto', neto >= 0 ? 'text-emerald-700' : 'text-rose-600');
+  cobDias.innerHTML = dias.slice(0, 45).map(d => `<div class="bg-white rounded-lg p-2"><b>${fmt(pd(d.f))}</b> · ${d.cobra ? '✅ cobra · ' + (STX[stP[d.f]] || '') : '❌ no cobra'}${d.forzar ? ' <span class="text-slate-500">(ajuste manual)</span>' : ''}
     ${d.ok.length ? `<div class="text-xs text-slate-600">Entregado ese día: ${d.ok.map(t => esc(t.cliente) + ' (' + esc(t.tipo) + ')').join(', ')}</div>` : ''}
     ${d.falta.length ? `<div class="text-xs text-orange-700">Asignado a este día y no se entregó ese día: ${d.falta.map(x => esc(x.t.cliente) + (x.e ? ' (se entregó el ' + fmt(pd(x.e)) + ')' : ' (sigue pendiente)')).join(', ')}</div>` : ''}
     <div class="mt-1 flex gap-2 text-xs">${d.forzar ? `<button onclick="diaAjuste('${d.f}','')" class="border rounded px-2 py-0.5">Quitar ajuste</button>` : d.cobra ? `<button onclick="diaAjuste('${d.f}','nocobrar')" class="border rounded px-2 py-0.5">No cobrar</button>` : `<button onclick="diaAjuste('${d.f}','cobrar')" class="border rounded px-2 py-0.5">Cobrar igual</button>`}</div></div>`).join('') || '<p class="text-xs text-slate-400">Aún no hay días. Se llenan solos cuando entregas lo asignado.</p>';
-  cobPagos.innerHTML = [...FIN.pagos].sort((a, b) => b.f.localeCompare(a.f)).map(p => `<div>${fmt(pd(p.f))} · ${$(p.monto)} <button onclick="finDel('${p.id}', true)" class="text-red-600 ml-1">✖</button></div>`).join('') || '<p class="text-xs text-slate-400">Sin pagos registrados.</p>';
+  cobPagos.innerHTML = [...FIN.pagos].sort((a, b) => b.f.localeCompare(a.f)).map(p => `<div>${fmt(pd(p.f))} · ${$(p.monto)}${p.nota ? ' · ' + esc(p.nota) : ''} <button onclick="finDel('${p.id}', true)" class="text-red-600 ml-1">✖</button></div>`).join('') || '<p class="text-xs text-slate-400">Sin pagos registrados.</p>';
   cobEfec.innerHTML = ef.map(e => `<div>${fmt(pd(e.f))} · ${esc(e.cliente)} · ${esc(e.concepto)} · <b>${$(e.monto)}</b> <button onclick="efecEntregado('${e.id}')" class="border rounded px-2 py-0.5 text-xs">Ya se lo entregué</button> <button onclick="finDel('${e.id}', true)" class="text-red-600">✖</button></div>`).join('') || '<p class="text-xs text-slate-400">No debes entregarle efectivo.</p>';
   const m6 = []; for (let i = 0; i < 6; i++) { const d = new Date(hoy().getFullYear(), hoy().getMonth() - i, 1); m6.push(d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0')); }
-  cobStat.innerHTML = '<table class="w-full text-xs"><thead><tr class="text-left text-slate-500"><th class="p-1.5">Mes</th><th>Entregados</th><th>Completos de origen</th><th>Resueltos por mí</th></tr></thead><tbody>' + m6.map(k => { const es = T.filter(t => fEnt(t).slice(0, 7) === k), r = es.filter(t => FIN.comp[t.id]).length, c = es.length - r, pc = x => es.length ? ' (' + Math.round(x / es.length * 100) + '%)' : ''; return `<tr class="border-t"><td class="p-1.5">${k}</td><td>${es.length}</td><td>${c}${pc(c)}</td><td>${r}${pc(r)}</td></tr>`; }).join('') + '</tbody></table>';
+  cobStat.innerHTML = '<table class="w-full text-xs"><thead><tr class="text-left text-slate-500"><th class="p-1.5">Mes</th><th>Entregados</th><th>Completos de origen</th><th>Resueltos por mí</th></tr></thead><tbody>' + m6.map(k => { const es = T.filter(t => fEnt(t).slice(0, 7) === k), r = es.filter(t => t.resuelto).length, c = es.length - r, pc = x => es.length ? ' (' + Math.round(x / es.length * 100) + '%)' : ''; return `<tr class="border-t"><td class="p-1.5">${k}</td><td>${es.length}</td><td>${c}${pc(c)}</td><td>${r}${pc(r)}</td></tr>`; }).join('') + '</tbody></table>';
   const hd = dias.find(d => d.f === hy), asig = T.filter(t => t.asignado === hy && fEnt(t) !== hy).length;
   hoyCobro.textContent = hd && hd.cobra ? '· 💵 hoy ya es día cobrable' : asig ? '· 💵 hoy aún no cobra (te faltan ' + asig + ' asignado(s))' : '';
 }
@@ -660,7 +759,7 @@ function renderBanner() {
   const d0 = hoy(), n0 = nombreInh(d0), fin = d0.getDay() === 0 || d0.getDay() === 6;
   let msg = '', cls = '';
   if (n0 || fin) { msg = '🚫 Hoy no se trabaja' + (n0 ? ': ' + n0 : ' (fin de semana)'); cls = 'bg-red-600 text-white'; }
-  else for (let i = 1; i <= 7; i++) { const d = new Date(d0); d.setDate(d.getDate() + i); const n = nombreInh(d); if (n) { msg = '📆 Próximo día sin labores: ' + n + ' · ' + fmt(d) + (i === 1 ? ' (mañana)' : ' (en ' + i + ' días)'); cls = 'bg-amber-100 text-amber-900 border border-amber-300'; break; } }
+  else for (let i = 1; i <= 2; i++) { const d = new Date(d0); d.setDate(d.getDate() + i); const n = nombreInh(d); if (n) { msg = '📆 Aviso: ' + (i === 1 ? 'mañana' : 'dentro de ' + i + ' días') + ' (' + fmt(d) + ') no se trabaja: ' + n + '. Tómalo en cuenta para tus entregas.'; cls = 'bg-amber-100 text-amber-900 border border-amber-300'; break; } }
   bannerInh.className = 'rounded-2xl p-4 font-semibold ' + (msg ? cls : 'hidden'); bannerInh.textContent = msg;
 }
 function avisoFecha() {
@@ -692,7 +791,7 @@ function chipNom(vis) {
   const hm = new Date(hoy().getFullYear(), hoy().getMonth(), 1), k = hm.getFullYear() + '-' + String(hm.getMonth() + 1).padStart(2, '0');
   const fs = NOMS.map(n => nomCuenta(n, k));
   const pt = fs.filter(f => f.t && f.d === f.t).length, dd = fs.reduce((a, f) => a + f.d, 0), tt = fs.reduce((a, f) => a + f.t, 0), pct = tt ? Math.round(dd / tt * 100) : 0;
-  const mostrar = NOM.activo && fs.length > 0;
+  const mostrar = false;
   nomChip.className = mostrar ? 'w-full text-left rounded-2xl p-4 bg-violet-50 border border-violet-300' : 'hidden';
   nomChip.innerHTML = mostrar ? `<div class="font-semibold text-violet-900">💼 Nóminas de ${hm.toLocaleDateString('es-MX', {month: 'long'})}: ${pt} de ${fs.length} patrones terminados · ${dd} de ${tt} declaraciones ${pt === fs.length ? '· ✅ ¡Completo!' : ''}</div><div class="h-2 bg-white rounded mt-2"><div class="h-2 rounded bg-violet-600" style="width:${pct}%"></div></div><div class="text-xs text-violet-700 mt-1">Toca para ver el detalle</div>` : '';
   tabNb.textContent = vis && fs.length ? '(' + pt + '/' + fs.length + ')' : '';
@@ -700,9 +799,9 @@ function chipNom(vis) {
 function renderNom() {
   const vis = NOM.activo || puede();
   tabN.style.display = vis ? '' : 'none'; if (!vis && TAB === 'nom') tab('panel'); chipNom(vis);
-  tabS.style.display = puede() ? '' : 'none'; if (!puede() && TAB === 'sat') tab('panel');
+  tabS.style.display = puede() ? '' : 'none'; tabA.style.display = puede() ? '' : 'none'; if (!puede() && TAB === 'ape') tab('panel'); if (!puede() && TAB === 'sat') tab('panel');
   tabC.style.display = (CEROS.length || puede()) ? '' : 'none'; if (!CEROS.length && !puede() && TAB === 'cer') tab('panel');
-  nomToggle.style.display = puede() ? '' : 'none'; nomChk.checked = !!NOM.activo; nomForm.style.display = puede() ? '' : 'none';
+  nomToggle.style.display = puede() ? '' : 'none'; nomChk.checked = !!NOM.activo; nomForm.style.display = 'none';
   if (!vis) return;
   const k = nomKey(), edit = puede();
   nomPer.textContent = NPER.toLocaleDateString('es-MX', {month: 'long', year: 'numeric'});
@@ -723,7 +822,7 @@ function tog(sec, btn) {
   const on = !e.classList.contains('hidden'); document.getElementById(btn).classList.toggle('on', on);
   if (on) e.scrollIntoView({behavior: 'smooth', block: 'start'});
 }
-function syncToggles() { [['bitSec', 'btnBit'], ['inhSec', 'btnInh'], ['terSec', 'btnTer'], ['cobSec', 'btnCob'], ['admin', 'btnAdm']].forEach(([s, b]) => document.getElementById(b).classList.toggle('on', !document.getElementById(s).classList.contains('hidden'))); }
+function syncToggles() { [['bitSec', 'btnBit'], ['inhSec', 'btnInh'], ['terSec', 'btnTer'], ['cobSec', 'btnCob'], ['admin', 'btnAdm'], ['horSec', 'btnHor']].forEach(([s, b]) => document.getElementById(b).classList.toggle('on', !document.getElementById(s).classList.contains('hidden'))); }
 function menuUser() { userMenu.classList.toggle('hidden'); }
 document.addEventListener('click', e => { if (!e.target.closest('#userBox')) userMenu.classList.add('hidden'); });
 let undoDoc = null, undoExtra = null, undoT = null;
@@ -731,12 +830,12 @@ function toast(msg, prev, extra) { undoDoc = prev || null; undoExtra = extra || 
 async function deshacer() { if (!undoDoc) return; const d = undoDoc, x = undoExtra; undoDoc = null; toastBox.classList.add('hidden'); await persist(d); if (x) await quitar(x); }
 function tab(t) {
   TAB = t;
-  [['panel', 'mainP', 'tabP', 'bg-slate-900'], ['nom', 'mainNom', 'tabN', 'bg-violet-700'], ['sat', 'mainSat', 'tabS', 'bg-emerald-700'], ['cer', 'mainCer', 'tabC', 'bg-teal-700']].forEach(([k, m, b, c]) => {
+  [['panel', 'mainP', 'tabP', 'bg-slate-900'], ['nom', 'mainNom', 'tabN', 'bg-violet-700'], ['sat', 'mainSat', 'tabS', 'bg-emerald-700'], ['cer', 'mainCer', 'tabC', 'bg-teal-700'], ['ape', 'mainApe', 'tabA', 'bg-rose-700']].forEach(([k, m, b, c]) => {
     document.getElementById(m).classList.toggle('hidden', t !== k);
     document.getElementById(b).className = 'px-4 py-2 rounded-lg font-semibold ' + (t === k ? c + ' text-white' : 'bg-white border');
   });
   if (t === 'sat') { if (!satFrame.getAttribute('src')) satFrame.src = 'nomina-sat.html'; syncSat(); }
-  const h = {nom: '#nominas', sat: '#registro', cer: '#ceros'}[t];
+  const h = {nom: '#nominas', sat: '#registro', cer: '#ceros', ape: '#aperturas'}[t];
   try { history.replaceState(null, '', h || location.pathname + location.search); } catch (e) {}
   window.scrollTo(0, 0);
 }
@@ -815,19 +914,7 @@ function renderCer() {
 // ---------- Gráficas junto al mapa de calor ----------
 function barra(l, d, t, c) { const p = t ? Math.round(d / t * 100) : 0; return `<div class="text-xs mb-1"><div class="flex justify-between gap-2"><span class="truncate">${l}</span><b>${d}/${t}</b></div><div class="h-2 bg-slate-200 rounded"><div class="h-2 rounded" style="width:${p}%;background:${c}"></div></div></div>`; }
 function donut(p, c) { return `<svg viewBox="0 0 42 42" class="w-24 h-24 shrink-0"><circle cx="21" cy="21" r="15.9155" fill="none" stroke="#e2e8f0" stroke-width="5"/><circle cx="21" cy="21" r="15.9155" fill="none" stroke="${c}" stroke-width="5" stroke-dasharray="${p} ${100 - p}" stroke-dashoffset="25"/><text x="21" y="23.5" text-anchor="middle" font-size="8" font-weight="700" fill="#0f172a">${p}%</text></svg>`; }
-function renderGraf() {
-  const hm = new Date(hoy().getFullYear(), hoy().getMonth(), 1), k = hm.getFullYear() + '-' + String(hm.getMonth() + 1).padStart(2, '0'), mes = hm.toLocaleDateString('es-MX', {month: 'long'});
-  let h = '';
-  if (NOM.activo && NOMS.length) {
-    const fs = NOMS.map(n => ({n, ...nomCuenta(n, k)})), dd = fs.reduce((a, f) => a + f.d, 0), tt = fs.reduce((a, f) => a + f.t, 0);
-    h += `<div class="rounded-xl border border-violet-200 bg-violet-50 p-3"><div class="font-semibold text-sm text-violet-900 mb-2">💼 Avance de nóminas · ${mes}</div><div class="flex gap-3 items-center">${donut(tt ? Math.round(dd / tt * 100) : 0, '#7c3aed')}<div class="flex-1 min-w-0">${fs.slice(0, 6).map((f, i) => barra(esc(f.n.patron), f.d, f.t, NCOL[i % NCOL.length])).join('')}${fs.length > 6 ? '<div class="text-xs text-slate-500">y ' + (fs.length - 6) + ' más…</div>' : ''}</div></div></div>`;
-  }
-  if (CEROS.length) {
-    const r = cerResumen(k);
-    h += `<div class="rounded-xl border border-teal-200 bg-teal-50 p-3"><div class="font-semibold text-sm text-teal-900 mb-2">🧮 Declaraciones en ceros · ${mes}</div><div class="flex gap-3 items-center">${donut(r.tm ? Math.round(r.dm / r.tm * 100) : 0, '#0f766e')}<div class="flex-1 min-w-0">${barra('Mensuales', r.dm, r.tm, '#0f766e')}${barra('DIOT (las que tocan)', r.dd, r.td, '#0891b2')}</div></div></div>`;
-  }
-  graf.innerHTML = h; heatWrap.className = h ? 'grid lg:grid-cols-2 gap-6' : '';
-}
+
 // ---------- Terminados, reabrir y respaldo ----------
 function renderTer() {
   const l = T.filter(t => t.estado === 'listo').sort((a, b) => (b.cerradoEn || b.firmaInicio || b.limite || '').localeCompare(a.cerradoEn || a.firmaInicio || a.limite || '')).slice(0, 80);
@@ -854,12 +941,215 @@ async function adEliminar() {
   await saveOvr(o); adCarga();
 }
 // ---------- "Resuelto por mí" (privado) ----------
+
+
+// ---------- Línea de tiempo y actividad por día ----------
+function lineaTiempo(t) {
+  const p = [], e = fEnt(t);
+  if (t.recibido) p.push('📥 Te lo dio ella: ' + fmt(pd(t.recibido)));
+  if (e) p.push('📤 Entregado: ' + fmt(pd(e)));
+  if (t.recogidoEn) p.push('✅ Recogido: ' + fmt(pd(t.recogidoEn)));
+  return p.length ? `<div class="text-xs text-slate-600 mt-1">${p.join(' → ')}</div>` : '';
+}
+function actDia(k) {
+  const li = (a, ic) => a.map(t => '<div class="text-xs">' + ic + ' ' + esc(t.cliente) + (t.negocio ? ' › ' + esc(t.negocio) : '') + ' · ' + esc(t.tipo) + (t.folio ? ' · 🔖 ' + esc(t.folio) : '') + '</div>').join('');
+  const h = (tt, a, ic) => a.length ? `<div class="mt-2 font-semibold text-xs">${tt} (${a.length})</div>` + li(a, ic) : '';
+  return h('📤 Entregados ese día', T.filter(t => fEnt(t) === k), '📤') + h('✅ Recogidos ese día', T.filter(t => t.recogidoEn === k), '✅') + h('📥 Que ella te dio ese día', T.filter(t => t.recibido === k), '📥');
+}
+function actNav(d) { AMES = AMES || new Date(hoy().getFullYear(), hoy().getMonth(), 1); AMES = new Date(AMES.getFullYear(), AMES.getMonth() + d, 1); renderAct(); }
+function actSel(k) { actDet.innerHTML = '<div class="font-semibold text-sm">' + fmt(pd(k)) + '</div>' + (actDia(k) || '<p class="text-xs text-slate-400">Sin movimientos ese día.</p>'); }
+function renderAct() {
+  if (!puede()) return;
+  AMES = AMES || new Date(hoy().getFullYear(), hoy().getMonth(), 1);
+  const y = AMES.getFullYear(), m = AMES.getMonth(), nd = new Date(y, m + 1, 0).getDate(), key = y + '-' + String(m + 1).padStart(2, '0'), cnt = {};
+  T.forEach(t => { const e = fEnt(t); if (e && e.slice(0, 7) === key) cnt[e] = (cnt[e] || 0) + 1; if (t.recogidoEn && t.recogidoEn.slice(0, 7) === key) cnt[t.recogidoEn] = (cnt[t.recogidoEn] || 0) + 1; });
+  actMes.textContent = AMES.toLocaleDateString('es-MX', {month: 'long', year: 'numeric'});
+  let h = ['L', 'M', 'M', 'J', 'V', 'S', 'D'].map(d => `<div class="text-center text-xs text-slate-500">${d}</div>`).join('') + '<div></div>'.repeat((new Date(y, m, 1).getDay() + 6) % 7);
+  for (let d = 1; d <= nd; d++) {
+    const dt = new Date(y, m, d), k = isoD(dt), n = cnt[k] || 0, hab = esHabil(dt);
+    const bg = n >= 5 ? '#15803d' : n >= 3 ? '#4ade80' : n >= 1 ? '#bbf7d0' : hab ? '#f1f5f9' : 'repeating-linear-gradient(45deg,#cbd5e1,#cbd5e1 5px,#e2e8f0 5px,#e2e8f0 10px)';
+    h += `<button onclick="actSel('${k}')" class="rounded-md py-2 text-sm" style="background:${bg};color:${n >= 5 ? '#fff' : '#0f172a'}">${d}${n ? `<div class="text-[10px] font-bold">${n}</div>` : ''}</button>`;
+  }
+  actGrid.innerHTML = h;
+  const sem = {};
+  for (let d = 1; d <= nd; d++) { const dt = new Date(y, m, d); if (!esHabil(dt) || dt > hoy()) continue; const wk = isoD(new Date(y, m, d - ((dt.getDay() + 6) % 7))); sem[wk] = sem[wk] || {h: 0, a: 0}; sem[wk].h++; if (cnt[isoD(dt)]) sem[wk].a++; }
+  actSem.innerHTML = Object.entries(sem).map(([wk, v]) => `<div class="text-xs">Semana del ${fmt(pd(wk))}: <b>${v.a} de ${v.h}</b> días hábiles con entregas ${v.a === v.h ? '✅' : '⚠️'}</div>`).join('') || '<div class="text-xs text-slate-400">Aún no hay días hábiles este mes.</div>';
+}
+// ---------- Pagos: aplicar al día más antiguo, anticipos y vista para ella ----------
+function asignarPagos(dias) {
+  let resto = FIN.pagos.reduce((x, p) => x + (+p.monto || 0), 0); const st = {};
+  [...dias].filter(d => d.cobra).sort((a, b) => a.f.localeCompare(b.f)).forEach(d => { if (resto >= FIN.tarifa) { st[d.f] = 'pagado'; resto -= FIN.tarifa; } else if (resto > 0) { st[d.f] = 'parcial'; resto = 0; } else st[d.f] = 'pendiente'; });
+  return {st, resto};
+}
+function pagosPublicos() {
+  const dias = diasCobro(), {st} = asignarPagos(dias);
+  return {visible: true, dias: dias.filter(d => d.cobra).slice(0, 45).map(d => ({f: d.f, st: st[d.f], docs: d.ok.map(t => t.cliente + ' – ' + t.tipo)}))};
+}
+async function syncPagos(forzar) {
+  if (!CAN) return;
+  const obj = pagChk.checked ? pagosPublicos() : {visible: false, dias: []}, firma = JSON.stringify(obj);
+  if (!forzar && firma === pagUltimo) return;
+  pagUltimo = firma;
+  try { await sb('rpc/guardar_ajuste', {p_pin: PIN, p_key: 'pagos', p_items: obj}); refrescar(); } catch (e) { pagUltimo = null; console.error(e); }
+}
+function pagActivar() { pagWanted = pagChk.checked; syncPagos(true); }
+function renderPag() {
+  pagSec.classList.toggle('hidden', !PAG.visible);
+  if (!PAG.visible) return;
+  const pend = (PAG.dias || []).filter(d => d.st !== 'pagado').length;
+  pagRes.textContent = pend ? '· ' + pend + ' día(s) con pago pendiente' : '· ✅ Todo liquidado';
+  pagLista.innerHTML = (PAG.dias || []).map(d => `<div class="border-b py-2 text-sm"><b>${fmt(pd(d.f))}</b> · ${d.docs.length} documento(s) <span class="ml-1">${STX[d.st] || ''}</span><div class="text-xs text-slate-500">${d.docs.map(esc).join(' · ') || 'Ajuste manual'}</div></div>`).join('') || '<p class="text-xs text-slate-400">Sin días registrados.</p>';
+}
+// ---------- Agrupar, seguimiento por dependencia y horarios ----------
+function grupos(list) {
+  const g = fGrp.value;
+  if (!g) return list.map(card).join('');
+  const m = {};
+  list.forEach(t => { const k = g === 'dep' ? (t.dep || 'Otro') : (t.cliente + (t.negocio ? ' › ' + t.negocio : '')); (m[k] = m[k] || []).push(t); });
+  return Object.keys(m).sort((a, b) => a.localeCompare(b)).map(k => `<div class="col-span-full mt-2"><h4 class="font-semibold text-slate-700 border-b pb-1">${g === 'dep' ? '🏢' : '👤'} ${esc(k)} <span class="text-xs font-normal text-slate-500">(${m[k].length})</span></h4></div>` + m[k].map(card).join('')).join('');
+}
+function dd(t) { return t.dep || 'Otro'; }
+function cierraDe(dep) { return ({...(HOR_DEF[dep] || {}), ...(HORS[dep] || {})}).cierra || ''; }
+function ordenDep(a, b) { return (cierraDe(a) || '99:99').localeCompare(cierraDe(b) || '99:99') || a.localeCompare(b); }
+function renderSeg() {
+  clL.innerHTML = [...new Set(T.map(t => t.cliente))].map(c => '<option value="' + esc(c) + '">').join('');
+  negL.innerHTML = [...new Set(T.map(t => t.negocio).filter(Boolean))].map(c => '<option value="' + esc(c) + '">').join('');
+  const act = T.filter(t => t.estado !== 'listo' && t.clase !== 'vigencia'), por = act.filter(t => t.estado === 'firmas'), esp = act.filter(t => t.espera && t.estado !== 'firmas');
+  const grp = (l, key) => { const m = {}; l.forEach(t => (m[key(t)] = m[key(t)] || []).push(t)); return Object.keys(m).sort(ordenDep).map(k => [k, m[k]]); };
+  const cab = k => `<div class="font-semibold text-sm mt-3">🏢 ${esc(k)} <span class="text-xs font-normal text-slate-500">${cierraDe(k) ? '· cierra ' + cierraDe(k) : ''}</span></div>`;
+  const quien = t => `<b>${esc(t.cliente)}</b>${t.negocio ? ' › ' + esc(t.negocio) : ''} · ${esc(t.tipo)}${t.folio ? ' · 🔖 ' + esc(t.folio) : ''}`;
+  segRec.innerHTML = grp(por, dd).map(([k, l]) => cab(k) + l.sort((a, b) => (a.fechaRecoger || '9999').localeCompare(b.fechaRecoger || '9999')).map(t => { const r = t.fechaRecoger ? pd(t.fechaRecoger) : null, h = r ? habiles(hoy(), r) : 0; return `<div class="text-sm border-b py-1.5">${quien(t)}<div class="text-xs text-slate-600">📤 Entregado ${fEnt(t) ? fmt(pd(fEnt(t))) : '—'} · ${r ? '📥 Recoger el ' + fmt(r) + (h < 0 ? ' · <b class="text-red-700">ya pasó</b>' : h === 0 ? ' · <b class="text-amber-700">¡hoy!</b>' : ' · en ' + h + ' día(s) hábil(es)') : 'sin fecha de recogida'}</div></div>`; }).join('')).join('') || '<p class="text-xs text-slate-400">Nada pendiente por recoger.</p>';
+  segEsp.innerHTML = grp(esp, t => t.espera.dep || 'Otro').map(([k, l]) => cab(k) + l.map(t => `<div class="text-sm border-b py-1.5">${quien(t)}<div class="text-xs text-orange-700">⏳ Esperando: ${esc(t.espera.txt)} <span class="text-slate-500">· desde ${fmt(pd(t.espera.desde))}</span>${puede() ? ` <button onclick="quitarEsp('${t.id}')" class="underline ml-1">✅ Ya llegó</button>` : ''}</div></div>`).join('')).join('') || '<p class="text-xs text-slate-400">Nada en espera.</p>';
+  nSegR.textContent = por.length; nSegE.textContent = esp.length;
+}
+let espId = null;
+function abrirEsp(id) { espId = id; espTxt.value = ''; espDep.value = 'Protección Civil'; dlgEsp.showModal(); }
+async function guardarEsp() { const o = find(espId); if (!o) return; if (!espTxt.value.trim()) return alert('Escribe qué estás esperando.'); await persist({...o, espera: {txt: espTxt.value.trim(), dep: espDep.value, desde: isoHoy()}}); dlgEsp.close(); }
+function quitarEsp(id) { persist({...find(id), espera: null}); }
+function renderPrio() {
+  const hy = isoHoy(), ahora = new Date(), act = T.filter(t => t.estado !== 'listo' && t.clase !== 'vigencia' && !t.espera);
+  const l = act.filter(t => (t.estado !== 'firmas' && ((t.plan || t.asignado) === hy || t.limite === hy)) || (t.estado === 'firmas' && t.fechaRecoger === hy)), m = {};
+  l.forEach(t => (m[dd(t)] = m[dd(t)] || []).push(t));
+  prioHoy.innerHTML = '<div class="text-xs font-semibold text-indigo-900 mb-1">🕑 Orden sugerido para hoy (primero las que cierran antes)</div>' + (Object.keys(m).sort(ordenDep).map(k => {
+    const c = cierraDe(k); let txt = '';
+    if (c) { const [hh, mm] = c.split(':').map(Number), f = new Date(ahora); f.setHours(hh, mm, 0, 0); const mins = Math.round((f - ahora) / 60000); txt = mins <= 0 ? '<b class="text-red-700">ya cerró</b>' : mins < 180 ? '<b class="text-amber-700">cierra ' + c + ' (en ' + Math.floor(mins / 60) + ' h ' + (mins % 60) + ' min)</b>' : 'cierra ' + c; }
+    return `<div class="text-sm">🏢 <b>${esc(k)}</b> · ${txt || 'horario por confirmar'} · ${m[k].length} pendiente(s)</div>`;
+  }).join('') || '<div class="text-xs text-slate-400">Nada que hacer hoy en dependencias.</div>');
+}
+function renderHor() {
+  const ed = puede();
+  horBody.innerHTML = DEPS.map((d, i) => {
+    const h = {...(HOR_DEF[d] || {}), ...(HORS[d] || {})};
+    return `<tr class="border-t align-top"><td class="p-2 font-medium">${esc(d)}<div class="text-xs text-slate-500 font-normal">${esc(h.dir || '')}</div></td>` + (ed
+      ? `<td class="p-2"><input id="ha${i}" value="${esc(h.abre || '')}" class="border rounded px-1 py-0.5 w-16" placeholder="09:00"></td><td class="p-2"><input id="hc${i}" value="${esc(h.cierra || '')}" class="border rounded px-1 py-0.5 w-16" placeholder="14:00"></td><td class="p-2"><input id="hn${i}" value="${esc(h.nota || '')}" class="border rounded px-1 py-0.5 w-full min-w-[160px]"> <button onclick="horSave(${i})" class="text-xs border rounded px-2 py-0.5 mt-1">Guardar</button></td>`
+      : `<td class="p-2">${esc(h.abre || '—')}</td><td class="p-2 font-semibold">${esc(h.cierra || '—')}</td><td class="p-2 text-xs">${esc(h.nota || '')}</td>`) + '</tr>';
+  }).join('');
+}
+async function horSave(i) {
+  const d = DEPS[i], o = {...HORS, [d]: {...(HORS[d] || {}), abre: document.getElementById('ha' + i).value.trim(), cierra: document.getElementById('hc' + i).value.trim(), nota: document.getElementById('hn' + i).value.trim()}};
+  try { await sb('rpc/guardar_ajuste', {p_pin: PIN, p_key: 'horarios', p_items: o}); HORS = o; refrescar(); render(); } catch (e) { alert('No se pudo guardar: ' + (e.message || e.code)); }
+}
+// ---------- Nueva gráfica del panel ----------
+function renderGraf() {
+  const hm = new Date(hoy().getFullYear(), hoy().getMonth(), 1), k = hm.getFullYear() + '-' + String(hm.getMonth() + 1).padStart(2, '0'), mes = hm.toLocaleDateString('es-MX', {month: 'long'});
+  let h = '';
+  if (NOM.activo && NOMS.length) {
+    const fs = NOMS.map(n => ({n, ...nomCuenta(n, k)})), dd2 = fs.reduce((a, f) => a + f.d, 0), tt = fs.reduce((a, f) => a + f.t, 0);
+    h += `<div role="button" onclick="tab('nom')" class="cursor-pointer hover:shadow rounded-xl border border-violet-200 bg-violet-50 p-3"><div class="font-semibold text-sm text-violet-900 mb-2">💼 Avance de nóminas · ${mes}</div><div class="flex gap-3 items-center">${donut(tt ? Math.round(dd2 / tt * 100) : 0, '#7c3aed')}<div class="flex-1 min-w-0">${fs.slice(0, 6).map((f, i) => barra(esc(f.n.patron), f.d, f.t, NCOL[i % NCOL.length])).join('')}${fs.length > 6 ? '<div class="text-xs text-slate-500">y ' + (fs.length - 6) + ' más…</div>' : ''}</div></div><div class="text-xs text-violet-700 mt-2">Toca para ver más detalles</div></div>`;
+  }
+  if (CEROS.length) {
+    const r = cerResumen(k);
+    h += `<div role="button" onclick="tab('cer')" class="cursor-pointer hover:shadow rounded-xl border border-teal-200 bg-teal-50 p-3"><div class="font-semibold text-sm text-teal-900 mb-2">🧮 Declaraciones en ceros · ${mes}</div><div class="flex gap-3 items-center">${donut(r.tm ? Math.round(r.dm / r.tm * 100) : 0, '#0f766e')}<div class="flex-1 min-w-0">${barra('Mensuales', r.dm, r.tm, '#0f766e')}${barra('DIOT (las que tocan)', r.dd, r.td, '#0891b2')}</div></div><div class="text-xs text-teal-700 mt-2">Toca para ver más detalles</div></div>`;
+  }
+  const es = T.filter(t => (fEnt(t) || '').slice(0, 7) === k);
+  if (es.length) {
+    const re = es.filter(t => t.resuelto).length, inc = es.filter(t => !t.resuelto && (t.intentos || []).some(x => x.res === 'incompleto')).length, ok = es.length - re - inc;
+    h += `<div class="rounded-xl border border-amber-200 bg-amber-50 p-3"><div class="font-semibold text-sm text-amber-900 mb-2">📦 Entregas de ${mes}</div><div class="flex gap-3 items-center">${donut(Math.round(ok / es.length * 100), '#16a34a')}<div class="flex-1 min-w-0">${barra('Completas de origen', ok, es.length, '#16a34a')}${barra('Con intento incompleto', inc, es.length, '#f97316')}${barra('Resueltas por mí', re, es.length, '#d97706')}</div></div><div class="text-xs text-slate-600 mt-2">Completa de origen = se entregó sin intentos incompletos ni ayuda extra del gestor.</div></div>`;
+  }
+  graf.innerHTML = h; heatWrap.className = h ? 'grid lg:grid-cols-2 gap-6' : '';
+}
 function resueltoPorMi(id) {
   const t = find(id); if (!t) return;
-  if (FIN.comp[id]) { if (confirm('¿Quitar la marca "Resuelto por mí"?')) finDel('C' + id, false); return; }
+  if (t.resuelto) { if (confirm('¿Quitar la marca "Resuelto por mí"?')) persist({...t, resuelto: null}); return; }
   const nota = prompt('¿Qué tuviste que resolver tú? (ej. imprimí el oficio). Es opcional.');
   if (nota === null) return;
-  finSave({id: 'C' + id, t: 'comp', tid: id, cliente: t.cliente, tipo: t.tipo, f: isoHoy(), nota: (nota || '').trim()});
+  persist({...t, resuelto: {f: isoHoy(), nota: (nota || '').trim()}});
+}
+
+// ---------- Aperturas: ruta, tiempos y costos (datos privados del dueño) ----------
+function apeEtapa(tpl, id) { return TPL[tpl].etapas.find(e => e.id === id); }
+function planProy(p) {
+  const tpl = TPL[p.tpl], hy = hoy(), ini = pd(p.inicio), res = {};
+  const st = id => (p.etapas || {})[id] || {};
+  const incl = e => !e.opc || !!st(e.id).inc;
+  const calc = e => {
+    if (res[e.id]) return res[e.id];
+    const s0 = st(e.id), pre = e.req.map(id => apeEtapa(p.tpl, id)).filter(x => x && incl(x)).map(calc);
+    let a = new Date(ini), crit = null;
+    pre.forEach((r, i) => { if (r.fin > a) { a = new Date(r.fin); crit = r.id; } });
+    if (s0.e !== 'listo' && a < hy) a = new Date(hy);
+    while (!esHabil(a)) a.setDate(a.getDate() + 1);
+    const ini2 = s0.ini ? pd(s0.ini) : a;
+    let fin = sumaHabiles(ini2, e.d), atraso = false;
+    if (s0.e === 'listo') { fin = s0.fin ? pd(s0.fin) : (fin < hy ? fin : new Date(hy)); }
+    else if (fin < hy) { fin = new Date(hy); atraso = true; }
+    return res[e.id] = {id: e.id, ini: ini2, fin, atraso, crit};
+  };
+  tpl.etapas.filter(incl).forEach(calc);
+  const lista = Object.values(res), fin = lista.reduce((m, r) => r.fin > m ? r.fin : m, ini);
+  let ultimo = lista.find(r => r.fin.getTime() === fin.getTime()), ruta = [];
+  while (ultimo) { ruta.unshift(ultimo.id); ultimo = ultimo.crit ? res[ultimo.crit] : null; }
+  return {res, fin, ruta};
+}
+function costoProy(p) {
+  let mn = 0, mx = 0, extra = false;
+  TPL[p.tpl].etapas.filter(e => !e.opc || ((p.etapas || {})[e.id] || {}).inc).forEach(e => { if (e.uma) { mn += e.uma[0] || 0; mx += e.uma[1] == null ? (e.uma[0] || 0) : e.uma[1]; if (e.uma[1] == null && e.uma[0]) extra = true; } if (!e.uma || e.c) extra = true; });
+  return {mn, mx, extra};
+}
+const peso = v => '$' + Math.round(v).toLocaleString('es-MX');
+async function apeNuevo() {
+  if (!apCli.value.trim()) return alert('Escribe el cliente.');
+  await finSave({id: 'Y' + Date.now(), t: 'proy', cliente: apCli.value.trim(), negocio: apNeg.value.trim(), tpl: apTpl.value, inicio: apIni.value || isoHoy(), etapas: {}});
+  apCli.value = ''; apNeg.value = '';
+}
+function apeSet(pid, eid, patch) { const p = FIN.proy.find(x => x.id === pid); if (!p) return; const et = {...(p.etapas || {})}; et[eid] = {...(et[eid] || {}), ...patch}; finSave({...p, etapas: et}); }
+function apeUma() { finSave({id: 'uma', t: 'uma', v: parseFloat(apUma.value) || 117.31}); }
+function apeCrear(pid, eid) {
+  const p = FIN.proy.find(x => x.id === pid), e = apeEtapa(p.tpl, eid); if (!p || !e) return;
+  const id = 'T' + Date.now();
+  persist({id, clase: 'tramite', dep: e.dep, cliente: p.cliente, negocio: p.negocio || '', tipo: e.n, folio: '', limite: '', dias: e.d, vence: '', monto: 0, repite: false, estado: 'proceso', firmaInicio: '', pagado: false, entregado: false, recibido: isoHoy(), asignado: '', plan: '', intentos: [], incompleto: false, falta: '', reqs: (CAT()[e.n] || []).map(n => ({n, ok: false})), resuelto: null, espera: null});
+  apeSet(pid, eid, {e: 'tram', ini: (((p.etapas || {})[eid] || {}).ini) || isoHoy()});
+  toast('✅ Se creó el trámite "' + e.n + '" en tu panel');
+}
+function renderApe() {
+  if (!puede()) return;
+  const uma = FIN.uma || 117.31, ECOL = {pend: '#94a3b8', tram: '#d97706', espera: '#f97316', listo: '#16a34a'};
+  if (document.activeElement !== apUma) apUma.value = uma;
+  if (!apIni.value) apIni.value = isoHoy();
+  apCostos.innerHTML = COSTOS.map(c => `<tr class="border-t"><td class="p-2">${esc(c.n)}<div class="text-[11px] text-slate-500">${esc(c.dep)} · ${esc(c.src)}</div></td><td class="p-2 whitespace-nowrap">${esc(c.txt)}</td><td class="p-2 whitespace-nowrap font-semibold">${c.u ? peso(c.u * uma) + (c.mas ? ' o más' : '') : '—'}</td></tr>`).join('');
+  apLista.innerHTML = FIN.proy.map(p => {
+    const tpl = TPL[p.tpl], pl = planProy(p), co = costoProy(p), st = id => (p.etapas || {})[id] || {};
+    const act = tpl.etapas.filter(e => !e.opc || st(e.id).inc), hechas = act.filter(e => st(e.id).e === 'listo').length;
+    const all = Object.values(pl.res), mn = all.reduce((m, r) => r.ini < m ? r.ini : m, all[0] ? all[0].ini : hoy()), mx = pl.fin, tot = Math.max(1, Math.round((mx - mn) / 864e5) + 1);
+    const pct = d => Math.max(0, Math.min(100, (d - mn) / 864e5 / tot * 100));
+    const hoyPos = hoy() >= mn && hoy() <= mx ? `<div style="position:absolute;left:${pct(hoy())}%;top:0;bottom:0;width:2px;background:#dc2626"></div>` : '';
+    const gantt = act.map(e => { const r = pl.res[e.id], s0 = st(e.id).e || 'pend', w = Math.max(1.2, (Math.round((r.fin - r.ini) / 864e5) + 1) / tot * 100);
+      return `<div class="flex items-center gap-2 text-xs py-0.5"><div class="w-44 shrink-0 truncate ${pl.ruta.includes(e.id) ? 'font-bold' : ''}" title="${esc(e.n)}">${pl.ruta.includes(e.id) ? '🔴 ' : ''}${esc(e.n)}</div><div class="relative flex-1 h-5 bg-slate-100 rounded">${hoyPos}<div style="position:absolute;left:${pct(r.ini)}%;width:${w}%;top:2px;bottom:2px;background:${ECOL[s0]};${r.atraso ? 'outline:2px solid #dc2626;' : ''}" class="rounded" title="${fmt(r.ini)} → ${fmt(r.fin)}"></div></div></div>`; }).join('');
+    const filas = tpl.etapas.map(e => { const s0 = st(e.id), r = pl.res[e.id], d = apeEtapa(p.tpl, e.id); const on = !e.opc || s0.inc;
+      return `<div class="border rounded-lg p-2 ${on ? 'bg-white' : 'bg-slate-50 opacity-70'}"><div class="flex flex-wrap items-center gap-2">
+        ${e.opc ? `<label class="text-xs"><input type="checkbox" ${s0.inc ? 'checked' : ''} onchange="apeSet('${p.id}','${e.id}',{inc:this.checked})"> Incluir</label>` : ''}
+        <b class="text-sm">${esc(e.n)}</b> <span class="text-xs bg-slate-100 rounded px-1">${esc(e.dep)}${cierraDe(e.dep) ? ' · cierra ' + cierraDe(e.dep) : ''}</span>
+        ${on ? `<select onchange="apeSet('${p.id}','${e.id}',{e:this.value})" class="border rounded px-1 py-0.5 text-xs ml-auto"><option value="pend" ${(s0.e || 'pend') === 'pend' ? 'selected' : ''}>⚪ Pendiente</option><option value="tram" ${s0.e === 'tram' ? 'selected' : ''}>🟡 En trámite</option><option value="espera" ${s0.e === 'espera' ? 'selected' : ''}>⏳ En espera</option><option value="listo" ${s0.e === 'listo' ? 'selected' : ''}>✅ Listo</option></select>` : ''}</div>
+        ${on && r ? `<div class="text-xs text-slate-600 mt-1">📅 ${fmt(r.ini)} → <b>${fmt(r.fin)}</b> · ${e.d} día(s) hábil(es) ${e.est ? '(estimado mío: ajústalo)' : ''}${r.atraso ? ' · <b class="text-red-700">va atrasado</b>' : ''}${e.req.length ? ' · Depende de: ' + e.req.map(i => esc(apeEtapa(p.tpl, i).n)).join(', ') : ''}</div>
+        <div class="text-xs text-slate-600">💲 ${e.uma ? (e.uma[0] === 0 && e.uma[1] === 0 ? 'Sin costo' : peso((e.uma[0] || 0) * uma) + (e.uma[1] == null ? ' o más' : e.uma[1] !== e.uma[0] ? ' a ' + peso(e.uma[1] * uma) : '')) : 'Por confirmar'}${e.c ? ' · ' + esc(e.c) : ''}</div>
+        <div class="flex flex-wrap items-center gap-2 mt-1 text-xs"><label>Inició <input type="date" value="${s0.ini || ''}" onchange="apeSet('${p.id}','${e.id}',{ini:this.value})" class="border rounded px-1"></label><label>Terminó <input type="date" value="${s0.fin || ''}" onchange="apeSet('${p.id}','${e.id}',{fin:this.value})" class="border rounded px-1"></label><button onclick="apeCrear('${p.id}','${e.id}')" class="border rounded px-2 py-0.5">➕ Crear en mi panel</button></div>` : ''}
+        <details class="mt-1"><summary class="text-xs text-indigo-700 cursor-pointer">¿Qué es y qué piden?</summary><p class="text-xs text-slate-700 mt-1">${esc(e.q)}${e.docs ? '<br><b>Documentos:</b> ' + esc(e.docs) : ''}</p></details></div>`; }).join('');
+    return `<details class="bg-white rounded-2xl border p-3" ${APEOPEN.has(p.id) ? 'open' : ''} ontoggle="this.open ? APEOPEN.add('${p.id}') : APEOPEN.delete('${p.id}')"><summary class="cursor-pointer"><b>${esc(p.cliente)}</b>${p.negocio ? ' › ' + esc(p.negocio) : ''} <span class="text-xs text-slate-500">· ${esc(tpl.nombre)}</span>
+      <div class="text-sm mt-1">🏁 Terminaría aprox. <b>${fmt(pl.fin)}</b> (${habiles(hoy(), pl.fin) > 0 ? 'en ' + habiles(hoy(), pl.fin) + ' día(s) hábil(es)' : 'ya debería estar'}) · ${hechas}/${act.length} etapas listas · 💲 ${peso(co.mn * uma)}${co.mx > co.mn ? ' a ' + peso(co.mx * uma) : ''}${co.extra ? ' <span class="text-xs text-amber-700">+ conceptos por confirmar</span>' : ''}</div></summary>
+      <div class="mt-3"><div class="text-xs font-semibold mb-1">Línea de tiempo (🔴 = ruta que más tarda; la línea roja vertical es hoy)</div><div class="overflow-x-auto"><div style="min-width:620px">${gantt}<div class="flex justify-between text-[11px] text-slate-500 pl-44"><span>${fmt(mn)}</span><span>${fmt(mx)}</span></div></div></div>
+      <div class="space-y-2 mt-3">${filas}</div>
+      <button onclick="if (confirm('¿Eliminar este proyecto?')) finDel('${p.id}', false)" class="mt-3 text-xs text-red-700 underline">🗑️ Eliminar proyecto</button></div></details>`;
+  }).join('') || '<p class="text-sm text-slate-500">Aún no hay proyectos. Crea uno arriba para ver su ruta y su línea de tiempo.</p>';
 }
 
 function mesNav(d) { MES = new Date(MES.getFullYear(), MES.getMonth() + d, 1); selDia = null; renderHeat(); }
@@ -868,7 +1158,7 @@ function diaHeat(k) {
   selDia = k;
   if (!k) { heatDet.innerHTML = '<p class="text-xs text-slate-400">Toca un día para ver el detalle.</p>'; return; }
   const d = pd(k), l = evDia(k), ni = nombreInh(d) || (esHabil(d) ? '' : 'Fin de semana');
-  heatDet.innerHTML = `<div class="font-semibold mb-1">${fmt(d)}${ni ? ' · <span class="text-slate-500">' + esc(ni) + '</span>' : ''}</div>` + (l.map(x => `<div class="border-b py-1"><b>${esc(x.cliente)}</b> · ${esc(x.tipo)} <span class="text-slate-500">— intento ${x.n}</span><br>${x.res === 'incompleto' ? '⚠️ Incompleto' : '🚫 No se alcanzó a entregar'}${x.nota ? ': ' + esc(x.nota) : ''}</div>`).join('') || '<p class="text-xs text-slate-400">Sin intentos ese día.</p>');
+  heatDet.innerHTML = `<div class="font-semibold mb-1">${fmt(d)}${ni ? ' · <span class="text-slate-500">' + esc(ni) + '</span>' : ''}</div>` + (l.map(x => `<div class="border-b py-1"><b>${esc(x.cliente)}</b> · ${esc(x.tipo)} <span class="text-slate-500">— intento ${x.n}</span><br>${x.res === 'incompleto' ? '⚠️ Incompleto' : '🚫 No se alcanzó a entregar'}${x.nota ? ': ' + esc(x.nota) : ''}</div>`).join('') || '<p class="text-xs text-slate-400">Sin intentos ese día.</p>') + actDia(k);
 }
 function renderHeat() {
   MES = MES || new Date(hoy().getFullYear(), hoy().getMonth(), 1);
@@ -912,7 +1202,9 @@ function inhDel(f) { inhGuardar(INH.filter(x => x.f !== f)); }
   col.onSnapshot(snap => { T = snap.docs.map(d => ({clase: 'tramite', dep: 'Otro', otros: [], ...d.data()})); render(); }, e => console.error(e));
   DB.doc().onSnapshot(s => { const it = (s.exists && s.data().items) || []; OVR = Object.fromEntries(it.map(x => [x.c, x.l])); sugerir(); }, e => console.error(e));
   if (CAN) { syncSat(); setInterval(syncSat, 20000); window.addEventListener('storage', e => { if (e.key === SATKEY) syncSat(); }); }
-  poll(() => sb('nominas?select=data'), rows => { const all = rows.map(r => r.data); NOMS = all.filter(x => x.kind !== 'cero').sort((a, b) => a.patron.localeCompare(b.patron)); CEROS = all.filter(x => x.kind === 'cero').sort((a, b) => a.alias.localeCompare(b.alias)); render(); }, e => console.error(e));
+  poll(() => sb('config?key=eq.pagos&select=data'), rows => { PAG = (rows[0] && rows[0].data.items) || {visible: false, dias: []}; render(); }, e => console.error(e));
+  poll(() => sb('config?key=eq.horarios&select=data'), rows => { HORS = (rows[0] && rows[0].data.items) || {}; render(); }, e => console.error(e));
+  poll(() => sb('nominas?select=data'), rows => { const all = rows.map(r => r.data); NOMS = all.filter(x => x.kind !== 'cero' && x.src === 'app').sort((a, b) => a.patron.localeCompare(b.patron)); CEROS = all.filter(x => x.kind === 'cero').sort((a, b) => a.alias.localeCompare(b.alias)); render(); }, e => console.error(e));
   poll(() => sb('config?key=eq.nominas&select=data'), rows => { NOM = (rows[0] && rows[0].data.items) || {activo: false}; render(); }, e => console.error(e));
   if (CAN) poll(() => sb('rpc/leer_finanzas', {p_pin: PIN}), rows => { FIN = finArmar(rows); render(); }, e => console.error(e));
   poll(() => sb('config?key=eq.inhabiles&select=data'), rows => { INH = (rows[0] && rows[0].data.items) || []; render(); }, e => console.error(e));
