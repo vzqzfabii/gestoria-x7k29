@@ -3,6 +3,15 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<!-- App instalable (pantalla completa, sin barra del navegador) -->
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#050816">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Gestoría">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" type="image/png" href="icon-192.png">
 <title>Panel de Gestoría</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script>tailwind.config={theme:{extend:{colors:{indigo:{50:'#e8f3f0',100:'#d1e9e3',200:'#a6d3c9',300:'#6fb5a6',400:'#37917f',500:'#16806e',600:'#0b6b5c',700:'#095548',800:'#073f35',900:'#052e27'}}}}}</script>
@@ -17,6 +26,132 @@ body{background:#f3f1ec;color:#0f172a;font-family:'IBM Plex Sans',system-ui,-app
 .tb.on::before{content:"●";font-size:.6rem}
 .tb.wa{background:#16a34a;border-color:#16a34a;color:#fff}.tb.wa:hover{background:#15803d}
 @media print{#formSec,#admin,#btnAdm,#btnObl,#btnPrn,#btnVista,#btnIn,#btnBit,dialog{display:none!important}}
+
+/* ======================================================================
+   TEMA GLASS OSCURO
+   Fondo oscuro con luces de neón difuminadas + paneles de vidrio esmerilado.
+   Todo el efecto vive aquí: para cambiar colores, edita este bloque.
+   ====================================================================== */
+:root{color-scheme:dark}
+html{background:#050816}
+body{background:transparent!important;color:#e6ecff;min-height:100vh}
+/* luces de neón animadas detrás de todo */
+body::before{content:"";position:fixed;inset:-25%;z-index:-2;pointer-events:none;
+  background:
+   radial-gradient(38% 34% at 14% 18%,rgba(99,102,241,.55),transparent 62%),
+   radial-gradient(34% 38% at 86% 12%,rgba(236,72,153,.40),transparent 62%),
+   radial-gradient(40% 40% at 72% 86%,rgba(20,184,166,.42),transparent 62%),
+   radial-gradient(30% 34% at 18% 88%,rgba(56,189,248,.36),transparent 62%);
+  filter:blur(28px);animation:gdrift 26s ease-in-out infinite alternate}
+body::after{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;background:linear-gradient(180deg,rgba(5,8,22,.50),rgba(5,8,22,.76))}
+@keyframes gdrift{from{transform:translate3d(-2%,1%,0) scale(1)}to{transform:translate3d(2%,-2%,0) scale(1.08)}}
+/* paneles de vidrio */
+.bg-white{background:rgba(255,255,255,.07)!important;box-shadow:0 10px 30px -14px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,255,255,.15),inset 0 0 0 1px rgba(255,255,255,.10)!important}
+section.bg-white,details.bg-white,dialog,header,#userMenu{-webkit-backdrop-filter:blur(18px) saturate(150%);backdrop-filter:blur(18px) saturate(150%)}
+section[class*="border-2"]{-webkit-backdrop-filter:blur(14px) saturate(140%);backdrop-filter:blur(14px) saturate(140%);box-shadow:0 14px 40px -18px rgba(0,0,0,.65),inset 0 1px 0 rgba(255,255,255,.12)}
+header.bg-slate-900{background:linear-gradient(135deg,rgba(15,23,60,.70),rgba(30,27,75,.50))!important;border-bottom:1px solid rgba(160,190,255,.35)!important;box-shadow:0 8px 30px -10px rgba(0,0,0,.6)}
+#tabs .bg-slate-900{background:rgba(255,255,255,.18)!important;box-shadow:0 0 0 1px rgba(255,255,255,.35),0 0 26px rgba(99,102,241,.5)!important}
+#tabs button.text-white{box-shadow:0 0 24px rgba(129,140,248,.35)}
+/* formularios */
+input,select,textarea{background:rgba(255,255,255,.08)!important;color:#e6ecff!important;border:1px solid rgba(255,255,255,.20)!important;border-radius:.6rem}
+input::placeholder,textarea::placeholder{color:rgba(200,214,240,.55)}
+input:focus,select:focus,textarea:focus{outline:none;border-color:rgba(129,140,248,.8)!important;box-shadow:0 0 0 3px rgba(99,102,241,.25)}
+input[type=checkbox],input[type=radio]{accent-color:#6366f1}
+select option{background:#101a36;color:#e6ecff}
+/* botones */
+.tb{background:rgba(255,255,255,.08)!important;color:#e6ecff;border:1px solid rgba(255,255,255,.20)!important}
+.tb:hover{background:rgba(255,255,255,.16)!important}
+.tb.on,.tb.sw:has(input:checked){background:rgba(20,184,166,.45)!important;border-color:rgba(94,234,212,.7)!important;box-shadow:0 0 18px rgba(20,184,166,.35)}
+.tb.wa{background:rgba(22,163,74,.55)!important;border-color:rgba(74,222,128,.6)!important}
+.hover\:bg-slate-100:hover{background:rgba(255,255,255,.14)!important}
+button,.tb,.cursor-pointer,summary{transition:transform .15s ease,background .2s,box-shadow .2s,border-color .2s}
+.tb:hover,.cursor-pointer:hover{transform:translateY(-1px)}
+section.bg-white:hover{box-shadow:0 18px 44px -14px rgba(0,0,0,.65),inset 0 1px 0 rgba(255,255,255,.22),inset 0 0 0 1px rgba(255,255,255,.16)!important}
+/* ventanas emergentes */
+dialog{background:rgba(12,18,44,.80)!important;color:#e6ecff;border:1px solid rgba(255,255,255,.20);box-shadow:0 30px 80px rgba(0,0,0,.65)}
+dialog::backdrop{background:rgba(3,6,20,.62);backdrop-filter:blur(6px)}
+/* enlaces, tablas, detalles */
+a{color:#7fd1c2}
+table{color:#e6ecff}
+details>summary{outline:none}
+::selection{background:rgba(99,102,241,.55)}
+::-webkit-scrollbar{width:10px;height:10px}::-webkit-scrollbar-thumb{background:rgba(255,255,255,.22);border-radius:8px}::-webkit-scrollbar-track{background:transparent}
+/* celdas del mapa del mes que traen color en línea */
+[style*="background:#f1f5f9"]{background:rgba(255,255,255,.07)!important;color:#e6ecff!important}
+[style*="repeating-linear-gradient(45deg,#cbd5e1"]{background:repeating-linear-gradient(45deg,rgba(255,255,255,.12),rgba(255,255,255,.12) 5px,rgba(255,255,255,.03) 5px,rgba(255,255,255,.03) 10px)!important;color:#9fb0c8!important}
+[style*="repeating-linear-gradient(45deg,#fca5a5"]{background:repeating-linear-gradient(45deg,rgba(248,113,113,.40),rgba(248,113,113,.40) 5px,rgba(248,113,113,.13) 5px,rgba(248,113,113,.13) 10px)!important;color:#fecaca!important}
+/* colores de Tailwind adaptados al fondo oscuro (generados) */
+.bg-amber-100{background:rgba(245,158,11,.19)!important}
+.bg-amber-50{background:rgba(245,158,11,.13)!important}
+.bg-emerald-50{background:rgba(16,185,129,.13)!important}
+.bg-green-100{background:rgba(34,197,94,.19)!important}
+.bg-indigo-50{background:rgba(22,168,154,.13)!important}
+.bg-orange-50{background:rgba(249,115,22,.13)!important}
+.bg-red-100{background:rgba(239,68,68,.19)!important}
+.bg-rose-50{background:rgba(244,63,94,.13)!important}
+.bg-slate-100{background:rgba(255,255,255,.08)!important}
+.bg-slate-200{background:rgba(255,255,255,.14)!important}
+.bg-slate-50{background:rgba(255,255,255,.05)!important}
+.bg-slate-900{background:rgba(8,12,30,.55)!important}
+.bg-teal-100{background:rgba(20,184,166,.19)!important}
+.bg-teal-50{background:rgba(20,184,166,.13)!important}
+.bg-violet-100{background:rgba(139,92,246,.19)!important}
+.bg-violet-50{background:rgba(139,92,246,.13)!important}
+.border-amber-200{border-color:rgba(245,158,11,.38)!important}
+.border-amber-300{border-color:rgba(245,158,11,.38)!important}
+.border-emerald-200{border-color:rgba(16,185,129,.38)!important}
+.border-emerald-300{border-color:rgba(16,185,129,.38)!important}
+.border-green-300{border-color:rgba(34,197,94,.38)!important}
+.border-indigo-300{border-color:rgba(22,168,154,.38)!important}
+.border-orange-200{border-color:rgba(249,115,22,.38)!important}
+.border-orange-300{border-color:rgba(249,115,22,.38)!important}
+.border-red-300{border-color:rgba(239,68,68,.38)!important}
+.border-rose-200{border-color:rgba(244,63,94,.38)!important}
+.border-rose-300{border-color:rgba(244,63,94,.38)!important}
+.border-slate-200{border-color:rgba(255,255,255,.16)!important}
+.border-slate-300{border-color:rgba(255,255,255,.16)!important}
+.border-teal-200{border-color:rgba(20,184,166,.38)!important}
+.border-teal-300{border-color:rgba(20,184,166,.38)!important}
+.border-violet-200{border-color:rgba(139,92,246,.38)!important}
+.border-violet-300{border-color:rgba(139,92,246,.38)!important}
+.text-amber-700{color:#fcd34d!important}
+.text-amber-800{color:#fcd34d!important}
+.text-amber-900{color:#fcd34d!important}
+.text-emerald-700{color:#6ee7b7!important}
+.text-emerald-800{color:#6ee7b7!important}
+.text-emerald-900{color:#6ee7b7!important}
+.text-green-800{color:#86efac!important}
+.text-indigo-600{color:#4fc2b0!important}
+.text-indigo-700{color:#7fd1c2!important}
+.text-indigo-900{color:#7fd1c2!important}
+.text-orange-500{color:#fb923c!important}
+.text-orange-600{color:#fb923c!important}
+.text-orange-700{color:#fdba74!important}
+.text-orange-800{color:#fdba74!important}
+.text-orange-900{color:#fdba74!important}
+.text-red-600{color:#f87171!important}
+.text-red-700{color:#fca5a5!important}
+.text-red-800{color:#fca5a5!important}
+.text-rose-600{color:#fb7185!important}
+.text-rose-700{color:#fda4af!important}
+.text-rose-900{color:#fda4af!important}
+.text-sky-700{color:#7dd3fc!important}
+.text-slate-400{color:#8fa0bd!important}
+.text-slate-500{color:#a9b8d2!important}
+.text-slate-600{color:#c3cee3!important}
+.text-slate-700{color:#d6deef!important}
+.text-slate-800{color:#e8eefc!important}
+.text-teal-700{color:#5eead4!important}
+.text-teal-800{color:#5eead4!important}
+.text-teal-900{color:#5eead4!important}
+.text-violet-700{color:#c4b5fd!important}
+.text-violet-800{color:#c4b5fd!important}
+.text-violet-900{color:#c4b5fd!important}
+/* al imprimir, volver a papel blanco */
+@media print{html,body{background:#fff!important;color:#000!important}body::before,body::after{display:none}
+ .bg-white,section,details,dialog,header,input,select,textarea{background:#fff!important;color:#000!important;backdrop-filter:none!important;box-shadow:none!important}
+ [class*="text-"]{color:#000!important}}
+@media (prefers-reduced-motion:reduce){*,body::before{animation:none!important;transition:none!important}}
 </style>
 </head>
 <body class="min-h-screen">
@@ -28,17 +163,20 @@ body{background:#f3f1ec;color:#0f172a;font-family:'IBM Plex Sans',system-ui,-app
       <div id="userMenu" class="hidden absolute right-0 mt-2 w-60 bg-white text-slate-800 rounded-xl shadow-lg p-2 text-sm z-30">
         <div class="px-2 py-1 text-xs text-slate-500"><span id="modo"></span></div>
         <button id="btnVista" type="button" onclick="VISTA=!VISTA;render();menuUser()" class="w-full text-left px-2 py-2 rounded-lg hover:bg-slate-100"></button>
+        <button id="btnInstalar" type="button" onclick="instalarApp()" class="w-full text-left px-2 py-2 rounded-lg hover:bg-slate-100">📲 Usar como app (pantalla completa)</button>
         <button id="btnIn" type="button" onclick="CAN ? salir() : entrar()" class="w-full text-left px-2 py-2 rounded-lg hover:bg-slate-100"></button>
       </div>
     </div>
   </div>
 </header>
 <nav id="tabs" class="max-w-7xl mx-auto px-4 pt-4 flex flex-wrap gap-2">
-  <button id="tabP" type="button" onclick="tab('panel')" class="px-4 py-2 rounded-lg font-semibold">📋 Panel</button>
-  <button id="tabN" type="button" onclick="tab('nom')" class="px-4 py-2 rounded-lg font-semibold">💼 Nóminas <span id="tabNb" class="text-xs font-normal"></span></button>
-  <button id="tabC" type="button" onclick="tab('cer')" class="px-4 py-2 rounded-lg font-semibold">🧮 Ceros</button>
+  <button id="tabP" type="button" onclick="tab('panel')" class="px-4 py-2 rounded-lg font-semibold">📋 Entregas</button>
+  <button id="tabN" type="button" onclick="tab('nom')" class="px-4 py-2 rounded-lg font-semibold">💼 Nóminas y ceros <span id="tabNb" class="text-xs font-normal"></span></button>
+  <button id="tabR" type="button" onclick="tab('rep')" class="px-4 py-2 rounded-lg font-semibold">📊 Reportes</button>
+  <button id="tabB" type="button" onclick="tab('cob')" class="px-4 py-2 rounded-lg font-semibold">💵 Mi cobranza</button>
   <button id="tabS" type="button" onclick="tab('sat')" class="px-4 py-2 rounded-lg font-semibold">🧾 Mi registro SAT</button>
   <button id="tabA" type="button" onclick="tab('ape')" class="px-4 py-2 rounded-lg font-semibold">🏪 Aperturas</button>
+  <button id="tabG" type="button" onclick="tab('cfg')" class="px-4 py-2 rounded-lg font-semibold">⚙️ Configuración</button>
 </nav>
 
 <main id="mainP" class="max-w-7xl mx-auto px-4 py-6 space-y-6">
@@ -56,26 +194,45 @@ body{background:#f3f1ec;color:#0f172a;font-family:'IBM Plex Sans',system-ui,-app
       <li>✅ <b>Recogido:</b> el día que lo recogiste y quedó cerrado. Arriba de cada tarjeta ves la línea completa: te lo dio → entregado → recogido.</li>
     </ul></details>
   <!-- Resumen -->
-  <section id="resumen" class="grid grid-cols-2 md:grid-cols-6 gap-3"></section>
+  
 
-  <section class="rounded-2xl p-4 border-2 border-indigo-300 bg-indigo-50">
-    <h2 class="font-bold text-indigo-900 mb-3">📅 Agenda de hoy <span id="hoyRes" class="text-sm font-normal text-indigo-700"></span> <span id="hoyCobro" class="text-sm font-normal text-emerald-700"></span></h2>
-    <div id="prioHoy" class="mb-3 bg-white/60 rounded-xl p-2"></div>
-    <div class="grid lg:grid-cols-3 gap-4">
-      <div><h3 class="font-semibold text-sm mb-2">📤 Por entregar hoy <span id="nA" class="ml-1 text-xs bg-indigo-600 text-white rounded-full px-2 py-0.5"></span></h3><div id="cA" class="space-y-2 max-h-96 overflow-auto"></div></div>
-      <div><h3 class="font-semibold text-sm mb-2">⏳ No se entregaron (venían de antes) <span id="nB" class="ml-1 text-xs bg-red-600 text-white rounded-full px-2 py-0.5"></span></h3><div id="cB" class="space-y-2 max-h-96 overflow-auto"></div></div>
-      <div class="hidden"><h3 class="font-semibold text-sm mb-2">📥 Por recoger hoy <span id="nD" class="ml-1 text-xs bg-amber-600 text-white rounded-full px-2 py-0.5"></span></h3><div id="cD" class="space-y-2 max-h-96 overflow-auto"></div></div>
-      <div><h3 class="font-semibold text-sm mb-2">⚠️ Incompletos <span id="nC" class="ml-1 text-xs text-white rounded-full px-2 py-0.5" style="background:#f97316"></span></h3><div id="cC" class="space-y-2 max-h-96 overflow-auto"></div></div>
-    </div>
+  
+  
+  
+  
+  <!-- Formulario -->
+  
+
+  
+  
+  
+  
+  
+  <!-- Tarjetas -->
+  
+
+  
+  
+  
+  
+  <!-- Todos -->
+  
+
+  <section id="resumen" class="grid grid-cols-2 md:grid-cols-6 gap-3"></section>
+  <section id="agendaSec" class="rounded-2xl p-4 border-2 border-indigo-300 bg-indigo-50">
+    <h2 class="font-bold text-indigo-900 mb-1">📅 Agenda de hoy <span id="hoyRes" class="text-sm font-normal text-indigo-700"></span> <span id="hoyCobro" class="text-sm font-normal text-emerald-700"></span></h2>
+    <div id="prioHoy" class="mb-3 bg-white/10 rounded-xl p-2"></div>
+    <div><h3 class="font-semibold text-sm mb-2">📤 Por entregar hoy <span id="nA" class="ml-1 text-xs bg-indigo-600 text-white rounded-full px-2 py-0.5"></span></h3><div id="cA"></div></div>
+    <div id="box1" class="mt-4"><h3 class="font-semibold text-sm mb-2">🔥 Sí o sí hoy / vencidos <span id="n1" class="ml-1 text-xs bg-red-600 text-white rounded-full px-2 py-0.5"></span></h3><div id="c1"></div></div>
+    <div id="boxB" class="mt-4"><h3 class="font-semibold text-sm mb-2">⏳ No se entregaron (venían de antes) <span id="nB" class="ml-1 text-xs bg-red-600 text-white rounded-full px-2 py-0.5"></span></h3><div id="cB"></div></div>
+    <div id="boxC" class="mt-4"><h3 class="font-semibold text-sm mb-2">⚠️ Incompletos <span id="nC" class="ml-1 text-xs text-white rounded-full px-2 py-0.5" style="background:#f97316"></span></h3><div id="cC"></div></div>
+    <div id="okLine" class="hidden mt-3 text-sm text-emerald-700">✅ Sin vencidos, atrasados ni incompletos.</div>
+    <div class="hidden"><span id="nD"></span><div id="cD"></div><span id="n2"></span><div id="c2"></div><span id="n3"></span><div id="c3"></div></div>
   </section>
   <section id="segSec" class="bg-white rounded-2xl shadow p-5"><div class="grid lg:grid-cols-2 gap-6">
     <div><h3 class="font-bold">📥 Ya deberían estar listos en las oficinas <span id="nSegR" class="ml-1 text-xs bg-amber-600 text-white rounded-full px-2 py-0.5"></span></h3><p class="text-xs text-slate-500">Documentos ya entregados cuya fecha de recogida ya llegó (Fiscalización, Desarrollo Urbano, etc.). Ordenado por dependencia: primero las que cierran más temprano.</p><div id="segRec"></div></div>
     <div><h3 class="font-bold">⏳ En espera <span id="nSegE" class="ml-1 text-xs bg-orange-500 text-white rounded-full px-2 py-0.5"></span></h3><p class="text-xs text-slate-500">Aún no se pueden entregar: falta una firma o un documento de otra dependencia.</p><div id="segEsp"></div></div>
   </div></section>
-  <section id="pagSec" class="hidden bg-white rounded-2xl shadow p-5"><h2 class="text-lg font-semibold">💵 Días por pagar al gestor <span id="pagRes" class="text-sm font-normal text-slate-600"></span></h2><p class="text-xs text-slate-500 mb-2">Informativo: cada día en que entregó documentos y si ya está liquidado.</p><div id="pagLista" class="max-h-80 overflow-auto"></div></section>
-  <section id="horSec" class="hidden bg-white rounded-2xl shadow p-5"><h2 class="text-lg font-semibold">🕒 Horarios de dependencias <span class="text-xs font-normal text-slate-500">(Playa del Carmen; confirma siempre, pueden cambiar)</span></h2>
-    <div class="overflow-x-auto mt-2"><table class="w-full text-sm"><thead class="text-left text-slate-500"><tr><th class="p-2">Dependencia</th><th class="p-2">Abre</th><th class="p-2">Cierra (recepción)</th><th class="p-2">Notas</th></tr></thead><tbody id="horBody"></tbody></table></div></section>
-  <!-- Formulario -->
   <section id="formSec" class="bg-white rounded-2xl shadow p-5"><details id="formDet"><summary class="cursor-pointer text-lg font-semibold">➕ Registrar trámite, pago o entrega <span class="text-xs font-normal text-slate-500">(toca para abrir)</span></summary><div class="mt-4">
     <form id="f" class="grid md:grid-cols-3 gap-4">
       <label class="block text-sm font-medium">Cliente
@@ -118,100 +275,31 @@ body{background:#f3f1ec;color:#0f172a;font-family:'IBM Plex Sans',system-ui,-app
       </div>
     </form>
   </div></details></section>
-
   <section class="bg-white rounded-2xl shadow p-3 space-y-2">
     <div class="flex flex-wrap gap-2">
       <input id="q" oninput="render()" placeholder="🔎 Buscar cliente, trámite o folio" class="border rounded-lg px-3 py-2 flex-1 min-w-[180px]">
       <select id="fDep" onchange="render()" class="border rounded-lg px-3 py-2 bg-white"><option value="">Todas las dependencias</option></select>
       <select id="fGrp" onchange="render()" class="border rounded-lg px-3 py-2 bg-white"><option value="">Sin agrupar</option><option value="cliente">Agrupar por cliente / negocio</option><option value="dep">Agrupar por dependencia</option></select>
     </div>
-    <div class="flex flex-wrap gap-2 items-center"><span class="text-xs text-slate-400 w-16">Secciones</span>
-      <button id="btnBit" type="button" onclick="tog('bitSec','btnBit')" class="tb">📜 Historial de intentos</button>
-      <button id="btnTer" type="button" onclick="tog('terSec','btnTer')" class="tb">✔ Terminados</button>
-      <button id="btnInh" type="button" onclick="tog('inhSec','btnInh')" class="tb">📆 Días inhábiles</button>
-      <button id="btnCob" type="button" onclick="tog('cobSec','btnCob')" class="tb">💵 Mi cobranza</button>
-      <button id="btnHor" type="button" onclick="tog('horSec','btnHor')" class="tb">🕒 Horarios</button>
-      <button id="btnAdm" type="button" onclick="tog('admin','btnAdm')" class="tb">⚙️ Requisitos</button>
-    </div>
     <div class="flex flex-wrap gap-2 items-center"><span class="text-xs text-slate-400 w-16">Acciones</span>
       <button id="btnWa" type="button" onclick="resumenWa()" class="tb wa">📲 Resumen por WhatsApp</button>
       <button id="btnObl" type="button" onclick="obligaciones()" class="tb">➕ Obligaciones del mes</button>
       <button id="btnPrn" type="button" onclick="window.print()" class="tb">🖨️ Imprimir</button>
-      <button id="btnResp" type="button" onclick="respaldo()" class="tb">💾 Respaldo</button>
-      <button id="btnCsv" type="button" onclick="respaldoCsv()" class="tb">📊 Excel (CSV)</button>
-      <label id="nomToggle" class="tb sw"><input type="checkbox" id="nomChk" onchange="nomActivar()"> <span>💼 Nóminas encargadas</span></label>
-      <label id="pagToggle" class="tb sw"><input type="checkbox" id="pagChk" onchange="pagActivar()"> <span>💵 Mostrarle pagos a ella</span></label>
     </div>
+    <div class="hidden"><button id="btnBit"></button><button id="btnTer"></button><button id="btnInh"></button><button id="btnCob"></button><button id="btnAdm"></button><button id="btnHor"></button></div>
   </section>
-  <section id="admin" class="hidden bg-white rounded-2xl shadow p-5">
-    <h2 class="text-lg font-semibold">⚙️ Requisitos por trámite</h2>
-    <p class="text-xs text-slate-500 mb-3">Un requisito por línea. Empieza con * los críticos: si faltan, la tarjeta se marca en rojo. Es una guía general; confirma siempre con la dependencia de tu municipio.</p>
-    <input id="adC" list="adL" oninput="adCarga()" placeholder="Elige o escribe el trámite" class="border rounded-lg px-3 py-2 w-full mb-2"><datalist id="adL"></datalist>
-    <textarea id="adT" rows="8" class="border rounded-lg px-3 py-2 w-full text-sm"></textarea>
-    <div class="mt-2 flex gap-2"><button type="button" onclick="adGuarda()" class="bg-indigo-600 text-white px-4 py-2 rounded-lg">Guardar lista</button><button type="button" onclick="adReset()" class="border px-4 py-2 rounded-lg">Restaurar original</button><button type="button" onclick="adEliminar()" class="border border-red-300 text-red-700 px-4 py-2 rounded-lg">Eliminar lista</button></div>
-  </section>
-  <section id="bitSec" class="hidden bg-white rounded-2xl shadow p-5"><h2 class="text-lg font-semibold">📜 Historial de intentos de entrega</h2>
-    <p class="text-xs text-slate-500">Lo ven el dueño y la contadora. <span id="bitRes"></span></p><div id="bitList" class="mt-2"></div></section>
-  <section id="inhSec" class="hidden bg-white rounded-2xl shadow p-5">
-    <h2 class="text-lg font-semibold">📆 Días inhábiles</h2>
-    <p class="text-xs text-slate-500 mb-2">No cuentan como días hábiles en ningún cálculo. Los feriados oficiales ya vienen incluidos. Agrega los días que cierre cada dependencia (Semana Santa, puentes, etc.).</p>
-    <div id="inhList" class="text-sm space-y-1"></div>
-    <div id="inhForm" class="mt-3 flex flex-wrap gap-2"><input id="inhF" type="date" class="border rounded-lg px-3 py-2"><input id="inhN" placeholder="Motivo (opcional)" class="border rounded-lg px-3 py-2 flex-1 min-w-[160px]"><button type="button" onclick="inhAdd()" class="bg-indigo-600 text-white px-4 py-2 rounded-lg">Agregar</button></div>
-  </section>
-  <section id="terSec" class="hidden bg-white rounded-2xl shadow p-5"><h2 class="text-lg font-semibold">✔ Historial de terminados</h2><p class="text-xs text-slate-500 mb-2">Si marcaste uno por error, ábrelo otra vez con ↩ Reabrir. Los más recientes salen primero.</p><div id="terList" class="text-sm"></div></section>
-  <!-- Tarjetas -->
-  <section class="grid lg:grid-cols-3 gap-5">
-    <div class="bg-red-50 rounded-2xl p-4 border border-red-200">
-      <h3 class="font-bold text-red-700 mb-3">🔥 Sí o sí hoy / vencidos <span id="n1" class="ml-1 text-xs bg-red-600 text-white rounded-full px-2 py-0.5"></span></h3>
-      <div id="c1" class="space-y-2 max-h-96 overflow-auto"></div>
-    </div>
-    <div class="bg-blue-50 rounded-2xl p-4 border border-blue-200">
-      <h3 class="font-bold text-blue-700 mb-3">📥 Entregados en dependencia <span id="n2" class="ml-1 text-xs bg-blue-600 text-white rounded-full px-2 py-0.5"></span></h3>
-      <div id="c2" class="space-y-2 max-h-96 overflow-auto"></div>
-    </div>
-    <div class="bg-amber-50 rounded-2xl p-4 border border-amber-200">
-      <h3 class="font-bold text-amber-700 mb-3">🔔 Vigencias y licencias por vencer (60 días) <span id="n3" class="ml-1 text-xs bg-amber-600 text-white rounded-full px-2 py-0.5"></span></h3>
-      <div id="c3" class="space-y-2 max-h-96 overflow-auto"></div>
-    </div>
-  </section>
-
-  <section class="grid lg:grid-cols-2 gap-5">
-    <div class="bg-rose-50 rounded-2xl p-4 border border-rose-200"><h3 class="font-bold text-rose-700 mb-3">💰 Pagos pendientes (SAT, IMSS…) <span id="n4" class="ml-1 text-xs bg-rose-600 text-white rounded-full px-2 py-0.5"></span></h3><div id="c4" class="space-y-2 max-h-96 overflow-auto"></div></div>
-    <div class="bg-emerald-50 rounded-2xl p-4 border border-emerald-200"><h3 class="font-bold text-emerald-700 mb-3">📤 Entregas pendientes (acuses, documentos) <span id="n5" class="ml-1 text-xs bg-emerald-600 text-white rounded-full px-2 py-0.5"></span></h3><div id="c5" class="space-y-2 max-h-96 overflow-auto"></div></div>
-  </section>
-  <section class="bg-white rounded-2xl shadow p-5"><h3 class="font-bold mb-2">🗓️ Próximos 8 días</h3><div id="c6"></div></section>
-  <section id="cobSec" class="hidden rounded-2xl p-5 border-2 border-emerald-300 bg-emerald-50">
-    <h2 class="text-lg font-bold text-emerald-900">💵 Mi cobranza <span class="text-xs font-normal text-emerald-800">(privada: solo la ves con tu clave)</span></h2>
-    <div id="cobRes" class="grid grid-cols-2 md:grid-cols-3 gap-2 my-3 text-center"></div>
-    <div class="bg-white rounded-xl p-3 mb-3"><div class="flex items-center justify-between"><h3 class="font-semibold text-sm">🟩 Mi actividad del mes</h3><div class="flex items-center gap-2"><button onclick="actNav(-1)" class="border rounded px-2">◀</button><b id="actMes" class="capitalize text-sm"></b><button onclick="actNav(1)" class="border rounded px-2">▶</button></div></div>
-      <p class="text-xs text-slate-500 mb-2">Cada día pinta cuántos documentos entregaste o recogiste. Sirve para ver si trabajas todos los días hábiles de la semana. Toca un día para ver el detalle.</p>
-      <div id="actGrid" class="grid grid-cols-7 gap-1 max-w-sm"></div><div id="actSem" class="mt-2 space-y-0.5"></div><div id="actDet" class="mt-2"></div></div>
-    <div class="bg-white rounded-xl p-3 mb-3"><h3 class="font-semibold text-sm mb-1">📊 Entregas: completas de origen vs. resueltas por mí</h3>
-      <p class="text-xs text-slate-500 mb-2">Completa de origen = ella te la dio completa. Resuelta por mí = salió porque tú completaste algo (imprimir, conseguir un papel). Se marca con 🛠️ en cada tarjeta.</p><div id="cobStat" class="overflow-x-auto"></div></div>
-    <div class="text-xs text-slate-700 mb-3">Tarifa por día: $<input id="cobTar" type="number" onchange="cobTarifa()" class="border rounded px-2 py-1 w-24 mx-1"> Un día se cobra cuando entregas al menos uno de los documentos que ella te asignó para ese día; los demás pueden salir después y no generan otro cobro. Si ella te da uno fuera de la lista, pasa al día siguiente y se cuenta junto con los de ese día.</div>
-    <div class="grid md:grid-cols-2 gap-4">
-      <div><h3 class="font-semibold text-sm mb-1">Días</h3><div id="cobDias" class="text-sm space-y-2 max-h-80 overflow-auto"></div></div>
-      <div><h3 class="font-semibold text-sm mb-1">Pagos que me ha hecho</h3><div id="cobPagos" class="text-sm"></div>
-        <div class="mt-1 flex gap-2 flex-wrap"><input id="pgM" type="number" placeholder="Monto $" class="border rounded px-2 py-1 w-28"><input id="pgN" placeholder="Nota (ej. cubre hoy y mañana)" class="border rounded px-2 py-1 w-52"><input id="pgF" type="date" class="border rounded px-2 py-1"><button type="button" onclick="pagoAdd()" class="bg-emerald-600 text-white px-3 py-1 rounded">Registrar pago</button><button type="button" onclick="pgM.value=FIN.tarifa" class="border rounded px-2 py-1 text-xs">1 día</button><button type="button" onclick="pgM.value=FIN.tarifa*2" class="border rounded px-2 py-1 text-xs">2 días</button></div>
-        <h3 class="font-semibold text-sm mt-4 mb-1">💵 Efectivo que debo entregarle a ella</h3><div id="cobEfec" class="text-sm"></div></div>
-    </div>
-  </section>
-  <section id="heatSec" class="bg-white rounded-2xl shadow p-5">
-    <div class="flex items-center justify-between mb-3"><h3 class="font-bold">🔥 Mapa del mes: entregas e intentos · <span id="heatMes" class="capitalize"></span></h3>
-      <div class="flex gap-2"><button onclick="mesNav(-1)" class="border rounded-lg px-3 py-1">◀</button><button onclick="mesNav(1)" class="border rounded-lg px-3 py-1">▶</button></div></div>
-    <div id="heatRes" class="mb-3"></div>
-    <div id="heatWrap"><div><div id="heatGrid" class="grid grid-cols-7 gap-1 max-w-md"></div>
-    <div class="flex flex-wrap gap-3 text-xs text-slate-600 mt-2 items-center"><span><i class="inline-block w-3 h-3 rounded align-middle" style="background:#bbf7d0"></i> día trabajado (1–2 documentos)</span><span><i class="inline-block w-3 h-3 rounded align-middle" style="background:#4ade80"></i> 3–4</span><span><i class="inline-block w-3 h-3 rounded align-middle" style="background:#15803d"></i> 5 o más</span><span>📤 = documentos entregados</span><span><i class="inline-block w-3 h-3 rounded align-middle" style="border:2px solid #f97316"></i> contorno naranja = intentos incompletos</span><span><i class="inline-block w-3 h-3 rounded align-middle" style="border:2px solid #dc2626"></i> rojo = 3 o más</span><span><i class="inline-block w-3 h-3 rounded align-middle" style="background:repeating-linear-gradient(45deg,#fca5a5,#fca5a5 3px,#fee2e2 3px,#fee2e2 6px)"></i> 🚫 no se trabaja</span></div>
-    </div><div id="graf" class="space-y-4"></div></div>
-    <div id="heatDet" class="mt-3 text-sm"></div>
-  </section>
-  <!-- Todos -->
   <section class="bg-white rounded-2xl shadow p-5">
     <h3 class="font-bold mb-3">📂 Todos los trámites activos</h3>
     <div id="todos" class="grid md:grid-cols-2 lg:grid-cols-3 gap-3"></div>
   </section>
+  <section class="grid lg:grid-cols-2 gap-5">
+    <div class="bg-rose-50 rounded-2xl p-4 border border-rose-200"><h3 class="font-bold text-rose-700 mb-3">💰 Pagos pendientes (SAT, IMSS…) <span id="n4" class="ml-1 text-xs bg-rose-600 text-white rounded-full px-2 py-0.5"></span></h3><div id="c4" class="space-y-2 max-h-96 overflow-auto"></div></div>
+    <div class="bg-emerald-50 rounded-2xl p-4 border border-emerald-200"><h3 class="font-bold text-emerald-700 mb-3">📤 Entregas pendientes (acuses, documentos) <span id="n5" class="ml-1 text-xs bg-emerald-600 text-white rounded-full px-2 py-0.5"></span></h3><div id="c5" class="space-y-2 max-h-96 overflow-auto"></div></div>
+  </section>
+  <section id="orgSec" class="bg-white rounded-2xl shadow p-5"><h3 class="font-bold">🗓️ Para organizarte</h3><p class="text-xs text-slate-500 mb-3">Qué se vence o se acaba el límite esta semana, la próxima y este mes.</p><div id="orgBody" class="grid md:grid-cols-2 gap-4"></div></section>
+  <section class="bg-white rounded-2xl shadow p-5"><h3 class="font-bold mb-2">🗓️ Próximos 8 días</h3><div id="c6"></div></section>
 </main>
-<main id="mainNom" class="hidden max-w-7xl mx-auto px-4 py-6">
+<main id="mainNom" class="hidden max-w-7xl mx-auto px-4 py-6 space-y-6">
   <section id="nomSec" class="rounded-2xl p-5 border-2 border-violet-300 bg-violet-50">
     <div class="flex flex-wrap items-center justify-between gap-2"><h2 class="text-lg font-bold text-violet-900">💼 Nóminas <span id="nomEst" class="text-xs font-normal"></span></h2>
       <div class="flex items-center gap-2"><button onclick="nomMes(-1)" class="border rounded-lg px-3 py-1 bg-white">◀</button><b id="nomPer" class="capitalize"></b><button onclick="nomMes(1)" class="border rounded-lg px-3 py-1 bg-white">▶</button></div></div>
@@ -226,18 +314,8 @@ body{background:#f3f1ec;color:#0f172a;font-family:'IBM Plex Sans',system-ui,-app
       <details class="mt-3"><summary class="cursor-pointer">📋 Pegar lista desde Excel (patrón y empleado)</summary><textarea id="nomImp" rows="4" placeholder="Una fila por empleado: Patrón [Tab o ;] Empleado" class="border rounded-lg px-3 py-2 w-full mt-2"></textarea><button type="button" onclick="nomImportar()" class="mt-1 border px-3 py-1 rounded-lg">Importar</button></details>
     </div>
   </section>
-</main>
-<main id="mainSat" class="hidden w-full px-3 py-4">
-  <div class="mb-3 flex flex-wrap items-center gap-2 text-sm">
-    <span class="text-slate-600">🔒 Los datos de tus empleados se guardan solo en este navegador. A la contadora solo le llega el avance: patrón y cuántos empleados llevas.</span>
-    <button type="button" onclick="syncSat(true)" class="border rounded-lg px-3 py-1 bg-white">🔄 Enviar avance ahora</button>
-    <a href="nomina-sat.html" target="_blank" class="border rounded-lg px-3 py-1 bg-white">↗ Abrir en pantalla completa</a>
-    <span id="satEst" class="text-emerald-700"></span>
-  </div>
-  <iframe id="satFrame" title="Registro SAT" class="w-full rounded-2xl border bg-white" style="height:92vh"></iframe>
-</main>
-<main id="mainCer" class="hidden max-w-5xl mx-auto px-4 py-6">
-  <section class="rounded-2xl p-5 border-2 border-teal-300 bg-teal-50">
+
+  <section id="cerSec" class="rounded-2xl p-5 border-2 border-teal-300 bg-teal-50">
     <div class="flex flex-wrap items-center justify-between gap-2"><h2 class="text-lg font-bold text-teal-900">🧮 Declaraciones en ceros</h2>
       <div class="flex items-center gap-2"><button onclick="cerMes(-1)" class="border rounded-lg px-3 py-1 bg-white">◀</button><b id="cerPer" class="capitalize"></b><button onclick="cerMes(1)" class="border rounded-lg px-3 py-1 bg-white">▶</button></div></div>
     <p class="text-xs text-teal-800 mt-1">Cada cliente se identifica con un alias: las 4 primeras letras de su RFC (3 si es persona moral). Aquí no se guarda nada más.</p>
@@ -257,6 +335,73 @@ body{background:#f3f1ec;color:#0f172a;font-family:'IBM Plex Sans',system-ui,-app
     </div>
   </section>
 </main>
+<main id="mainRep" class="hidden max-w-7xl mx-auto px-4 py-6 space-y-6">
+  <section id="heatSec" class="bg-white rounded-2xl shadow p-5">
+    <div class="flex items-center justify-between mb-3"><h3 class="font-bold">🔥 Mapa del mes: entregas e intentos · <span id="heatMes" class="capitalize"></span></h3>
+      <div class="flex gap-2"><button onclick="mesNav(-1)" class="border rounded-lg px-3 py-1">◀</button><button onclick="mesNav(1)" class="border rounded-lg px-3 py-1">▶</button></div></div>
+    <div id="heatRes" class="mb-3"></div>
+    <div id="heatWrap"><div><div id="heatGrid" class="grid grid-cols-7 gap-1 max-w-md"></div>
+    <div class="flex flex-wrap gap-3 text-xs text-slate-600 mt-2 items-center"><span><i class="inline-block w-3 h-3 rounded align-middle" style="background:#bbf7d0"></i> día trabajado (1–2 documentos)</span><span><i class="inline-block w-3 h-3 rounded align-middle" style="background:#4ade80"></i> 3–4</span><span><i class="inline-block w-3 h-3 rounded align-middle" style="background:#15803d"></i> 5 o más</span><span>📤 = documentos entregados</span><span><i class="inline-block w-3 h-3 rounded align-middle" style="border:2px solid #f97316"></i> contorno naranja = intentos incompletos</span><span><i class="inline-block w-3 h-3 rounded align-middle" style="border:2px solid #dc2626"></i> rojo = 3 o más</span><span><i class="inline-block w-3 h-3 rounded align-middle" style="background:repeating-linear-gradient(45deg,#fca5a5,#fca5a5 3px,#fee2e2 3px,#fee2e2 6px)"></i> 🚫 no se trabaja</span></div>
+    </div><div id="graf" class="space-y-4"></div></div>
+    <div id="heatDet" class="mt-3 text-sm"></div>
+  </section>
+  <section id="pagSec" class="hidden bg-white rounded-2xl shadow p-5"><h2 class="text-lg font-semibold">💵 Días por pagar al gestor <span id="pagRes" class="text-sm font-normal text-slate-600"></span></h2><p class="text-xs text-slate-500 mb-2">Informativo: cada día en que entregó documentos y si ya está liquidado.</p><div id="pagLista" class="max-h-80 overflow-auto"></div></section>
+  <section id="bitSec" class="bg-white rounded-2xl shadow p-5"><h2 class="text-lg font-semibold">📜 Historial de intentos de entrega</h2>
+    <p class="text-xs text-slate-500">Lo ven el dueño y la contadora. <span id="bitRes"></span></p><div id="bitList" class="mt-2"></div></section>
+  <section id="terSec" class="bg-white rounded-2xl shadow p-5"><h2 class="text-lg font-semibold">✔ Historial de terminados</h2><p class="text-xs text-slate-500 mb-2">Si marcaste uno por error, ábrelo otra vez con ↩ Reabrir. Los más recientes salen primero.</p><div id="terList" class="text-sm"></div></section>
+</main>
+<main id="mainCob" class="hidden max-w-5xl mx-auto px-4 py-6 space-y-4">
+  <section class="bg-white rounded-2xl shadow p-5"><h2 class="text-lg font-semibold mb-1">👁️ Qué ve la contadora</h2><p class="text-xs text-slate-500 mb-3">Estos interruptores controlan lo que ella puede ver. Nada se muestra hasta que lo enciendas.</p>
+    <div class="flex flex-wrap gap-2">
+      <label id="nomToggle" class="tb sw"><input type="checkbox" id="nomChk" onchange="nomActivar()"> <span>💼 Nóminas encargadas</span></label>
+      <label id="pagToggle" class="tb sw"><input type="checkbox" id="pagChk" onchange="pagActivar()"> <span>💵 Mostrarle pagos a ella</span></label>
+    </div></section>
+  <section id="cobSec" class="rounded-2xl p-5 border-2 border-emerald-300 bg-emerald-50">
+    <h2 class="text-lg font-bold text-emerald-900">💵 Mi cobranza <span class="text-xs font-normal text-emerald-800">(privada: solo la ves con tu clave)</span></h2>
+    <div id="cobRes" class="grid grid-cols-2 md:grid-cols-3 gap-2 my-3 text-center"></div>
+    <div class="bg-white rounded-xl p-3 mb-3"><div class="flex items-center justify-between"><h3 class="font-semibold text-sm">🟩 Mi actividad del mes</h3><div class="flex items-center gap-2"><button onclick="actNav(-1)" class="border rounded px-2">◀</button><b id="actMes" class="capitalize text-sm"></b><button onclick="actNav(1)" class="border rounded px-2">▶</button></div></div>
+      <p class="text-xs text-slate-500 mb-2">Cada día pinta cuántos documentos entregaste o recogiste. Sirve para ver si trabajas todos los días hábiles de la semana. Toca un día para ver el detalle.</p>
+      <div id="actGrid" class="grid grid-cols-7 gap-1 max-w-sm"></div><div id="actSem" class="mt-2 space-y-0.5"></div><div id="actDet" class="mt-2"></div></div>
+    <div class="bg-white rounded-xl p-3 mb-3"><h3 class="font-semibold text-sm mb-1">📊 Entregas: completas de origen vs. resueltas por mí</h3>
+      <p class="text-xs text-slate-500 mb-2">Completa de origen = ella te la dio completa. Resuelta por mí = salió porque tú completaste algo (imprimir, conseguir un papel). Se marca con 🛠️ en cada tarjeta.</p><div id="cobStat" class="overflow-x-auto"></div></div>
+    <div class="text-xs text-slate-700 mb-3">Tarifa por día: $<input id="cobTar" type="number" onchange="cobTarifa()" class="border rounded px-2 py-1 w-24 mx-1"> Un día se cobra cuando entregas al menos uno de los documentos que ella te asignó para ese día; los demás pueden salir después y no generan otro cobro. Si ella te da uno fuera de la lista, pasa al día siguiente y se cuenta junto con los de ese día.</div>
+    <div class="grid md:grid-cols-2 gap-4">
+      <div><h3 class="font-semibold text-sm mb-1">Días</h3><div id="cobDias" class="text-sm space-y-2 max-h-80 overflow-auto"></div></div>
+      <div><h3 class="font-semibold text-sm mb-1">Pagos que me ha hecho</h3><div id="cobPagos" class="text-sm"></div>
+        <div class="mt-1 flex gap-2 flex-wrap"><input id="pgM" type="number" placeholder="Monto $" class="border rounded px-2 py-1 w-28"><input id="pgN" placeholder="Nota (ej. cubre hoy y mañana)" class="border rounded px-2 py-1 w-52"><input id="pgF" type="date" class="border rounded px-2 py-1"><button type="button" onclick="pagoAdd()" class="bg-emerald-600 text-white px-3 py-1 rounded">Registrar pago</button><button type="button" onclick="pgM.value=FIN.tarifa" class="border rounded px-2 py-1 text-xs">1 día</button><button type="button" onclick="pgM.value=FIN.tarifa*2" class="border rounded px-2 py-1 text-xs">2 días</button></div>
+        <h3 class="font-semibold text-sm mt-4 mb-1">💵 Efectivo que debo entregarle a ella</h3><div id="cobEfec" class="text-sm"></div></div>
+    </div>
+  </section>
+</main>
+<main id="mainCfg" class="hidden max-w-5xl mx-auto px-4 py-6 space-y-6">
+  <section class="bg-white rounded-2xl shadow p-5"><h2 class="text-lg font-semibold mb-1">💾 Respaldo</h2><p class="text-xs text-slate-500 mb-3">Descarga una copia de todo tu panel. Guárdala de vez en cuando.</p>
+    <div class="flex flex-wrap gap-2"><button id="btnResp" type="button" onclick="respaldo()" class="tb">💾 Respaldo completo</button><button id="btnCsv" type="button" onclick="respaldoCsv()" class="tb">📊 Excel (CSV)</button></div></section>
+  <section id="inhSec" class="bg-white rounded-2xl shadow p-5">
+    <h2 class="text-lg font-semibold">📆 Días inhábiles</h2>
+    <p class="text-xs text-slate-500 mb-2">No cuentan como días hábiles en ningún cálculo. Los feriados oficiales ya vienen incluidos. Agrega los días que cierre cada dependencia (Semana Santa, puentes, etc.).</p>
+    <div id="inhList" class="text-sm space-y-1"></div>
+    <div id="inhForm" class="mt-3 flex flex-wrap gap-2"><input id="inhF" type="date" class="border rounded-lg px-3 py-2"><input id="inhN" placeholder="Motivo (opcional)" class="border rounded-lg px-3 py-2 flex-1 min-w-[160px]"><button type="button" onclick="inhAdd()" class="bg-indigo-600 text-white px-4 py-2 rounded-lg">Agregar</button></div>
+  </section>
+  <section id="horSec" class="bg-white rounded-2xl shadow p-5"><h2 class="text-lg font-semibold">🕒 Horarios de dependencias <span class="text-xs font-normal text-slate-500">(Playa del Carmen; confirma siempre, pueden cambiar)</span></h2>
+    <div class="overflow-x-auto mt-2"><table class="w-full text-sm"><thead class="text-left text-slate-500"><tr><th class="p-2">Dependencia</th><th class="p-2">Abre</th><th class="p-2">Cierra (recepción)</th><th class="p-2">Notas</th></tr></thead><tbody id="horBody"></tbody></table></div></section>
+  <section id="admin" class="bg-white rounded-2xl shadow p-5">
+    <h2 class="text-lg font-semibold">⚙️ Requisitos por trámite</h2>
+    <p class="text-xs text-slate-500 mb-3">Un requisito por línea. Empieza con * los críticos: si faltan, la tarjeta se marca en rojo. Es una guía general; confirma siempre con la dependencia de tu municipio.</p>
+    <input id="adC" list="adL" oninput="adCarga()" placeholder="Elige o escribe el trámite" class="border rounded-lg px-3 py-2 w-full mb-2"><datalist id="adL"></datalist>
+    <textarea id="adT" rows="8" class="border rounded-lg px-3 py-2 w-full text-sm"></textarea>
+    <div class="mt-2 flex gap-2"><button type="button" onclick="adGuarda()" class="bg-indigo-600 text-white px-4 py-2 rounded-lg">Guardar lista</button><button type="button" onclick="adReset()" class="border px-4 py-2 rounded-lg">Restaurar original</button><button type="button" onclick="adEliminar()" class="border border-red-300 text-red-700 px-4 py-2 rounded-lg">Eliminar lista</button></div>
+  </section>
+</main>
+<main id="mainSat" class="hidden w-full px-3 py-4">
+  <div class="mb-3 flex flex-wrap items-center gap-2 text-sm">
+    <span class="text-slate-600">🔒 Los datos de tus empleados se guardan solo en este navegador. A la contadora solo le llega el avance: patrón y cuántos empleados llevas.</span>
+    <button type="button" onclick="syncSat(true)" class="border rounded-lg px-3 py-1 bg-white">🔄 Enviar avance ahora</button>
+    <a href="nomina-sat.html" target="_blank" class="border rounded-lg px-3 py-1 bg-white">↗ Abrir en pantalla completa</a>
+    <span id="satEst" class="text-emerald-700"></span>
+  </div>
+  <iframe id="satFrame" title="Registro SAT" class="w-full rounded-2xl border bg-white" style="height:92vh"></iframe>
+</main>
+
 <div id="toastBox" class="hidden fixed bottom-4 left-1/2 -translate-x-1/2 bg-slate-900 text-white rounded-xl px-4 py-3 shadow-lg z-50 text-sm flex gap-3 items-center"><span id="toastMsg"></span><button id="toastUndo" type="button" onclick="deshacer()" class="underline font-semibold">Deshacer</button></div>
 <dialog id="dlgReq" class="rounded-2xl p-5 w-[min(92vw,460px)]">
   <h3 class="font-semibold mb-1">Requisitos de este trámite</h3>
@@ -493,7 +638,7 @@ function borrar(id) { if (confirm('¿Eliminar este trámite?')) quitar(id); }
 function render() {
   document.getElementById('hoy').textContent = fmt(hoy());
   document.getElementById('formSec').style.display = puede() ? '' : 'none';
-  btnAdm.style.display = btnObl.style.display = btnInh.style.display = pagToggle.style.display = btnCob.style.display = btnWa.style.display = btnResp.style.display = btnCsv.style.display = puede() ? '' : 'none'; if (!puede()) inhSec.classList.add('hidden'); renderBit(); renderHeat(); renderInh(); renderCob(); renderBanner(); renderNom(); renderCer(); renderTer(); renderGraf(); renderSeg(); renderHor(); renderPrio(); renderPag(); renderAct(); renderApe(); guiaFechas.style.display = puede() ? '' : 'none'; if (cardOpen && dlgCard.open) { const tt = find(cardOpen); if (tt) cardBox.innerHTML = card(tt); else dlgCard.close(); } if (pagWanted !== null && !!PAG.visible === pagWanted) pagWanted = null; pagChk.checked = pagWanted !== null ? pagWanted : !!PAG.visible; if (CAN && pagChk.checked) syncPagos(false); btnIn.textContent = CAN ? '🔓 Salir del modo dueño' : '🔑 Entrar como dueño'; btnUser.textContent = CAN ? '👤' : '🔑'; btnUser.className = CAN ? 'text-xl px-2 py-1 rounded-lg bg-white/15 hover:bg-white/25' : 'text-lg px-2 py-1 rounded-lg opacity-40 hover:opacity-100'; syncToggles(); if (!puede()) admin.classList.add('hidden');
+  btnAdm.style.display = btnObl.style.display = btnInh.style.display = pagToggle.style.display = btnCob.style.display = btnWa.style.display = btnResp.style.display = btnCsv.style.display = puede() ? '' : 'none'; inhSec.classList.toggle('hidden', !puede()); horSec.classList.toggle('hidden', !puede()); renderBit(); renderHeat(); renderInh(); renderCob(); renderBanner(); renderNom(); renderCer(); renderTer(); renderGraf(); renderSeg(); renderHor(); renderPrio(); renderPag(); renderAct(); renderApe(); renderOrg(); guiaFechas.style.display = puede() ? '' : 'none'; if (cardOpen && dlgCard.open) { const tt = find(cardOpen); if (tt) cardBox.innerHTML = card(tt); else dlgCard.close(); } if (pagWanted !== null && !!PAG.visible === pagWanted) pagWanted = null; pagChk.checked = pagWanted !== null ? pagWanted : !!PAG.visible; if (CAN && pagChk.checked) syncPagos(false); btnIn.textContent = CAN ? '🔓 Salir del modo dueño' : '🔑 Entrar como dueño'; btnUser.textContent = CAN ? '👤' : '🔑'; btnUser.className = CAN ? 'text-xl px-2 py-1 rounded-lg bg-white/15 hover:bg-white/25' : 'text-lg px-2 py-1 rounded-lg opacity-40 hover:opacity-100'; syncToggles(); admin.classList.toggle('hidden', !puede());
   document.getElementById('btnVista').style.display = CAN ? '' : 'none';
   document.getElementById('btnVista').textContent = VISTA ? '↩ Volver a mi vista' : '👀 Ver como contadora';
   document.getElementById('modo').textContent = (SNAP ? '📅 Actualizado: ' + window.__SNAP.fecha : DB ? '☁️ Se actualiza solo' : '💾 Datos solo en este navegador') + (puede() ? '' : ' · 👀 Vista de solo lectura');
@@ -505,7 +650,7 @@ function render() {
   const sinDoc = act.filter(t => faltantes(t).length).length;
   const vacio = m => `<p class="text-sm text-slate-400 text-center py-4">${m}</p>`;
 
-  document.getElementById('c1').innerHTML = urg.map(mini).join('') || vacio('Nada urgente 🎉');
+  document.getElementById('c1').innerHTML = lista(urg);
   document.getElementById('c2').innerHTML = fir.map(mini).join('') || vacio('Sin trámites en firmas');
   document.getElementById('c3').innerHTML = lic.map(mini).join('') || vacio('Sin licencias por vencer');
   document.getElementById('todos').innerHTML = grupos(act) || vacio('Aún no hay trámites. Abre ➕ Registrar para agregar el primero.');
@@ -517,12 +662,12 @@ function render() {
   const hy = isoHoy();
   const A = act.filter(t => (t.plan || t.asignado) === hy && t.estado !== 'firmas' && !t.espera), Bn = act.filter(t => (t.plan || t.asignado) && (t.plan || t.asignado) < hy && t.estado !== 'firmas' && !t.espera), inc = act.filter(t => t.incompleto && t.estado !== 'firmas');
   const entH = B.filter(t => t.estado === 'firmas' && t.firmaInicio === hy).length;
-  cA.innerHTML = A.map(mini).join('') || vacio('Nada planeado para hoy. Usa 📅 Para hoy en una tarjeta.');
-  cB.innerHTML = Bn.map(mini).join('') || vacio('Nada pendiente de días anteriores 👍');
-  cC.innerHTML = inc.map(mini).join('') || vacio('Sin incompletos');
+  cA.innerHTML = lista(A) || vacio('Nada planeado para hoy. Usa 📅 Para hoy en una tarjeta.');
+  cB.innerHTML = lista(Bn) || vacio('Nada pendiente de días anteriores 👍');
+  cC.innerHTML = lista(inc) || vacio('Sin incompletos');
   const Rc = act.filter(t => t.estado === 'firmas' && t.fechaRecoger && t.fechaRecoger <= hy);
   cD.innerHTML = Rc.map(mini).join('') || vacio('Nada por recoger hoy'); nD.textContent = Rc.length;
-  nA.textContent = A.length; nB.textContent = Bn.length; nC.textContent = inc.length;
+  nA.textContent = A.length; nB.textContent = Bn.length; nC.textContent = inc.length; box1.classList.toggle('hidden', !urg.length); boxB.classList.toggle('hidden', !Bn.length); boxC.classList.toggle('hidden', !inc.length); okLine.classList.toggle('hidden', !!(urg.length || Bn.length || inc.length));
   hoyRes.textContent = '· ' + entH + ' entregado(s) hoy · ' + A.length + ' por entregar';
   const prox = [];
   for (let i = 0; i < 8; i++) { const d = new Date(hoy()); d.setDate(d.getDate() + i); const ni = nombreInh(d); if (ni) prox.push(`<div class="text-sm py-1 border-b text-red-700 font-semibold">🚫 ${i === 0 ? 'Hoy' : i === 1 ? 'Mañana' : fmt(d)} · No se trabaja: ${esc(ni)}</div>`);
@@ -665,7 +810,7 @@ f.addEventListener('submit', e => {
   limpiarForm();
 });
 sugerir(); claseChange(); recibido.value = isoHoy(); asig.value = isoD(sumaHabiles(hoy(), 1));
-tab({'#nominas': 'nom', '#registro': 'sat', '#ceros': 'cer'}[location.hash] || 'panel');
+tab({'#nominas': 'nom', '#ceros': 'cer', '#reportes': 'rep', '#cobranza': 'cob', '#registro': 'sat', '#aperturas': 'ape', '#config': 'cfg'}[location.hash] || 'panel');
 render();
 
 let intId = null;
@@ -728,7 +873,7 @@ function pagoAdd() { const m = parseFloat(pgM.value); if (!m) return alert('Escr
 function cobrarEfectivo(id) { const t = find(id), m = parseFloat(prompt('¿Cuánto cobraste en efectivo?', '300')); if (!t || !m) return; finSave({id: 'E' + Date.now(), t: 'efec', tid: t.id, cliente: t.cliente, concepto: t.tipo, f: isoHoy(), monto: m, entregado: ''}); }
 function efecEntregado(id) { const e = FIN.efec.find(x => x.id === id); if (e) finSave({...e, entregado: isoHoy()}); }
 function renderCob() {
-  if (!puede()) { cobSec.classList.add('hidden'); hoyCobro.textContent = ''; return; }
+  cobSec.classList.toggle('hidden', !puede()); if (!puede()) { hoyCobro.textContent = ''; return; }
   const $ = v => '$' + Number(v).toLocaleString('es-MX'), dias = diasCobro(), hy = isoHoy();
   const n = dias.filter(d => d.cobra).length, ganado = n * FIN.tarifa, pagado = FIN.pagos.reduce((x, p) => x + (+p.monto || 0), 0), debe = ganado - pagado;
   const {st: stP} = asignarPagos(dias);
@@ -799,9 +944,10 @@ function chipNom(vis) {
 }
 function renderNom() {
   const vis = NOM.activo || puede();
-  tabN.style.display = vis ? '' : 'none'; if (!vis && TAB === 'nom') tab('panel'); chipNom(vis);
-  tabS.style.display = puede() ? '' : 'none'; tabA.style.display = puede() ? '' : 'none'; if (!puede() && TAB === 'ape') tab('panel'); if (!puede() && TAB === 'sat') tab('panel');
-  tabC.style.display = (CEROS.length || puede()) ? '' : 'none'; if (!CEROS.length && !puede() && TAB === 'cer') tab('panel');
+  const visTab = vis || CEROS.length > 0; nomSec.classList.toggle('hidden', !vis);
+  tabN.style.display = visTab ? '' : 'none'; if (!visTab && TAB === 'nom') tab('panel'); chipNom(vis);
+  [tabS, tabA, tabB, tabG].forEach(b => b.style.display = puede() ? '' : 'none');
+  if (!puede() && ['sat', 'ape', 'cob', 'cfg'].includes(TAB)) tab('panel');
   nomToggle.style.display = puede() ? '' : 'none'; nomChk.checked = !!NOM.activo; nomForm.style.display = 'none';
   if (!vis) return;
   const k = nomKey(), edit = puede();
@@ -824,22 +970,20 @@ function tog(sec, btn) {
   if (on) e.scrollIntoView({behavior: 'smooth', block: 'start'});
 }
 function syncToggles() { [['bitSec', 'btnBit'], ['inhSec', 'btnInh'], ['terSec', 'btnTer'], ['cobSec', 'btnCob'], ['admin', 'btnAdm'], ['horSec', 'btnHor']].forEach(([s, b]) => document.getElementById(b).classList.toggle('on', !document.getElementById(s).classList.contains('hidden'))); }
+// ---------- Instalar como app: sin barra de direcciones ----------
+let deferredInstall = null;
+window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); deferredInstall = e; });
+if (window.matchMedia && (matchMedia('(display-mode: standalone)').matches || navigator.standalone)) btnInstalar.style.display = 'none';
+if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+function instalarApp() {
+  if (deferredInstall) { deferredInstall.prompt(); deferredInstall = null; return; }
+  alert('Para usar el panel como app, sin la barra del navegador:\n\n• Android (Chrome): menú ⋮ → "Instalar app" o "Agregar a la pantalla principal".\n• iPhone (Safari): botón Compartir → "Agregar a pantalla de inicio".\n• Computadora (Chrome o Edge): ícono de instalar ⊕ en la barra de direcciones, o menú → "Instalar Panel de Gestoría".\n\nTambién puedes pulsar F11 para pantalla completa en computadora.');
+}
 function menuUser() { userMenu.classList.toggle('hidden'); }
 document.addEventListener('click', e => { if (!e.target.closest('#userBox')) userMenu.classList.add('hidden'); });
 let undoDoc = null, undoExtra = null, undoT = null;
 function toast(msg, prev, extra) { undoDoc = prev || null; undoExtra = extra || null; toastMsg.textContent = msg; toastUndo.style.display = prev ? '' : 'none'; toastBox.classList.remove('hidden'); clearTimeout(undoT); undoT = setTimeout(() => toastBox.classList.add('hidden'), 9000); }
 async function deshacer() { if (!undoDoc) return; const d = undoDoc, x = undoExtra; undoDoc = null; toastBox.classList.add('hidden'); await persist(d); if (x) await quitar(x); }
-function tab(t) {
-  TAB = t;
-  [['panel', 'mainP', 'tabP', 'bg-slate-900'], ['nom', 'mainNom', 'tabN', 'bg-violet-700'], ['sat', 'mainSat', 'tabS', 'bg-emerald-700'], ['cer', 'mainCer', 'tabC', 'bg-teal-700'], ['ape', 'mainApe', 'tabA', 'bg-rose-700']].forEach(([k, m, b, c]) => {
-    document.getElementById(m).classList.toggle('hidden', t !== k);
-    document.getElementById(b).className = 'px-4 py-2 rounded-lg font-semibold ' + (t === k ? c + ' text-white' : 'bg-white border');
-  });
-  if (t === 'sat') { if (!satFrame.getAttribute('src')) satFrame.src = 'nomina-sat.html'; syncSat(); }
-  const h = {nom: '#nominas', sat: '#registro', cer: '#ceros', ape: '#aperturas'}[t];
-  try { history.replaceState(null, '', h || location.pathname + location.search); } catch (e) {}
-  window.scrollTo(0, 0);
-}
 // ---------- Registro SAT: manda solo el avance (sin datos personales) ----------
 async function syncSat(forzar) {
   if (!CAN) return;
@@ -901,7 +1045,7 @@ async function cerImportar() {
 function renderCer() {
   const k = cerKey(), r = cerResumen(k), edit = puede();
   cerPer.textContent = CPER.toLocaleDateString('es-MX', {month: 'long', year: 'numeric'});
-  cerFormBox.style.display = edit ? '' : 'none';
+  cerFormBox.style.display = edit ? '' : 'none'; cerSec.classList.toggle('hidden', !(CEROS.length || edit));
   const caja = (v, l) => `<div class="bg-white rounded-lg p-2"><div class="text-xl font-bold">${v}</div><div class="text-xs text-slate-500">${l}</div></div>`;
   cerRes.innerHTML = caja(r.dm + ' de ' + r.tm, 'Declaraciones mensuales hechas') + caja(r.td ? r.dd + ' de ' + r.td : '—', 'DIOT hechas (las que tocan este mes)');
   cerBody.innerHTML = CEROS.map(c => {
@@ -914,7 +1058,7 @@ function renderCer() {
 }
 // ---------- Gráficas junto al mapa de calor ----------
 function barra(l, d, t, c) { const p = t ? Math.round(d / t * 100) : 0; return `<div class="text-xs mb-1"><div class="flex justify-between gap-2"><span class="truncate">${l}</span><b>${d}/${t}</b></div><div class="h-2 bg-slate-200 rounded"><div class="h-2 rounded" style="width:${p}%;background:${c}"></div></div></div>`; }
-function donut(p, c) { return `<svg viewBox="0 0 42 42" class="w-24 h-24 shrink-0"><circle cx="21" cy="21" r="15.9155" fill="none" stroke="#e2e8f0" stroke-width="5"/><circle cx="21" cy="21" r="15.9155" fill="none" stroke="${c}" stroke-width="5" stroke-dasharray="${p} ${100 - p}" stroke-dashoffset="25"/><text x="21" y="23.5" text-anchor="middle" font-size="8" font-weight="700" fill="#0f172a">${p}%</text></svg>`; }
+function donut(p, c) { return `<svg viewBox="0 0 42 42" class="w-24 h-24 shrink-0"><circle cx="21" cy="21" r="15.9155" fill="none" stroke="rgba(255,255,255,.16)" stroke-width="5"/><circle cx="21" cy="21" r="15.9155" fill="none" stroke="${c}" stroke-width="5" stroke-dasharray="${p} ${100 - p}" stroke-dashoffset="25"/><text x="21" y="23.5" text-anchor="middle" font-size="8" font-weight="700" fill="#e6ecff">${p}%</text></svg>`; }
 
 // ---------- Terminados, reabrir y respaldo ----------
 function renderTer() {
@@ -1185,6 +1329,38 @@ function cicloHtml(t) {
   const l = t.ciclo || []; if (!l.length) return '';
   const np = l.filter(x => x.tipo === 'prorroga').length;
   return `<details class="mt-1"><summary class="cursor-pointer text-xs text-slate-600">🔁 Folio: ${np} prórroga(s) · ${l.length} ingreso(s)</summary><div class="mt-1 text-xs space-y-0.5">${l.map((x, i) => `<div>${i + 1}. ${x.tipo === 'prorroga' ? '🔁 Prórroga' : '✅ Solventación'} ingresada ${fmt(pd(x.ingreso))}${x.recoger ? ' · recoger ' + fmt(pd(x.recoger)) : ''}${x.recogido ? ' · recogida ' + fmt(pd(x.recogido)) : ''}${x.nuevaLimite ? ' · nueva fecha límite ' + fmt(pd(x.nuevaLimite)) : ''}</div>`).join('')}</div></details>`;
+}
+
+// ---------- Pestañas y organización (Parte 2) ----------
+function tab(t) {
+  if (t === 'cer') { t = 'nom'; setTimeout(() => { const e = document.getElementById('cerSec'); if (e) e.scrollIntoView({behavior: 'smooth'}); }, 50); }
+  TAB = t;
+  [['panel', 'mainP', 'tabP', 'bg-slate-900'], ['nom', 'mainNom', 'tabN', 'bg-violet-700'], ['rep', 'mainRep', 'tabR', 'bg-sky-700'], ['cob', 'mainCob', 'tabB', 'bg-emerald-700'], ['sat', 'mainSat', 'tabS', 'bg-emerald-700'], ['ape', 'mainApe', 'tabA', 'bg-rose-700'], ['cfg', 'mainCfg', 'tabG', 'bg-slate-600']].forEach(([k, m, b, c]) => {
+    document.getElementById(m).classList.toggle('hidden', t !== k);
+    document.getElementById(b).className = 'px-4 py-2 rounded-lg font-semibold ' + (t === k ? c + ' text-white' : 'bg-white border');
+  });
+  if (t === 'sat') { if (!satFrame.getAttribute('src')) satFrame.src = 'nomina-sat.html'; syncSat(); }
+  const h = {nom: '#nominas', rep: '#reportes', cob: '#cobranza', sat: '#registro', ape: '#aperturas', cfg: '#config'}[t];
+  try { history.replaceState(null, '', h || location.pathname + location.search); } catch (e) {}
+  window.scrollTo(0, 0);
+}
+// En computadora el día de hoy usa tarjetas completas en filas; en celular, tarjetas compactas
+function lista(a) { return a.length ? `<div class="lg:hidden space-y-2">${a.map(mini).join('')}</div><div class="hidden lg:grid lg:grid-cols-2 xl:grid-cols-3 gap-3">${a.map(card).join('')}</div>` : ''; }
+// Planificador: qué se vence o se acaba el límite esta semana, la próxima y este mes
+function renderOrg() {
+  const hy = hoy(), dow = (hy.getDay() + 6) % 7, finSem = new Date(hy.getFullYear(), hy.getMonth(), hy.getDate() + (6 - dow)), finSig = new Date(finSem.getFullYear(), finSem.getMonth(), finSem.getDate() + 7), finMes = new Date(hy.getFullYear(), hy.getMonth() + 1, 0), fin60 = new Date(hy.getFullYear(), hy.getMonth(), hy.getDate() + 60);
+  const items = [];
+  T.filter(t => t.estado !== 'listo').forEach(t => {
+    if (t.clase === 'vigencia') { if (t.vence) items.push({f: t.vence, t, txt: 'vence la vigencia'}); return; }
+    if (t.estado === 'firmas') { if (t.fechaRecoger) items.push({f: t.fechaRecoger, t, txt: yo('hay que regresar a recoger', 'el gestor regresa a recoger')}); return; }
+    if (t.limite) items.push({f: t.limite, t, txt: 'se acaba el límite'});
+    if (t.vence) items.push({f: t.vence, t, txt: 'vence la licencia'});
+  });
+  const cub = [['⚠️ Ya pasó la fecha', d => d < hy], ['📅 Esta semana (hasta el ' + fmt(finSem) + ')', d => d >= hy && d <= finSem], ['📅 Próxima semana (hasta el ' + fmt(finSig) + ')', d => d > finSem && d <= finSig], ['🗓️ Resto del mes', d => d > finSig && d <= finMes], ['🔭 Próximos 60 días', d => d > finMes && d <= fin60]];
+  orgBody.innerHTML = cub.map(([tt, fn]) => {
+    const l = items.filter(i => fn(pd(i.f))).sort((a, b) => a.f.localeCompare(b.f));
+    return l.length ? `<div><div class="font-semibold text-sm mb-1">${tt} <span class="text-xs font-normal text-slate-500">· ${l.length}</span></div>${l.map(i => `<div class="text-sm py-1 border-b"><span style="color:${depCol(i.t.dep)}">●</span> <b>${fmt(pd(i.f))}</b> · ${esc(i.t.cliente)}${i.t.negocio ? ' › ' + esc(i.t.negocio) : ''} (${esc(i.t.tipo)}) <span class="text-slate-500">— ${i.txt}</span></div>`).join('')}</div>` : '';
+  }).join('') || '<p class="text-sm text-slate-500">Nada con fecha en los próximos 60 días. 🎉</p>';
 }
 
 function mesNav(d) { MES = new Date(MES.getFullYear(), MES.getMonth() + d, 1); selDia = null; renderHeat(); }
