@@ -239,6 +239,9 @@ details>summary{outline:none}
     <div><h3 class="font-bold">📥 Ya deberían estar listos en las oficinas <span id="nSegR" class="ml-1 text-xs bg-amber-600 text-white rounded-full px-2 py-0.5"></span></h3><p class="text-xs text-slate-500">Documentos ya entregados cuya fecha de recogida ya llegó (Fiscalización, Desarrollo Urbano, etc.). Ordenado por dependencia: primero las que cierran más temprano.</p><div id="segRec"></div></div>
     <div><h3 class="font-bold">⏳ En espera <span id="nSegE" class="ml-1 text-xs bg-orange-500 text-white rounded-full px-2 py-0.5"></span></h3><p class="text-xs text-slate-500">Aún no se pueden entregar: falta una firma o un documento de otra dependencia.</p><div id="segEsp"></div></div>
   </div></section>
+  <section id="docSec" class="hidden bg-white rounded-2xl shadow p-5"><h3 class="font-bold">🔔 Seguimiento de documentos <span id="nDoc" class="ml-1 text-xs bg-indigo-600 text-white rounded-full px-2 py-0.5"></span></h3>
+    <p class="text-xs text-slate-500 mb-2">Los documentos que piden los folios y en qué paso va cada uno. Toca uno para abrir su trámite.</p>
+    <div class="grid lg:grid-cols-2 gap-6"><div><div id="docTit1" class="font-semibold text-sm">Te toca hacer ahora</div><div id="docHacer"></div></div><div><div class="font-semibold text-sm">Esperando a una dependencia</div><div id="docEsp"></div></div></div></section>
   <section id="formSec" class="bg-white rounded-2xl shadow p-5"><details id="formDet"><summary class="cursor-pointer text-lg font-semibold">➕ Registrar trámite, pago o entrega <span class="text-xs font-normal text-slate-500">(toca para abrir)</span></summary><div class="mt-4">
     <form id="f" class="grid md:grid-cols-3 gap-4">
       <label class="block text-sm font-medium">Cliente
@@ -452,6 +455,10 @@ details>summary{outline:none}
   <label class="text-sm block">¿Hasta qué fecha es la vigencia de la prórroga?<input id="vigFec" type="date" class="border rounded-lg px-3 py-2 w-full mt-1"></label>
   <p class="text-xs text-slate-500 mt-2">El folio sigue abierto. Después podrás solventar, ingresar otra prórroga o cancelarlo.</p>
   <div class="mt-3 flex gap-2"><button onclick="guardarVig()" class="bg-indigo-600 text-white px-4 py-2 rounded-lg">Guardar</button><button onclick="dlgVig.close()" class="border px-4 py-2 rounded-lg">Cancelar</button></div></dialog>
+<dialog id="dlgDoc" class="rounded-2xl p-5 w-[min(92vw,440px)]"><h3 class="font-semibold mb-2">➕ Documento que pide este trámite</h3>
+  <label class="text-sm block">¿Cuál?<select id="docTpl" class="border rounded-lg px-3 py-2 w-full mt-1 bg-white"></select></label>
+  <label class="text-sm block mt-2">Nombre propio <span class="text-slate-400">(opcional, ej. "Anuncio de la fachada")</span><input id="docNom" class="border rounded-lg px-3 py-2 w-full mt-1"></label>
+  <div class="mt-3 flex gap-2"><button onclick="guardarDoc()" class="bg-indigo-600 text-white px-4 py-2 rounded-lg">Agregar</button><button onclick="dlgDoc.close()" class="border px-4 py-2 rounded-lg">Cancelar</button></div></dialog>
 <dialog id="dlgEnt" class="rounded-2xl p-5 w-[min(92vw,420px)]">
   <h3 class="font-semibold mb-2">Entregado en dependencia</h3>
   <label class="text-sm">¿Qué día te dijeron que regreses a recoger? <span class="text-slate-400">(opcional)</span><input id="entRec" type="date" class="border rounded-lg px-3 py-2 w-full mt-1"></label>
@@ -596,7 +603,7 @@ function card(t) {
     </div>
     ${pasoBanner(t)}<div class="text-sm mt-1">📅 ${lim ? 'Fecha límite: ' + fmt(lim) + ' · ' : ''}${estado}</div>
     <div class="text-xs text-slate-500 mt-1">${t.resp ? '👤 ' + esc(t.resp) : ''}${t.monto ? ' · 💲' + Number(t.monto).toLocaleString('es-MX') : ''}${t.repite ? ' · 🔁 mensual' : ''}</div>${lineaTiempo(t)}${extraBadges(t)}${planB ? `<div class="text-xs mt-1">${planB}</div>` : ''}
-    ${firmas}${recB(t)}${lic}${alerta}${incB}${intB}${intHtml(t)}${cicloHtml(t)}${t.resuelto ? '<div class="mt-1 text-xs rounded px-2 py-1 bg-amber-50 text-amber-900 border border-amber-200">🛠️ ' + yo('Resuelto por mí', 'Resuelto por el gestor') + ': ' + esc(t.resuelto.nota || 'completado por el gestor') + '</div>' : ''}${t.espera ? '<div class="mt-1 text-xs rounded px-2 py-1 bg-orange-50 text-orange-900 border border-orange-200">⏳ En espera: ' + esc(t.espera.txt) + ' (' + esc(t.espera.dep || '') + ')</div>' : ''}
+    ${firmas}${recB(t)}${lic}${alerta}${incB}${intB}${intHtml(t)}${cicloHtml(t)}${docsHtml(t)}${t.resuelto ? '<div class="mt-1 text-xs rounded px-2 py-1 bg-amber-50 text-amber-900 border border-amber-200">🛠️ ' + yo('Resuelto por mí', 'Resuelto por el gestor') + ': ' + esc(t.resuelto.nota || 'completado por el gestor') + '</div>' : ''}${t.espera ? '<div class="mt-1 text-xs rounded px-2 py-1 bg-orange-50 text-orange-900 border border-orange-200">⏳ En espera: ' + esc(t.espera.txt) + ' (' + esc(t.espera.dep || '') + ')</div>' : ''}
     
     ${reqHtml(t)}
     ${puede() ? `<div class="flex flex-wrap gap-2 mt-3">
@@ -651,7 +658,7 @@ function borrar(id) { if (confirm('¿Eliminar este trámite?')) quitar(id); }
 function render() {
   document.getElementById('hoy').textContent = fmt(hoy());
   document.getElementById('formSec').style.display = puede() ? '' : 'none';
-  btnAdm.style.display = btnObl.style.display = btnInh.style.display = pagToggle.style.display = btnCob.style.display = btnWa.style.display = btnResp.style.display = btnCsv.style.display = puede() ? '' : 'none'; inhSec.classList.toggle('hidden', !puede()); horSec.classList.toggle('hidden', !puede()); renderBit(); renderHeat(); renderInh(); renderCob(); renderBanner(); renderNom(); renderCer(); renderTer(); renderGraf(); renderSeg(); renderHor(); renderPrio(); renderPag(); renderAct(); renderApe(); renderOrg(); guiaFechas.style.display = puede() ? '' : 'none'; if (cardOpen && dlgCard.open) { const tt = find(cardOpen); if (tt) cardBox.innerHTML = card(tt); else dlgCard.close(); } if (pagWanted !== null && !!PAG.visible === pagWanted) pagWanted = null; pagChk.checked = pagWanted !== null ? pagWanted : !!PAG.visible; if (CAN && pagChk.checked) syncPagos(false); btnIn.textContent = CAN ? '🔓 Salir del modo dueño' : '🔑 Entrar como dueño'; btnUser.textContent = CAN ? '👤' : '🔑'; btnUser.className = CAN ? 'text-xl px-2 py-1 rounded-lg bg-white/15 hover:bg-white/25' : 'text-lg px-2 py-1 rounded-lg opacity-40 hover:opacity-100'; syncToggles(); admin.classList.toggle('hidden', !puede());
+  btnAdm.style.display = btnObl.style.display = btnInh.style.display = pagToggle.style.display = btnCob.style.display = btnWa.style.display = btnResp.style.display = btnCsv.style.display = puede() ? '' : 'none'; inhSec.classList.toggle('hidden', !puede()); horSec.classList.toggle('hidden', !puede()); renderBit(); renderHeat(); renderInh(); renderCob(); renderBanner(); renderNom(); renderCer(); renderTer(); renderGraf(); renderSeg(); renderHor(); renderPrio(); renderPag(); renderAct(); renderApe(); renderOrg(); renderDocs(); guiaFechas.style.display = puede() ? '' : 'none'; if (cardOpen && dlgCard.open) { const tt = find(cardOpen); if (tt) cardBox.innerHTML = card(tt); else dlgCard.close(); } if (pagWanted !== null && !!PAG.visible === pagWanted) pagWanted = null; pagChk.checked = pagWanted !== null ? pagWanted : !!PAG.visible; if (CAN && pagChk.checked) syncPagos(false); btnIn.textContent = CAN ? '🔓 Salir del modo dueño' : '🔑 Entrar como dueño'; btnUser.textContent = CAN ? '👤' : '🔑'; btnUser.className = CAN ? 'text-xl px-2 py-1 rounded-lg bg-white/15 hover:bg-white/25' : 'text-lg px-2 py-1 rounded-lg opacity-40 hover:opacity-100'; syncToggles(); admin.classList.toggle('hidden', !puede());
   document.getElementById('btnVista').style.display = CAN ? '' : 'none';
   document.getElementById('btnVista').textContent = VISTA ? '↩ Volver a mi vista' : '👀 Ver como contadora';
   document.getElementById('modo').textContent = (SNAP ? '📅 Actualizado: ' + window.__SNAP.fecha : DB ? '☁️ Se actualiza solo' : '💾 Datos solo en este navegador') + (puede() ? '' : ' · 👀 Vista de solo lectura');
@@ -732,6 +739,33 @@ const TPL = {
   {id: 'anu', n: 'Licencia de anuncio (si pondrás letrero)', dep: 'Desarrollo Urbano', d: 10, est: true, req: ['uso'], uma: [3.5, null], opc: true, c: 'Desde 3.5 UMA según dimensiones.', q: 'Pide la constancia de uso de suelo de giro comercial vigente. Tiempo estimado.'}
  ]}
 };
+
+// ---------- Documentos que piden los folios: cada uno con su propio recorrido ----------
+// q = quién tiene la pelota: 'yo' (me toca hacer algo) o 'dep' (esperando a una dependencia)
+function flujoPermiso(o) {
+  return {
+    ingresar: {t: 'Por ingresar la solicitud', q: 'yo', ac: [['📥 Ya la ingresé', 'esp_pase']]},
+    esp_pase: {t: 'Esperando ' + o.pase, q: 'dep', ac: [['💳 Ya salió: ' + o.pase, 'pagar']]},
+    pagar: {t: 'Pagar en caja (' + o.pase + ')', q: 'yo', ac: [['✅ Ya pagué y entregué el comprobante', 'esp_exp']]},
+    esp_exp: {t: 'Pago entregado: esperando que lo expidan', q: 'dep', auto: {dias: o.dias, ir: 'sello'}, ac: [['📄 Ya me lo entregaron', 'listo'], ['🔏 Pedir sello para la prórroga', 'sello']]},
+    sello: {t: 'Pedir sello para la prórroga', q: 'yo', ac: [['🔏 Ya lo sellaron', 'listo'], ['📄 Ya estaba listo: me lo entregaron', 'listo']]},
+    listo: {t: 'Listo para la prórroga o la solventación', q: null, fin: true, ac: []}
+  };
+}
+const FL_PAGO = {pagar: {t: 'Por pagar los derechos', q: 'yo', ac: [['✅ Ya pagué', 'listo']]}, listo: {t: 'Pagado: comprobante guardado', q: null, fin: true, ac: []}};
+const FL_SAT = {bajar: {t: 'Descargar la constancia en el portal del SAT', q: 'yo', ac: [['✅ Ya la tengo', 'listo']]}, listo: {t: 'Constancia lista', q: null, fin: true, ac: []}};
+const DOCTPL = {
+  licfun: {n: 'Licencia de Funcionamiento Municipal (vigente del año)', dep: 'Tesorería (Ingresos)', fl: flujoPermiso({dias: 10, pase: 'orden de pago'}), ini: 'ingresar', est: true, q: 'La expide la Dirección de Ingresos (Tesorería). Todo establecimiento debe estar en el padrón y renovar en enero y febrero. Se puede iniciar en línea en el portal de Trámites y Servicios. Confirma los requisitos vigentes.', req: ['Formato para trámite de licencia de funcionamiento (original y copia)', 'Copia de la licencia de uso de suelo comercial', 'Si vende alcohol: copia de la licencia con resello actualizado y del comodato sellado, con facturas de ambos pagos', 'Renovación: original de la licencia anterior o formato sellado del último trámite', 'Apertura: copia de la licencia de regularización o terminación de obra']},
+  pc: {n: 'Constancia / dictamen de Protección Civil', dep: 'Protección Civil', fl: flujoPermiso({dias: 30, pase: 'orden de pago'}), ini: 'ingresar', est: true, q: 'Verifica que el local cumpla las medidas de seguridad. Bajo riesgo se tramita por el SARE (19 UMA); mediano y alto riesgo directo en Protección Civil (hasta 30 días naturales si cumples todo). Confirma tu caso.', req: ['INE del representante', 'Comprobante de domicilio del local', 'Croquis de ubicación', 'Plano con rutas de evacuación', 'Extintores vigentes (factura o recarga)', 'Constancia de capacitación de brigadas', 'Licencia de uso de suelo']},
+  uso: {n: 'Licencia de uso de suelo comercial', dep: 'Desarrollo Urbano', fl: flujoPermiso({dias: 14, pase: 'pase de caja'}), ini: 'ingresar', est: true, q: 'Dice si el giro está permitido en ese predio. La piden la licencia de funcionamiento y la de anuncio. La expide Desarrollo Urbano y Fisonomía.', req: ['INE', 'Comprobante de domicilio', 'Escritura, contrato de arrendamiento o título de propiedad', 'Predial al corriente', 'Croquis de ubicación', 'Fotografías del inmueble']},
+  anuncio: {n: 'Licencia de anuncios y publicidad', dep: 'Desarrollo Urbano', fl: flujoPermiso({dias: 30, pase: 'pase de caja'}), ini: 'ingresar', q: 'Desarrollo Urbano y Fisonomía. Desde 3.5 UMA según dimensiones. Pide la constancia de uso de suelo comercial vigente. Si hay estructura o espectacular se pide también dictamen de Protección Civil.', req: ['Constancia de uso de suelo de giro comercial vigente', 'Datos y dimensiones del anuncio (croquis o diseño)', 'INE del representante']},
+  basura: {n: 'Pago de derechos de basura comercial / saneamiento', dep: 'Tesorería (Ingresos)', fl: FL_PAGO, ini: 'pagar', q: 'Los derechos de recolección de basura se pagan junto con la licencia (en el SARE o en Tesorería). Guarda el comprobante.', req: ['Recibo de los derechos del año', 'Comprobante de pago']},
+  rfc: {n: 'RFC / Constancia de Situación Fiscal', dep: 'SAT', fl: FL_SAT, ini: 'bajar', q: 'La constancia se descarga en el portal del SAT, sin costo.', req: ['RFC y contraseña o e.firma para entrar al portal']},
+  sanitario: {n: 'Permiso / licencia sanitaria (alimentos, bebidas o salud)', dep: 'Otro', fl: flujoPermiso({dias: 15, pase: 'pase de caja'}), ini: 'ingresar', est: true, q: 'Solo aplica a giros con alimentos, bebidas o salud. Confirma la autoridad sanitaria y los requisitos de tu caso.', req: ['Según el giro: aviso o permiso ante la autoridad sanitaria']},
+  alcohol: {n: 'Licencia de bebidas alcohólicas (con resello del año)', dep: 'Otro', fl: flujoPermiso({dias: 15, pase: 'pase de caja'}), ini: 'ingresar', est: true, q: 'Solo si el giro vende alcohol. Para renovar la licencia de funcionamiento el municipio pide copia de esta licencia con el resello actualizado y del comodato sellado, con las facturas de ambos pagos.', req: ['Licencia de bebidas alcohólicas del año con resello', 'Contrato de comodato sellado', 'Facturas de ambos pagos']},
+  otro: {n: 'Otro documento', dep: 'Otro', fl: flujoPermiso({dias: 30, pase: 'pase de caja'}), ini: 'ingresar', est: true, q: 'Documento a la medida: sigue el recorrido de ingresar, pase de caja, pago, espera y sello.', req: []}
+};
+const DOCOPEN = new Set();
 
 const STX = {pagado: '💵 Pagado', parcial: '◑ Pago parcial', pendiente: '⏳ Pendiente de pago'};
 const HOR_DEF = {
@@ -818,7 +852,7 @@ f.addEventListener('submit', e => {
     reqs: [...document.querySelectorAll('.rq')].map(c => ({n: c.dataset.n, ok: c.checked})),
     estado: o ? o.estado : 'proceso', firmaInicio: o ? o.firmaInicio : '',
     pagado: o ? !!o.pagado : false, entregado: o ? !!o.entregado : false,
-    recibido: recibido.value, intentos: o ? (o.intentos || []) : [], incompleto: o ? !!o.incompleto : false, falta: o ? (o.falta || '') : '', plan: o ? (o.plan || '') : '', asignado: asig.value, folio: folio.value.trim(), negocio: negocio.value.trim(), resuelto: o ? (o.resuelto || null) : null, espera: o ? (o.espera || null) : null, periodoIni: perIni.value, periodoFin: perFin.value, cancelado: o ? !!o.cancelado : false, ciclo: o ? (o.ciclo || []) : [], cicloTipo: o ? (o.cicloTipo || '') : '', recogidoEn: o ? (o.recogidoEn || '') : '', previo: o ? (o.previo || '') : '', cerradoEn: o ? (o.cerradoEn || '') : '', fechaEntrega: o ? (o.fechaEntrega || '') : '', fechaRecoger: o ? (o.fechaRecoger || '') : ''
+    recibido: recibido.value, intentos: o ? (o.intentos || []) : [], incompleto: o ? !!o.incompleto : false, falta: o ? (o.falta || '') : '', plan: o ? (o.plan || '') : '', asignado: asig.value, folio: folio.value.trim(), negocio: negocio.value.trim(), resuelto: o ? (o.resuelto || null) : null, espera: o ? (o.espera || null) : null, periodoIni: perIni.value, periodoFin: perFin.value, cancelado: o ? !!o.cancelado : false, docsFolio: o ? (o.docsFolio || []) : [], ciclo: o ? (o.ciclo || []) : [], cicloTipo: o ? (o.cicloTipo || '') : '', recogidoEn: o ? (o.recogidoEn || '') : '', previo: o ? (o.previo || '') : '', cerradoEn: o ? (o.cerradoEn || '') : '', fechaEntrega: o ? (o.fechaEntrega || '') : '', fechaRecoger: o ? (o.fechaRecoger || '') : ''
   });
   limpiarForm();
 });
@@ -1366,7 +1400,7 @@ function pasoFis(t) {
     if (f > hy) return {tipo: 'esp', t: 'Esperando ' + nom, s: 'La tiene Fiscalización; se recoge el ' + fmt(pd(f)) + '.'};
     return {tipo: 'rec', t: 'Recoger ' + (pr ? 'prórroga' : 'hoja de solventación'), s: 'Ya llegó la fecha (' + fmt(pd(f)) + '): hay que ir por ella.'};
   }
-  const falta = (t.reqs || []).filter(r => !r.ok).map(r => rn(r.n));
+  const falta = [...(t.reqs || []).filter(r => !r.ok).map(r => rn(r.n)), ...docsPend(t).map(x => x.n + ' (' + x.titulo.toLowerCase() + ')')];
   if (last && last.tipo === 'prorroga' && last.recogido) return {tipo: 'dec', t: 'Prórroga vigente' + (t.limite ? ' hasta ' + fmt(pd(t.limite)) : ''), s: falta.length ? yo('Faltan: ' + falta.join(', ') + '. Reúnelos o ingresa otra prórroga.', 'Faltan: ' + falta.join(', ') + '.') : 'No falta ningún documento: ya se puede solventar.'};
   return {tipo: 'hac', t: 'Folio por atender', s: falta.length ? yo('Faltan: ' + falta.join(', ') + '. Si no los tienes a tiempo, ingresa prórroga.', 'Faltan: ' + falta.join(', ') + '.') : yo('Entrega lo que pide el folio.', 'Pendiente de entregar lo que pide el folio.')};
 }
@@ -1423,6 +1457,49 @@ function diasCobro() {
   });
   Object.keys(FIN.dias).forEach(get);
   return Object.values(m).map(d => ({...d, forzar: FIN.dias[d.f] || '', cobra: FIN.dias[d.f] === 'cobrar' ? true : FIN.dias[d.f] === 'nocobrar' ? false : (d.ok.length > 0 || d.falta.length > 0)})).sort((a, b) => b.f.localeCompare(a.f));
+}
+
+// ---------- Seguimiento de documentos del folio ----------
+function docEfect(d) {
+  const tp = DOCTPL[d.tpl] || DOCTPL.otro, fl = tp.fl, st = fl[d.paso] || fl[tp.ini], dias = Math.floor((hoy() - pd(d.desde)) / 864e5);
+  if (st.auto && dias >= st.auto.dias) { const sg = fl[st.auto.ir]; return {...sg, id: st.auto.ir, auto: true, t: 'Ya pasaron ' + dias + ' días: ' + sg.t.toLowerCase()}; }
+  return {...st, id: d.paso, auto: false};
+}
+function docsPend(t) { return (t.docsFolio || []).filter(d => !d.cancelado).map(d => ({n: d.n, ...docEfect(d)})).filter(e => !e.fin).map(e => ({n: e.n, titulo: e.t})); }
+function docsHtml(t) {
+  if (t.clase && t.clase !== 'tramite') return '';
+  const l = t.docsFolio || [], ed = puede();
+  const add = ed ? `<button onclick="abrirDoc('${t.id}')" class="mt-1 text-xs underline text-slate-500">➕ Documento que pide</button>` : '';
+  if (!l.length) return add ? `<div>${add}</div>` : '';
+  const pend = docsPend(t).length;
+  return `<details class="mt-2" ${DOCOPEN.has(t.id) ? 'open' : ''} ontoggle="this.open ? DOCOPEN.add('${t.id}') : DOCOPEN.delete('${t.id}')"><summary class="cursor-pointer text-xs text-slate-600">📑 Documentos que pide (${l.length}) · ${pend ? pend + ' pendiente(s)' : '✅ todos listos'}</summary><div class="mt-1 space-y-1.5">${l.map((d, i) => {
+    const e = docEfect(d), tp = DOCTPL[d.tpl] || DOCTPL.otro, col = d.cancelado ? 'text-slate-500' : e.fin ? 'text-emerald-700' : e.auto ? 'text-red-700' : e.q === 'yo' ? 'text-amber-700' : 'text-blue-700';
+    return `<div class="rounded-lg border p-2 text-xs ${d.cancelado ? 'opacity-60' : ''}"><div class="font-semibold">${esc(d.n)} <span class="rounded px-1 font-normal text-white" style="background:${depCol(tp.dep)}">${esc(tp.dep)}</span></div><div class="font-semibold ${col}">${d.cancelado ? '🚫 Ya no se pide' : (e.fin ? '✅ ' : e.auto ? '⏰ ' : e.q === 'yo' ? '👉 ' : '⏳ ') + esc(e.t)}</div><div class="text-slate-500">desde ${fmt(pd(d.desde))}${tp.est && !e.fin ? ' · tiempos estimados' : ''}</div>`
+      + (ed && !d.cancelado && !e.fin ? `<div class="flex flex-wrap gap-1 mt-1">${e.ac.map(([lb, ir]) => `<button onclick="docIr('${t.id}',${i},'${ir}')" class="border rounded px-2 py-0.5">${lb}</button>`).join('')}<button onclick="docNo('${t.id}',${i})" class="border rounded px-2 py-0.5">🚫 Ya no se pide</button></div>` : '')
+      + (ed ? `<div class="mt-0.5"><button onclick="docAtras('${t.id}',${i})" class="underline text-slate-500">⏪ paso anterior</button> <button onclick="docQuitar('${t.id}',${i})" class="underline text-slate-500">🗑️ quitar</button></div>` : '')
+      + `<details class="mt-1"><summary class="cursor-pointer text-slate-500">¿Qué piden?</summary><div class="text-slate-600">${esc(tp.q)}<ul class="list-disc pl-4">${(tp.req || []).map(r => '<li>' + esc(r) + '</li>').join('')}</ul></div></details></div>`;
+  }).join('')}</div>${add}</details>`;
+}
+function docCambiar(id, i, fn, msg) { const o = find(id); if (!o) return; const l = (o.docsFolio || []).map(x => ({...x})); fn(l, l[i]); persist({...o, docsFolio: l}); if (msg) toast(msg, o); }
+function docIr(id, i, ir) { docCambiar(id, i, (l, d) => { d.hist = [...(d.hist || []), {paso: d.paso, desde: d.desde}]; d.paso = ir; d.desde = isoHoy(); }, ir === 'listo' ? '✅ Documento listo' : '👉 Paso guardado'); }
+function docAtras(id, i) { docCambiar(id, i, (l, d) => { const h = d.hist || []; if (!h.length) return alert('Ya está en el primer paso.'); const a = h[h.length - 1]; d.paso = a.paso; d.desde = a.desde; d.hist = h.slice(0, -1); d.cancelado = false; }); }
+function docNo(id, i) { if (confirm('¿Este documento ya no se pide (por ejemplo, se canceló el anuncio)?')) docCambiar(id, i, (l, d) => { d.cancelado = true; }, '🚫 Documento marcado como ya no necesario'); }
+function docQuitar(id, i) { const o = find(id); if (!o || !confirm('¿Quitar este documento de la lista?')) return; persist({...o, docsFolio: (o.docsFolio || []).filter((_, j) => j !== i)}); }
+let docId = null;
+function abrirDoc(id) { docId = id; docTpl.innerHTML = Object.entries(DOCTPL).map(([k, v]) => `<option value="${k}">${esc(v.n)}</option>`).join(''); docNom.value = ''; dlgDoc.showModal(); }
+async function guardarDoc() {
+  const o = find(docId); if (!o) return; const k = docTpl.value, tp = DOCTPL[k];
+  await persist({...o, docsFolio: [...(o.docsFolio || []), {id: 'D' + Date.now(), tpl: k, n: docNom.value.trim() || tp.n, paso: tp.ini, desde: isoHoy(), hist: []}]});
+  dlgDoc.close();
+}
+function renderDocs() {
+  const hacer = [], esp = [];
+  T.filter(t => t.estado !== 'listo').forEach(t => (t.docsFolio || []).forEach(d => { if (d.cancelado) return; const e = docEfect(d); if (e.fin) return; (e.q === 'yo' ? hacer : esp).push({t, d, e}); }));
+  const fila = x => `<div onclick="verCard('${x.t.id}')" class="cursor-pointer text-sm border-b py-1.5"><span style="color:${depCol(x.t.dep)}">●</span> <b>${esc(x.t.cliente)}</b>${x.t.negocio ? ' › ' + esc(x.t.negocio) : ''}${x.t.folio ? ' · 🔖 ' + esc(x.t.folio) : ''} — ${esc(x.d.n)}<div class="text-xs ${x.e.auto ? 'text-red-700 font-semibold' : 'text-slate-600'}">${x.e.auto ? '⏰ ' : ''}${esc(x.e.t)} <span class="text-slate-500">· desde ${fmt(pd(x.d.desde))}</span></div></div>`;
+  docHacer.innerHTML = hacer.map(fila).join('') || '<p class="text-xs text-slate-400">Nada por hacer 🎉</p>';
+  docEsp.innerHTML = esp.map(fila).join('') || '<p class="text-xs text-slate-400">Nada en espera.</p>';
+  nDoc.textContent = hacer.length + esp.length; docSec.classList.toggle('hidden', !(hacer.length + esp.length));
+  docTit1.textContent = yo('Te toca hacer ahora', 'Le toca al gestor');
 }
 
 function mesNav(d) { MES = new Date(MES.getFullYear(), MES.getMonth() + d, 1); selDia = null; renderHeat(); }
