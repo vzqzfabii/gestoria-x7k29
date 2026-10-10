@@ -83,9 +83,13 @@ details>summary{outline:none}
 /* colores de Tailwind adaptados al fondo oscuro (generados) */
 .bg-amber-100{background:rgba(245,158,11,.19)!important}
 .bg-amber-50{background:rgba(245,158,11,.13)!important}
+.bg-blue-100{background:rgba(59,130,246,.19)!important}
+.bg-emerald-100{background:rgba(16,185,129,.19)!important}
 .bg-emerald-50{background:rgba(16,185,129,.13)!important}
 .bg-green-100{background:rgba(34,197,94,.19)!important}
+.bg-indigo-100{background:rgba(22,168,154,.19)!important}
 .bg-indigo-50{background:rgba(22,168,154,.13)!important}
+.bg-orange-100{background:rgba(249,115,22,.19)!important}
 .bg-orange-50{background:rgba(249,115,22,.13)!important}
 .bg-red-100{background:rgba(239,68,68,.19)!important}
 .bg-rose-50{background:rgba(244,63,94,.13)!important}
@@ -110,6 +114,7 @@ details>summary{outline:none}
 .border-rose-300{border-color:rgba(244,63,94,.38)!important}
 .border-slate-200{border-color:rgba(255,255,255,.16)!important}
 .border-slate-300{border-color:rgba(255,255,255,.16)!important}
+.border-slate-400{border-color:rgba(255,255,255,.16)!important}
 .border-teal-200{border-color:rgba(20,184,166,.38)!important}
 .border-teal-300{border-color:rgba(20,184,166,.38)!important}
 .border-violet-200{border-color:rgba(139,92,246,.38)!important}
@@ -117,6 +122,7 @@ details>summary{outline:none}
 .text-amber-700{color:#fcd34d!important}
 .text-amber-800{color:#fcd34d!important}
 .text-amber-900{color:#fcd34d!important}
+.text-blue-900{color:#93c5fd!important}
 .text-emerald-700{color:#6ee7b7!important}
 .text-emerald-800{color:#6ee7b7!important}
 .text-emerald-900{color:#6ee7b7!important}
@@ -239,7 +245,7 @@ details>summary{outline:none}
         <input id="cliente" list="clL" required class="mt-1 w-full border rounded-lg px-3 py-2" placeholder="Nombre del cliente">
       </label>
       <label class="block text-sm font-medium">Naturaleza
-        <select id="clase" onchange="claseChange()" class="mt-1 w-full border rounded-lg px-3 py-2 bg-white"><option value="tramite">📄 Trámite</option><option value="pago">💰 Pago</option><option value="entrega">📤 Entrega de documentos / acuses</option><option value="recoger">📥 Recoger documento</option><option value="vigencia">🔔 Vigencia (e.firma, CSD, poder…)</option></select></label>
+        <select id="clase" onchange="claseChange()" class="mt-1 w-full border rounded-lg px-3 py-2 bg-white"><option value="tramite">📄 Trámite</option><option value="pago">💰 Pago</option><option value="entrega">📤 Entrega de documentos / acuses</option><option value="recoger">📥 Recoger documento</option><option value="vigencia">🔔 Vigencia (e.firma, CSD, poder…)</option><option value="sello">🔏 Sello del mes (recurrente)</option></select></label>
       <label class="block text-sm font-medium">Dependencia / área
         <select id="dep" onchange="sugerir()" class="mt-1 w-full border rounded-lg px-3 py-2 bg-white"></select></label>
       <label class="block text-sm font-medium">Trámite o concepto
@@ -247,6 +253,9 @@ details>summary{outline:none}
       <label class="block text-sm font-medium">Fecha límite <span class="text-slate-400 font-normal">(opcional en pagos, recoger y entregas)</span>
         <input id="limite" type="date" onchange="avisoFecha()" required class="mt-1 w-full border rounded-lg px-3 py-2">
       </label>
+      <label class="block text-sm font-medium">Periodo que abarca: inicia <span class="text-slate-400 font-normal">(opcional)</span><input id="perIni" type="date" class="mt-1 w-full border rounded-lg px-3 py-2"></label>
+      <label class="block text-sm font-medium">Periodo: finaliza<input id="perFin" type="date" class="mt-1 w-full border rounded-lg px-3 py-2"></label>
+      <label class="block text-sm font-medium">Periodo rápido<select id="perPre" onchange="perPreset()" class="mt-1 w-full border rounded-lg px-3 py-2 bg-white"><option value="">Elegir…</option><option value="mesAnt">Mes anterior</option><option value="mes">Este mes</option><option value="bimAnt">Bimestre anterior (IMSS)</option><option value="bim">Bimestre actual</option></select></label>
       <label class="block text-sm font-medium">Negocio / sucursal <span class="text-slate-400 font-normal">(si el cliente tiene varios)</span><input id="negocio" list="negL" class="mt-1 w-full border rounded-lg px-3 py-2"></label>
       <label class="block text-sm font-medium">Folio u oficio <span class="text-slate-400 font-normal">(opcional)</span><input id="folio" class="mt-1 w-full border rounded-lg px-3 py-2" placeholder="Ej. folio de Fiscalización"></label>
       <label class="block text-sm font-medium">Entregar el día <span class="text-slate-400 font-normal">(el que ella pida; vacío = no se cobra)</span><input id="asig" type="date" onchange="avisoFecha()" class="mt-1 w-full border rounded-lg px-3 py-2"></label>
@@ -364,7 +373,7 @@ details>summary{outline:none}
       <div id="actGrid" class="grid grid-cols-7 gap-1 max-w-sm"></div><div id="actSem" class="mt-2 space-y-0.5"></div><div id="actDet" class="mt-2"></div></div>
     <div class="bg-white rounded-xl p-3 mb-3"><h3 class="font-semibold text-sm mb-1">📊 Entregas: completas de origen vs. resueltas por mí</h3>
       <p class="text-xs text-slate-500 mb-2">Completa de origen = ella te la dio completa. Resuelta por mí = salió porque tú completaste algo (imprimir, conseguir un papel). Se marca con 🛠️ en cada tarjeta.</p><div id="cobStat" class="overflow-x-auto"></div></div>
-    <div class="text-xs text-slate-700 mb-3">Tarifa por día: $<input id="cobTar" type="number" onchange="cobTarifa()" class="border rounded px-2 py-1 w-24 mx-1"> Un día se cobra cuando entregas al menos uno de los documentos que ella te asignó para ese día; los demás pueden salir después y no generan otro cobro. Si ella te da uno fuera de la lista, pasa al día siguiente y se cuenta junto con los de ese día.</div>
+    <div class="text-xs text-slate-700 mb-3">Tarifa por día: $<input id="cobTar" type="number" onchange="cobTarifa()" class="border rounded px-2 py-1 w-24 mx-1"> Un día asignado se cobra cuando ya recogiste sus documentos y llega ese día (ya estás comprometido), o antes si entregas alguno en día hábil. Los demás pueden salir después sin cobro extra. Lo que entregues en sábado, domingo o festivo cuenta ese mismo día como día extra. Si ella te da uno fuera de la lista, pasa al día siguiente y se cuenta con los de ese día.</div>
     <div class="grid md:grid-cols-2 gap-4">
       <div><h3 class="font-semibold text-sm mb-1">Días</h3><div id="cobDias" class="text-sm space-y-2 max-h-80 overflow-auto"></div></div>
       <div><h3 class="font-semibold text-sm mb-1">Pagos que me ha hecho</h3><div id="cobPagos" class="text-sm"></div>
@@ -439,6 +448,10 @@ details>summary{outline:none}
   <label id="fisLimBox" class="text-sm block mt-2">Nueva fecha límite que te dieron con la prórroga <span class="text-slate-400">(opcional)</span><input id="fisLim" type="date" class="border rounded-lg px-3 py-2 w-full mt-1"></label>
   <div class="mt-3 flex gap-2"><button onclick="guardarFis()" class="bg-indigo-600 text-white px-4 py-2 rounded-lg">Guardar</button><button onclick="dlgFis.close()" class="border px-4 py-2 rounded-lg">Cancelar</button></div></dialog>
 <dialog id="dlgCard" class="rounded-2xl p-3 w-[min(96vw,640px)]"><div id="cardBox"></div><div class="text-right mt-2"><button onclick="dlgCard.close()" class="border px-4 py-2 rounded-lg">Cerrar</button></div></dialog>
+<dialog id="dlgVig" class="rounded-2xl p-5 w-[min(92vw,420px)]"><h3 class="font-semibold mb-2">📥 Prórroga recogida</h3>
+  <label class="text-sm block">¿Hasta qué fecha es la vigencia de la prórroga?<input id="vigFec" type="date" class="border rounded-lg px-3 py-2 w-full mt-1"></label>
+  <p class="text-xs text-slate-500 mt-2">El folio sigue abierto. Después podrás solventar, ingresar otra prórroga o cancelarlo.</p>
+  <div class="mt-3 flex gap-2"><button onclick="guardarVig()" class="bg-indigo-600 text-white px-4 py-2 rounded-lg">Guardar</button><button onclick="dlgVig.close()" class="border px-4 py-2 rounded-lg">Cancelar</button></div></dialog>
 <dialog id="dlgEnt" class="rounded-2xl p-5 w-[min(92vw,420px)]">
   <h3 class="font-semibold mb-2">Entregado en dependencia</h3>
   <label class="text-sm">¿Qué día te dijeron que regreses a recoger? <span class="text-slate-400">(opcional)</span><input id="entRec" type="date" class="border rounded-lg px-3 py-2 w-full mt-1"></label>
@@ -546,8 +559,8 @@ function reqHtml(t) {
 function toggleReq(id, i) { const o = find(id), r = o.reqs.map(x => ({...x})); r[i].ok = !r[i].ok; persist({...o, reqs: r}); }
 
 // ---------- Tarjeta ----------
-const ICO = {tramite: '📄', pago: '💰', entrega: '📤', recoger: '📥', vigencia: '🔔'};
-const lblTer = (t, c) => t.estado === 'firmas' ? (t.dep === 'Fiscalización' ? (t.cicloTipo === 'prorroga' ? '📥 Recogí la prórroga (sigue abierto)' : '📥 Recogí la hoja de solventado (cerrar)') : '📥 Ya lo recogí (cerrar)') : ({tramite: '✔ Terminado', pago: '💰 Marcar pagado', entrega: '📤 Marcar entregado', recoger: '📥 Ya lo recogí', vigencia: '✔ Renovada'}[c] || '✔ Terminado');
+const ICO = {tramite: '📄', pago: '💰', entrega: '📤', recoger: '📥', vigencia: '🔔', sello: '🔏'};
+const lblTer = (t, c) => t.estado === 'firmas' ? (t.dep === 'Fiscalización' ? (t.cicloTipo === 'prorroga' ? '📥 Recogí la prórroga (sigue abierto)' : '📥 Recogí la hoja de solventado (cerrar)') : '📥 Ya lo recogí (cerrar)') : ({tramite: '✔ Terminado', pago: '💰 Marcar pagado', entrega: '📤 Marcar entregado', recoger: '📥 Ya lo recogí', vigencia: '✔ Renovada', sello: '🔏 Ya quedó sellado este mes'}[c] || '✔ Terminado');
 function card(t) {
   const c = t.clase || 'tramite', ints = t.intentos || [], nI = ints.length;
   const lim = t.limite ? pd(t.limite) : null, h = lim ? habiles(hoy(), lim) : 999, falt = faltantes(t);
@@ -563,7 +576,7 @@ function card(t) {
   else estado = `<span class="text-slate-600">quedan ${h} día(s) hábil(es)</span>`;
 
   let firmas = '';
-  if (t.estado === 'firmas') {
+  if (t.estado === 'firmas' && !t.fechaRecoger) {
     const ini = pd(t.firmaInicio), fin = sumaHabiles(ini, t.dias), trans = habiles(ini, hoy());
     const resta = Math.max(t.dias - trans, 0), tarde = lim && fin > lim;
     firmas = `<div class="mt-2 text-xs rounded-lg p-2 ${tarde ? 'bg-red-100 text-red-800' : 'bg-white text-slate-700'}">
@@ -571,7 +584,7 @@ function card(t) {
       ${tarde ? '<br>' + yo('⚠️ Cuidado: la respuesta estimada cae después de tu fecha límite', '⚠️ La respuesta estimada de la dependencia cae después de la fecha límite') : ''}</div>`;
   }
   let lic = '';
-  if (t.vence) { const d = diasCal(pd(t.vence)); lic = `<div class="mt-1 text-xs text-amber-800">🏪 Licencia vence ${fmt(pd(t.vence))} (${d < 0 ? 'vencida' : d + ' días'})</div>`; }
+  if (t.vence) { const d = diasCal(pd(t.vence)); lic = t.dep === 'Fiscalización' ? `<div class="mt-1 text-xs text-amber-800">⏳ Fecha límite del folio: ${fmt(pd(t.vence))}${ent ? ' · ya no corre: lo tiene la dependencia' : ' (' + (d < 0 ? 'vencida: riesgo de multa' : d + ' días') + ')'}</div>` : `<div class="mt-1 text-xs text-amber-800">🏪 Licencia vence ${fmt(pd(t.vence))} (${d < 0 ? 'vencida' : d + ' días'})</div>`; }
 
   const alerta = falt.length ? `<div class="mt-2 text-xs font-semibold bg-red-600 text-white rounded-lg px-2 py-1.5">🚨 Falta: ${falt.join(', ')}</div>` : '';
   const chip = (k, lbl, ok) => `<span class="${puede() ? 'chip ' : ''}text-xs px-2 py-0.5 rounded-full border ${ok ? 'bg-green-100 border-green-300 text-green-800' : 'bg-red-100 border-red-300 text-red-800'}" ${puede() ? `onclick="toggle('${t.id}','${k}')"` : ''}>${ok ? '✅' : '❌'} ${lbl}</span>`;
@@ -581,13 +594,13 @@ function card(t) {
       <div><div class="font-semibold"><span style="color:${cliCol(t.cliente)}">●</span> ${esc(t.cliente)}</div><div class="text-xs text-slate-500">${ICO[c]} ${esc(t.tipo)} <span class="rounded px-1 text-white" style="background:${depCol(t.dep)}">${esc(t.dep || '')}</span>${t.negocio ? ' <span class="text-slate-700">🏬 ' + esc(t.negocio) + '</span>' : ''}${t.folio ? ' <span class="font-mono bg-amber-50 border border-amber-200 rounded px-1">🔖 ' + esc(t.folio) + '</span>' : ''}${!ent && cierraDe(t.dep || 'Otro') ? ' <span class="text-amber-700">🕑 cierra ' + cierraDe(t.dep || 'Otro') + '</span>' : ''}</div></div>
       ${puede() ? `<div class="flex gap-2 text-sm"><button onclick="editar('${t.id}')" title="Editar">✏️</button><button onclick="borrar('${t.id}')" title="Eliminar">🗑️</button></div>` : ''}
     </div>
-    <div class="text-sm mt-1">📅 ${lim ? 'Fecha límite: ' + fmt(lim) + ' · ' : ''}${estado}</div>
-    <div class="text-xs text-slate-500 mt-1">${t.resp ? '👤 ' + esc(t.resp) : ''}${t.monto ? ' · 💲' + Number(t.monto).toLocaleString('es-MX') : ''}${t.repite ? ' · 🔁 mensual' : ''}</div>${lineaTiempo(t)}${planB ? `<div class="text-xs mt-1">${planB}</div>` : ''}
+    ${pasoBanner(t)}<div class="text-sm mt-1">📅 ${lim ? 'Fecha límite: ' + fmt(lim) + ' · ' : ''}${estado}</div>
+    <div class="text-xs text-slate-500 mt-1">${t.resp ? '👤 ' + esc(t.resp) : ''}${t.monto ? ' · 💲' + Number(t.monto).toLocaleString('es-MX') : ''}${t.repite ? ' · 🔁 mensual' : ''}</div>${lineaTiempo(t)}${extraBadges(t)}${planB ? `<div class="text-xs mt-1">${planB}</div>` : ''}
     ${firmas}${recB(t)}${lic}${alerta}${incB}${intB}${intHtml(t)}${cicloHtml(t)}${t.resuelto ? '<div class="mt-1 text-xs rounded px-2 py-1 bg-amber-50 text-amber-900 border border-amber-200">🛠️ ' + yo('Resuelto por mí', 'Resuelto por el gestor') + ': ' + esc(t.resuelto.nota || 'completado por el gestor') + '</div>' : ''}${t.espera ? '<div class="mt-1 text-xs rounded px-2 py-1 bg-orange-50 text-orange-900 border border-orange-200">⏳ En espera: ' + esc(t.espera.txt) + ' (' + esc(t.espera.dep || '') + ')</div>' : ''}
     
     ${reqHtml(t)}
     ${puede() ? `<div class="flex flex-wrap gap-2 mt-3">
-      ${t.estado !== 'firmas' && c === 'tramite' && t.dep === 'Fiscalización' ? `<button onclick="abrirFis('${t.id}','prorroga')" class="text-xs bg-blue-600 text-white px-2.5 py-1 rounded-md">🔁 Ingresé prórroga</button><button onclick="abrirFis('${t.id}','solventacion')" class="text-xs bg-emerald-700 text-white px-2.5 py-1 rounded-md">✅ Ingresé solventación</button>` : ''}${t.estado !== 'firmas' && c === 'tramite' && t.dep !== 'Fiscalización' ? `<button onclick="aFirmas('${t.id}')" class="text-xs bg-blue-600 text-white px-2.5 py-1 rounded-md">📥 Entregado en dependencia</button>` : ''}
+      ${t.estado !== 'firmas' && c === 'tramite' && t.dep === 'Fiscalización' ? `<button onclick="abrirFis('${t.id}','prorroga')" class="text-xs bg-blue-600 text-white px-2.5 py-1 rounded-md">🔁 Ingresé prórroga</button><button onclick="abrirFis('${t.id}','solventacion')" class="text-xs bg-emerald-700 text-white px-2.5 py-1 rounded-md">✅ Ingresé solventación</button><button onclick="cancelarFis('${t.id}')" class="text-xs border border-slate-400 px-2.5 py-1 rounded-md">🚫 Ya no es necesario</button>` : ''}${t.estado !== 'firmas' && c === 'tramite' && t.dep !== 'Fiscalización' ? `<button onclick="aFirmas('${t.id}')" class="text-xs bg-blue-600 text-white px-2.5 py-1 rounded-md">📥 Entregado en dependencia</button>` : ''}
       <button onclick="${t.dep === 'Fiscalización' && t.estado === 'firmas' ? 'recogerFis' : 'terminar'}('${t.id}')" class="text-xs bg-green-600 text-white px-2.5 py-1 rounded-md">${lblTer(t, c)}</button>
       <button onclick="abrirInt('${t.id}')" class="text-xs border border-orange-400 text-orange-700 px-2.5 py-1 rounded-md">⚠️ Registrar intento</button>
       ${t.incompleto ? `<button onclick="resolver('${t.id}')" class="text-xs border border-slate-300 px-2.5 py-1 rounded-md">✅ Ya está completo</button>` : ''}
@@ -779,7 +792,7 @@ async function adGuarda() {
   await saveOvr({...OVR, [c]: adT.value.split('\n').map(x => x.trim()).filter(Boolean)}); alert('Lista guardada ✅');
 }
 async function adReset() { const o = {...OVR}; delete o[adC.value.trim()]; await saveOvr(o); adCarga(); }
-function claseChange() { limite.required = clase.value === 'tramite'; vence.required = clase.value === 'vigencia'; }
+function claseChange() { limite.required = clase.value === 'tramite'; if (clase.value === 'sello') repite.checked = true; vence.required = clase.value === 'vigencia'; }
 function filtrados() {
   const x = q.value.toLowerCase();
   return T.filter(t => (!fDep.value || t.dep === fDep.value) && (!x || (t.cliente + ' ' + t.tipo + ' ' + (t.folio || '') + ' ' + (t.negocio || '')).toLowerCase().includes(x)));
@@ -789,7 +802,7 @@ function limpiarForm() { f.reset(); formDet.open = false; recibido.value = isoHo
 function editar(id) {
   const t = find(id); if (!t) return;
   editId = id; dep.value = t.dep || 'Otro'; sugerir(); clase.value = t.clase || 'tramite'; claseChange();
-  cliente.value = t.cliente; recibido.value = t.recibido || ''; asig.value = t.asignado || ''; folio.value = t.folio || ''; negocio.value = t.negocio || ''; tipo.value = t.tipo; limite.value = t.limite; dias.value = t.dias; vence.value = t.vence || '';
+  cliente.value = t.cliente; recibido.value = t.recibido || ''; asig.value = t.asignado || ''; folio.value = t.folio || ''; perIni.value = t.periodoIni || ''; perFin.value = t.periodoFin || ''; negocio.value = t.negocio || ''; tipo.value = t.tipo; limite.value = t.limite; dias.value = t.dias; vence.value = t.vence || '';
   monto.value = t.monto || ''; repite.checked = !!t.repite;
   renderReq(t.reqs);
   btnG.textContent = 'Guardar cambios'; formDet.open = true; btnC.classList.remove('hidden'); formSec.scrollIntoView({behavior: 'smooth'});
@@ -805,7 +818,7 @@ f.addEventListener('submit', e => {
     reqs: [...document.querySelectorAll('.rq')].map(c => ({n: c.dataset.n, ok: c.checked})),
     estado: o ? o.estado : 'proceso', firmaInicio: o ? o.firmaInicio : '',
     pagado: o ? !!o.pagado : false, entregado: o ? !!o.entregado : false,
-    recibido: recibido.value, intentos: o ? (o.intentos || []) : [], incompleto: o ? !!o.incompleto : false, falta: o ? (o.falta || '') : '', plan: o ? (o.plan || '') : '', asignado: asig.value, folio: folio.value.trim(), negocio: negocio.value.trim(), resuelto: o ? (o.resuelto || null) : null, espera: o ? (o.espera || null) : null, ciclo: o ? (o.ciclo || []) : [], cicloTipo: o ? (o.cicloTipo || '') : '', recogidoEn: o ? (o.recogidoEn || '') : '', previo: o ? (o.previo || '') : '', cerradoEn: o ? (o.cerradoEn || '') : '', fechaEntrega: o ? (o.fechaEntrega || '') : '', fechaRecoger: o ? (o.fechaRecoger || '') : ''
+    recibido: recibido.value, intentos: o ? (o.intentos || []) : [], incompleto: o ? !!o.incompleto : false, falta: o ? (o.falta || '') : '', plan: o ? (o.plan || '') : '', asignado: asig.value, folio: folio.value.trim(), negocio: negocio.value.trim(), resuelto: o ? (o.resuelto || null) : null, espera: o ? (o.espera || null) : null, periodoIni: perIni.value, periodoFin: perFin.value, cancelado: o ? !!o.cancelado : false, ciclo: o ? (o.ciclo || []) : [], cicloTipo: o ? (o.cicloTipo || '') : '', recogidoEn: o ? (o.recogidoEn || '') : '', previo: o ? (o.previo || '') : '', cerradoEn: o ? (o.cerradoEn || '') : '', fechaEntrega: o ? (o.fechaEntrega || '') : '', fechaRecoger: o ? (o.fechaRecoger || '') : ''
   });
   limpiarForm();
 });
@@ -824,11 +837,7 @@ async function guardarInt() {
 function plan(id, d) { persist({...find(id), plan: d === 'hoy' ? isoHoy() : isoD(sumaHabiles(hoy(), 1))}); }
 function quitarPlan(id) { persist({...find(id), plan: ''}); }
 function resolver(id) { persist({...find(id), incompleto: false, falta: ''}); }
-function recB(t) {
-  if (t.estado !== 'firmas' || !t.fechaRecoger) return '';
-  const r = pd(t.fechaRecoger), hh = habiles(hoy(), r);
-  return `<div class="mt-2 text-xs rounded-lg p-2 ${hh <= 0 ? 'bg-amber-100 text-amber-900 font-semibold' : 'bg-white text-slate-700'}">${yo('📥 Te dijeron que regreses a recoger el ', '📥 El gestor debe regresar a recoger el ')}<b>${fmt(r)}</b> · ${hh < 0 ? yo('ya pasó, ve por él', 'ya pasó la fecha de recogida') : hh === 0 ? '¡es hoy!' : 'en ' + hh + ' día(s) hábil(es)'}</div>`;
-}
+
 function intHtml(t) {
   const l = t.intentos || []; if (!l.length) return '';
   return `<details class="mt-1"><summary class="cursor-pointer text-xs text-slate-600">📜 Historial de intentos</summary><div class="mt-1 text-xs space-y-0.5">${l.map(x => `<div>#${x.n} · ${fmt(pd(x.fecha))} · ${x.res === 'incompleto' ? '⚠️ incompleto' : '🚫 no se entregó ese día'}${x.nota ? ': ' + esc(x.nota) : ''}</div>`).join('')}</div></details>`;
@@ -856,17 +865,7 @@ function finArmar(rows) {
 async function finSave(d) { try { await sb('rpc/guardar_finanzas', {p_pin: PIN, p_doc: d}); refrescar(); } catch (e) { alert('No se pudo guardar: ' + (e.message || e.code)); } }
 async function finDel(id, ask) { if (ask && !confirm('¿Borrar este registro?')) return; try { await sb('rpc/borrar_finanzas', {p_pin: PIN, p_id: id}); refrescar(); } catch (e) { alert('No se pudo borrar: ' + (e.message || e.code)); } }
 const fEnt = t => t.fechaEntrega || ((t.estado === 'firmas' || t.estado === 'listo') ? (t.firmaInicio || '') : '');
-function diasCobro() {
-  const m = {}, hy = isoHoy(), get = f => m[f] = m[f] || {f, ok: [], falta: []};
-  T.forEach(t => {
-    if (!t.asignado) return;
-    const e = fEnt(t);
-    if (e) get(t.asignado).ok.push(t);
-    else if (t.asignado <= hy) get(t.asignado).falta.push({t, e: ''});
-  });
-  Object.keys(FIN.dias).forEach(get);
-  return Object.values(m).map(d => ({...d, forzar: FIN.dias[d.f] || '', cobra: FIN.dias[d.f] === 'cobrar' ? true : FIN.dias[d.f] === 'nocobrar' ? false : d.ok.length > 0})).sort((a, b) => b.f.localeCompare(a.f));
-}
+
 function diaAjuste(f, v) { v ? finSave({id: 'D' + f, t: 'dia', f, forzar: v}) : finDel('D' + f, false); }
 function cobTarifa() { finSave({id: 'cfg', t: 'cfg', tarifa: parseFloat(cobTar.value) || 300}); }
 function pagoAdd() { const m = parseFloat(pgM.value); if (!m) return alert('Escribe el monto.'); finSave({id: 'P' + Date.now(), t: 'pago', f: pgF.value || isoHoy(), monto: m, nota: pgN.value.trim()}); pgM.value = ''; pgN.value = ''; }
@@ -881,9 +880,9 @@ function renderCob() {
   if (document.activeElement !== cobTar) cobTar.value = FIN.tarifa;
   const caja = (v, l, c) => `<div class="bg-white rounded-lg p-2"><div class="text-xl font-bold ${c || ''}">${v}</div><div class="text-xs text-slate-500">${l}</div></div>`;
   cobRes.innerHTML = caja(n, 'Días cobrables') + caja($(ganado), 'Ganado') + caja($(pagado), 'Me ha pagado') + (debe >= 0 ? caja($(debe), 'Me debe', 'text-emerald-700') : caja($(-debe), 'Anticipo (te pagó de más)', 'text-sky-700')) + caja($(efT), 'Efectivo que le debo', 'text-rose-600') + caja($(Math.abs(neto)) + (neto < 0 ? ' (le debo)' : ''), 'Saldo neto', neto >= 0 ? 'text-emerald-700' : 'text-rose-600');
-  cobDias.innerHTML = dias.slice(0, 45).map(d => `<div class="bg-white rounded-lg p-2"><b>${fmt(pd(d.f))}</b> · ${d.cobra ? '✅ cobra · ' + (STX[stP[d.f]] || '') : '❌ no cobra'}${d.forzar ? ' <span class="text-slate-500">(ajuste manual)</span>' : ''}
+  cobDias.innerHTML = dias.slice(0, 45).map(d => `<div class="bg-white rounded-lg p-2"><b>${fmt(pd(d.f))}</b>${d.extra ? ' 🌙 día extra' : ''} · ${d.cobra ? '✅ cobra · ' + (STX[stP[d.f]] || '') : '❌ no cobra'}${d.forzar ? ' <span class="text-slate-500">(ajuste manual)</span>' : ''}
     ${d.ok.length ? `<div class="text-xs text-slate-600">Entregados de este día: ${d.ok.map(t => esc(t.cliente) + ' (' + esc(t.tipo) + ')' + (fEnt(t) !== d.f ? ' · entregado el ' + fmt(pd(fEnt(t))) : '')).join(', ')}</div>` : ''}
-    ${d.falta.length ? `<div class="text-xs text-orange-700">Asignados a este día que siguen pendientes: ${d.falta.map(x => esc(x.t.cliente) + (x.e ? ' (se entregó el ' + fmt(pd(x.e)) + ')' : ' (sigue pendiente)')).join(', ')}</div>` : ''}
+    ${d.falta.length ? `<div class="text-xs text-orange-700">Pendientes de este día (ya cuenta: estás comprometido): ${d.falta.map(x => esc(x.t.cliente) + (x.e ? ' (se entregó el ' + fmt(pd(x.e)) + ')' : ' (sigue pendiente)')).join(', ')}</div>` : ''}
     <div class="mt-1 flex gap-2 text-xs">${d.forzar ? `<button onclick="diaAjuste('${d.f}','')" class="border rounded px-2 py-0.5">Quitar ajuste</button>` : d.cobra ? `<button onclick="diaAjuste('${d.f}','nocobrar')" class="border rounded px-2 py-0.5">No cobrar</button>` : `<button onclick="diaAjuste('${d.f}','cobrar')" class="border rounded px-2 py-0.5">Cobrar igual</button>`}</div></div>`).join('') || '<p class="text-xs text-slate-400">Aún no hay días. Se llenan solos cuando entregas lo asignado.</p>';
   cobPagos.innerHTML = [...FIN.pagos].sort((a, b) => b.f.localeCompare(a.f)).map(p => `<div>${fmt(pd(p.f))} · ${$(p.monto)}${p.nota ? ' · ' + esc(p.nota) : ''} <button onclick="finDel('${p.id}', true)" class="text-red-600 ml-1">✖</button></div>`).join('') || '<p class="text-xs text-slate-400">Sin pagos registrados.</p>';
   cobEfec.innerHTML = ef.map(e => `<div>${fmt(pd(e.f))} · ${esc(e.cliente)} · ${esc(e.concepto)} · <b>${$(e.monto)}</b> <button onclick="efecEntregado('${e.id}')" class="border rounded px-2 py-0.5 text-xs">Ya se lo entregué</button> <button onclick="finDel('${e.id}', true)" class="text-red-600">✖</button></div>`).join('') || '<p class="text-xs text-slate-400">No debes entregarle efectivo.</p>';
@@ -1063,7 +1062,7 @@ function donut(p, c) { return `<svg viewBox="0 0 42 42" class="w-24 h-24 shrink-
 // ---------- Terminados, reabrir y respaldo ----------
 function renderTer() {
   const l = T.filter(t => t.estado === 'listo').sort((a, b) => (b.cerradoEn || b.firmaInicio || b.limite || '').localeCompare(a.cerradoEn || a.firmaInicio || a.limite || '')).slice(0, 80);
-  terList.innerHTML = l.map(t => `<div class="border-b py-2 flex flex-wrap items-center gap-2"><b>${esc(t.cliente)}</b><span class="text-slate-600">${ICO[t.clase || 'tramite'] || ''} ${esc(t.tipo)}</span><span class="bg-slate-100 rounded px-1 text-xs">${esc(t.dep || '')}</span><span class="text-xs text-slate-500">· cerrado ${t.cerradoEn ? fmt(pd(t.cerradoEn)) : 'sin fecha registrada'}</span>${puede() ? `<button onclick="reabrir('${t.id}')" class="ml-auto border rounded px-2 py-0.5 text-xs">↩ Reabrir</button>` : ''}</div>`).join('') || '<p class="text-xs text-slate-400">Aún no hay terminados.</p>';
+  terList.innerHTML = l.map(t => `<div class="border-b py-2 flex flex-wrap items-center gap-2"><b>${esc(t.cliente)}</b><span class="text-slate-600">${ICO[t.clase || 'tramite'] || ''} ${esc(t.tipo)}</span><span class="bg-slate-100 rounded px-1 text-xs">${esc(t.dep || '')}</span><span class="text-xs text-slate-500">· cerrado ${t.cerradoEn ? fmt(pd(t.cerradoEn)) : 'sin fecha registrada'}${t.cancelado ? ' · 🚫 cancelado' : ''}</span>${puede() ? `<button onclick="reabrir('${t.id}')" class="ml-auto border rounded px-2 py-0.5 text-xs">↩ Reabrir</button>` : ''}</div>`).join('') || '<p class="text-xs text-slate-400">Aún no hay terminados.</p>';
 }
 function reabrir(id) { const o = find(id); if (!o || !confirm('¿Reabrir este trámite? Volverá a salir como pendiente.')) return; persist({...o, estado: o.previo || (o.firmaInicio ? 'firmas' : 'proceso'), cerradoEn: '', pagado: false, entregado: false}); }
 function bajar(nombre, texto, tipo) { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([texto], {type: tipo})); a.download = nombre; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 3000); }
@@ -1128,7 +1127,7 @@ function asignarPagos(dias) {
 }
 function pagosPublicos() {
   const dias = diasCobro(), {st} = asignarPagos(dias);
-  return {visible: true, dias: dias.filter(d => d.cobra).slice(0, 45).map(d => ({f: d.f, st: st[d.f], docs: d.ok.map(t => t.cliente + ' – ' + t.tipo)}))};
+  return {visible: true, dias: dias.filter(d => d.cobra).slice(0, 45).map(d => ({f: d.f, st: st[d.f], docs: d.ok.concat(d.falta.map(x => x.t)).map(t => t.cliente + ' – ' + t.tipo)}))};
 }
 async function syncPagos(forzar) {
   if (!CAN) return;
@@ -1311,19 +1310,12 @@ function mini(t) {
 function verCard(id) { const t = find(id); if (!t) return; cardOpen = id; cardBox.innerHTML = card(t); dlgCard.showModal(); }
 // ---------- Fiscalización: folio, prórrogas y solventación ----------
 let fisId = null, fisTipo = null;
-function abrirFis(id, tipo) { fisId = id; fisTipo = tipo; fisRec.value = ''; fisLim.value = ''; fisLimBox.style.display = tipo === 'prorroga' ? '' : 'none'; fisTit.textContent = tipo === 'prorroga' ? '🔁 Ingresé una prórroga' : '✅ Ingresé la solventación'; dlgFis.showModal(); }
+function abrirFis(id, tipo) { fisId = id; fisTipo = tipo; fisRec.value = ''; fisLim.value = ''; fisLimBox.style.display = 'none'; fisTit.textContent = tipo === 'prorroga' ? '🔁 Ingresé una prórroga' : '✅ Ingresé la solventación'; dlgFis.showModal(); }
 async function guardarFis() {
   const o = find(fisId); if (!o) return;
   const c = [...(o.ciclo || []), {tipo: fisTipo, ingreso: isoHoy(), recoger: fisRec.value, nuevaLimite: fisLim.value, recogido: ''}];
   await persist({...o, estado: 'firmas', firmaInicio: isoHoy(), fechaEntrega: o.fechaEntrega || isoHoy(), fechaRecoger: fisRec.value, cicloTipo: fisTipo, ciclo: c, incompleto: false, falta: ''});
   dlgFis.close(); toast(fisTipo === 'prorroga' ? '🔁 Prórroga registrada' : '✅ Solventación registrada', o);
-}
-async function recogerFis(id) {
-  const o = find(id); if (!o) return;
-  if (o.cicloTipo !== 'prorroga') return terminar(id);
-  const c = (o.ciclo || []).map((x, i, a) => i === a.length - 1 ? {...x, recogido: isoHoy()} : x), last = c[c.length - 1] || {};
-  await persist({...o, ciclo: c, estado: 'proceso', fechaRecoger: '', cicloTipo: '', limite: last.nuevaLimite || o.limite});
-  toast('📥 Prórroga recogida. El folio sigue abierto.', o);
 }
 function cicloHtml(t) {
   const l = t.ciclo || []; if (!l.length) return '';
@@ -1354,13 +1346,83 @@ function renderOrg() {
     if (t.clase === 'vigencia') { if (t.vence) items.push({f: t.vence, t, txt: 'vence la vigencia'}); return; }
     if (t.estado === 'firmas') { if (t.fechaRecoger) items.push({f: t.fechaRecoger, t, txt: yo('hay que regresar a recoger', 'el gestor regresa a recoger')}); return; }
     if (t.limite) items.push({f: t.limite, t, txt: 'se acaba el límite'});
-    if (t.vence) items.push({f: t.vence, t, txt: 'vence la licencia'});
+    if (t.vence) items.push({f: t.vence, t, txt: t.dep === 'Fiscalización' ? 'se acaba el límite del folio' : 'vence la licencia'});
   });
   const cub = [['⚠️ Ya pasó la fecha', d => d < hy], ['📅 Esta semana (hasta el ' + fmt(finSem) + ')', d => d >= hy && d <= finSem], ['📅 Próxima semana (hasta el ' + fmt(finSig) + ')', d => d > finSem && d <= finSig], ['🗓️ Resto del mes', d => d > finSig && d <= finMes], ['🔭 Próximos 60 días', d => d > finMes && d <= fin60]];
   orgBody.innerHTML = cub.map(([tt, fn]) => {
     const l = items.filter(i => fn(pd(i.f))).sort((a, b) => a.f.localeCompare(b.f));
     return l.length ? `<div><div class="font-semibold text-sm mb-1">${tt} <span class="text-xs font-normal text-slate-500">· ${l.length}</span></div>${l.map(i => `<div class="text-sm py-1 border-b"><span style="color:${depCol(i.t.dep)}">●</span> <b>${fmt(pd(i.f))}</b> · ${esc(i.t.cliente)}${i.t.negocio ? ' › ' + esc(i.t.negocio) : ''} (${esc(i.t.tipo)}) <span class="text-slate-500">— ${i.txt}</span></div>`).join('')}</div>` : '';
   }).join('') || '<p class="text-sm text-slate-500">Nada con fecha en los próximos 60 días. 🎉</p>';
+}
+
+// ---------- Parte A: flujo de Fiscalización, periodos y sellos ----------
+// Dónde está el folio y qué sigue (el título cambia solo según el paso y la fecha)
+function pasoFis(t) {
+  const hy = isoHoy(), ci = t.ciclo || [], last = ci[ci.length - 1];
+  if (t.estado === 'listo') return {tipo: 'ok', t: t.cancelado ? 'Cancelado: ya no era necesario' : 'Folio terminado', s: ''};
+  if (t.estado === 'firmas') {
+    const pr = t.cicloTipo === 'prorroga', f = t.fechaRecoger, nom = pr ? 'prórroga de Fiscalización' : 'hoja de solventación';
+    if (!f) return {tipo: 'esp', t: 'Esperando ' + nom, s: yo('Aún no tienes fecha para recoger.', 'Aún no hay fecha para recoger.')};
+    if (f > hy) return {tipo: 'esp', t: 'Esperando ' + nom, s: 'La tiene Fiscalización; se recoge el ' + fmt(pd(f)) + '.'};
+    return {tipo: 'rec', t: 'Recoger ' + (pr ? 'prórroga' : 'hoja de solventación'), s: 'Ya llegó la fecha (' + fmt(pd(f)) + '): hay que ir por ella.'};
+  }
+  const falta = (t.reqs || []).filter(r => !r.ok).map(r => rn(r.n));
+  if (last && last.tipo === 'prorroga' && last.recogido) return {tipo: 'dec', t: 'Prórroga vigente' + (t.limite ? ' hasta ' + fmt(pd(t.limite)) : ''), s: falta.length ? yo('Faltan: ' + falta.join(', ') + '. Reúnelos o ingresa otra prórroga.', 'Faltan: ' + falta.join(', ') + '.') : 'No falta ningún documento: ya se puede solventar.'};
+  return {tipo: 'hac', t: 'Folio por atender', s: falta.length ? yo('Faltan: ' + falta.join(', ') + '. Si no los tienes a tiempo, ingresa prórroga.', 'Faltan: ' + falta.join(', ') + '.') : yo('Entrega lo que pide el folio.', 'Pendiente de entregar lo que pide el folio.')};
+}
+function pasoBanner(t) {
+  if (t.dep !== 'Fiscalización') return '';
+  const p = pasoFis(t), col = {esp: 'bg-blue-100 text-blue-900', rec: 'bg-amber-100 text-amber-900', dec: 'bg-indigo-100 text-indigo-900', hac: 'bg-orange-100 text-orange-900', ok: 'bg-emerald-100 text-emerald-900'}[p.tipo];
+  return `<div class="mt-2 rounded-lg px-2 py-1.5 ${col}"><div class="font-bold text-sm">${{esp: '⏳', rec: '📥', dec: '🧭', hac: '📝', ok: '✅'}[p.tipo]} ${esc(p.t)}</div>${p.s ? `<div class="text-xs">${esc(p.s)}</div>` : ''}</div>`;
+}
+function extraBadges(t) {
+  let h = '';
+  if (t.periodoIni || t.periodoFin) h += `<div class="text-xs text-slate-600 mt-1">🗓️ Periodo que abarca: ${t.periodoIni ? fmt(pd(t.periodoIni)) : '…'} – ${t.periodoFin ? fmt(pd(t.periodoFin)) : '…'}</div>`;
+  if (t.clase === 'sello') h += `<div class="text-xs mt-1">🔏 Sello de ${t.limite ? pd(t.limite).toLocaleDateString('es-MX', {month: 'long'}) : 'este mes'}: ${t.estado === 'listo' ? '<b class="text-emerald-700">✅ ya sellado</b>' : '<b class="text-amber-700">pendiente</b>'}</div>`;
+  return h;
+}
+function recB(t) {
+  if (t.estado !== 'firmas' || !t.fechaRecoger) return '';
+  const r = pd(t.fechaRecoger), hh = habiles(hoy(), r), que = t.dep === 'Fiscalización' ? (t.cicloTipo === 'prorroga' ? 'la prórroga' : 'la hoja de solventación') : 'el documento';
+  return `<div class="mt-2 rounded-lg p-2 ${hh <= 0 ? 'bg-amber-100 text-amber-900' : 'bg-white text-slate-700'}"><div class="text-lg font-bold">📥 ${yo('Recoger', 'El gestor recoge')} ${que}: ${fmt(r)}</div><div class="text-xs">${hh < 0 ? 'ya pasó la fecha' : hh === 0 ? '¡es hoy!' : 'en ' + hh + ' día(s) hábil(es)'}</div></div>`;
+}
+let vigId = null;
+function recogerFis(id) {
+  const o = find(id); if (!o) return;
+  if (o.cicloTipo !== 'prorroga') return terminar(id);
+  vigId = id; vigFec.value = o.limite || ''; dlgVig.showModal();
+}
+async function guardarVig() {
+  const o = find(vigId); if (!o) return;
+  const c = (o.ciclo || []).map((x, i, a) => i === a.length - 1 ? {...x, recogido: isoHoy(), nuevaLimite: vigFec.value} : x);
+  await persist({...o, ciclo: c, estado: 'proceso', fechaRecoger: '', cicloTipo: '', limite: vigFec.value || o.limite});
+  dlgVig.close(); toast('📥 Prórroga recogida. Vigencia: ' + (vigFec.value ? fmt(pd(vigFec.value)) : 'sin fecha'), o);
+}
+async function cancelarFis(id) {
+  const o = find(id); if (!o || !confirm('¿Marcar este folio como cancelado / ya no necesario?')) return;
+  await persist({...o, estado: 'listo', previo: o.estado, cerradoEn: isoHoy(), cancelado: true, incompleto: false});
+  toast('🚫 Folio cancelado', o);
+}
+function perPreset() {
+  const v = perPre.value, h = hoy(), y = h.getFullYear(), m = h.getMonth(); let a = null, b = null;
+  if (v === 'mesAnt') { a = new Date(y, m - 1, 1); b = new Date(y, m, 0); }
+  else if (v === 'mes') { a = new Date(y, m, 1); b = new Date(y, m + 1, 0); }
+  else if (v === 'bim' || v === 'bimAnt') { const k = Math.floor(m / 2) * 2 - (v === 'bimAnt' ? 2 : 0); a = new Date(y, k, 1); b = new Date(y, k + 2, 0); }
+  if (a) { perIni.value = isoD(a); perFin.value = isoD(b); }
+  perPre.value = '';
+}
+// Cobro: un día asignado cuenta cuando ya recogiste sus documentos y llega ese día,
+// o antes si entregas alguno en día hábil; entregas en sábado/domingo/festivo cuentan ese mismo día como "día extra".
+function diasCobro() {
+  const m = {}, hy = isoHoy(), get = f => m[f] = m[f] || {f, ok: [], falta: [], extra: false};
+  T.forEach(t => {
+    if (!t.asignado) return;
+    const e = fEnt(t);
+    if (e) { const finde = !esHabil(pd(e)), g = get(finde ? e : t.asignado); if (finde) g.extra = true; g.ok.push(t); }
+    else if (t.asignado <= hy) get(t.asignado).falta.push({t, e: ''});
+  });
+  Object.keys(FIN.dias).forEach(get);
+  return Object.values(m).map(d => ({...d, forzar: FIN.dias[d.f] || '', cobra: FIN.dias[d.f] === 'cobrar' ? true : FIN.dias[d.f] === 'nocobrar' ? false : (d.ok.length > 0 || d.falta.length > 0)})).sort((a, b) => b.f.localeCompare(a.f));
 }
 
 function mesNav(d) { MES = new Date(MES.getFullYear(), MES.getMonth() + d, 1); selDia = null; renderHeat(); }
