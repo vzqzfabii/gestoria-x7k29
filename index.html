@@ -92,6 +92,7 @@ details>summary{outline:none}
 .bg-orange-100{background:rgba(249,115,22,.19)!important}
 .bg-orange-50{background:rgba(249,115,22,.13)!important}
 .bg-red-100{background:rgba(239,68,68,.19)!important}
+.bg-red-50{background:rgba(239,68,68,.13)!important}
 .bg-rose-50{background:rgba(244,63,94,.13)!important}
 .bg-slate-100{background:rgba(255,255,255,.08)!important}
 .bg-slate-200{background:rgba(255,255,255,.14)!important}
@@ -119,9 +120,12 @@ details>summary{outline:none}
 .border-teal-300{border-color:rgba(20,184,166,.38)!important}
 .border-violet-200{border-color:rgba(139,92,246,.38)!important}
 .border-violet-300{border-color:rgba(139,92,246,.38)!important}
+.text-amber-600{color:#fbbf24!important}
 .text-amber-700{color:#fcd34d!important}
 .text-amber-800{color:#fcd34d!important}
 .text-amber-900{color:#fcd34d!important}
+.text-blue-600{color:#60a5fa!important}
+.text-blue-700{color:#93c5fd!important}
 .text-blue-900{color:#93c5fd!important}
 .text-emerald-700{color:#6ee7b7!important}
 .text-emerald-800{color:#6ee7b7!important}
@@ -138,6 +142,7 @@ details>summary{outline:none}
 .text-red-600{color:#f87171!important}
 .text-red-700{color:#fca5a5!important}
 .text-red-800{color:#fca5a5!important}
+.text-red-900{color:#fca5a5!important}
 .text-rose-600{color:#fb7185!important}
 .text-rose-700{color:#fda4af!important}
 .text-rose-900{color:#fda4af!important}
@@ -177,6 +182,7 @@ details>summary{outline:none}
 </header>
 <nav id="tabs" class="max-w-7xl mx-auto px-4 pt-4 flex flex-wrap gap-2">
   <button id="tabP" type="button" onclick="tab('panel')" class="px-4 py-2 rounded-lg font-semibold">📋 Entregas</button>
+  <button id="tabE" type="button" onclick="tab('est')" class="px-4 py-2 rounded-lg font-semibold">🧭 Estatus</button>
   <button id="tabN" type="button" onclick="tab('nom')" class="px-4 py-2 rounded-lg font-semibold">💼 Nóminas y ceros <span id="tabNb" class="text-xs font-normal"></span></button>
   <button id="tabR" type="button" onclick="tab('rep')" class="px-4 py-2 rounded-lg font-semibold">📊 Reportes</button>
   <button id="tabB" type="button" onclick="tab('cob')" class="px-4 py-2 rounded-lg font-semibold">💵 Mi cobranza</button>
@@ -188,6 +194,7 @@ details>summary{outline:none}
 <main id="mainP" class="max-w-7xl mx-auto px-4 py-6 space-y-6">
 
   <div id="bannerInh" class="hidden"></div>
+  <div id="riesgoBanner" class="hidden" onclick="tab('est')"></div>
   <button id="nomChip" type="button" onclick="tab('nom')" class="hidden w-full text-left rounded-2xl p-4 bg-violet-50 border border-violet-300"></button>
   <details id="guiaFechas" class="bg-white rounded-2xl shadow p-3 text-sm"><summary class="cursor-pointer font-semibold">❓ ¿Qué significan las fechas de las tarjetas?</summary>
     <ul class="mt-2 space-y-1 text-slate-700">
@@ -252,10 +259,11 @@ details>summary{outline:none}
       <label class="block text-sm font-medium">Dependencia / área
         <select id="dep" onchange="sugerir()" class="mt-1 w-full border rounded-lg px-3 py-2 bg-white"></select></label>
       <label class="block text-sm font-medium">Trámite o concepto
-        <input id="tipo" list="sug" oninput="renderReq()" required class="mt-1 w-full border rounded-lg px-3 py-2" placeholder="Elige o escribe"><datalist id="sug"></datalist></label>
+        <input id="tipo" list="sug" oninput="renderReq(); sugFlujo()" required class="mt-1 w-full border rounded-lg px-3 py-2" placeholder="Elige o escribe"><datalist id="sug"></datalist></label>
       <label class="block text-sm font-medium">Fecha límite <span class="text-slate-400 font-normal">(opcional en pagos, recoger y entregas)</span>
         <input id="limite" type="date" onchange="avisoFecha()" required class="mt-1 w-full border rounded-lg px-3 py-2">
       </label>
+      <label class="block text-sm font-medium">Recorrido que sigue <span class="text-slate-400 font-normal">(opcional)</span><select id="flujoSel" onchange="flujoManual = true" class="mt-1 w-full border rounded-lg px-3 py-2 bg-white"></select></label>
       <label class="block text-sm font-medium">Periodo que abarca: inicia <span class="text-slate-400 font-normal">(opcional)</span><input id="perIni" type="date" class="mt-1 w-full border rounded-lg px-3 py-2"></label>
       <label class="block text-sm font-medium">Periodo: finaliza<input id="perFin" type="date" class="mt-1 w-full border rounded-lg px-3 py-2"></label>
       <label class="block text-sm font-medium">Periodo rápido<select id="perPre" onchange="perPreset()" class="mt-1 w-full border rounded-lg px-3 py-2 bg-white"><option value="">Elegir…</option><option value="mesAnt">Mes anterior</option><option value="mes">Este mes</option><option value="bimAnt">Bimestre anterior (IMSS)</option><option value="bim">Bimestre actual</option></select></label>
@@ -310,6 +318,17 @@ details>summary{outline:none}
   </section>
   <section id="orgSec" class="bg-white rounded-2xl shadow p-5"><h3 class="font-bold">🗓️ Para organizarte</h3><p class="text-xs text-slate-500 mb-3">Qué se vence o se acaba el límite esta semana, la próxima y este mes.</p><div id="orgBody" class="grid md:grid-cols-2 gap-4"></div></section>
   <section class="bg-white rounded-2xl shadow p-5"><h3 class="font-bold mb-2">🗓️ Próximos 8 días</h3><div id="c6"></div></section>
+</main>
+<main id="mainEst" class="hidden max-w-7xl mx-auto px-4 py-6 space-y-5">
+  <section class="bg-white rounded-2xl shadow p-5"><div class="flex flex-wrap items-center justify-between gap-2"><h2 class="text-lg font-semibold">🧭 Estatus de trámites</h2><select id="estDepSel" onchange="renderEst()" class="border rounded-lg px-3 py-2 bg-white"></select></div>
+    <p class="text-xs text-slate-500">En qué paso va cada trámite, por qué no ha terminado y quién tiene la pelota. Toca uno para abrirlo.</p><div id="estRes" class="grid grid-cols-2 md:grid-cols-6 gap-2 mt-3 text-center"></div></section>
+  <section id="estRiskSec" class="rounded-2xl p-5 border-2 border-red-300 bg-red-50"><h3 class="font-bold text-red-900 mb-1">🚨 En riesgo</h3><div id="estRisk"></div></section>
+  <section class="bg-white rounded-2xl shadow p-5"><div class="grid lg:grid-cols-2 gap-6">
+    <div><h3 id="estYoT" class="font-bold">👉 Me toca a mí</h3><div id="estYo"></div></div>
+    <div><h3 class="font-bold">⏳ Esperando a una dependencia</h3><div id="estDepL"></div></div>
+    <div><h3 class="font-bold">📥 Ya toca recoger</h3><div id="estRec"></div></div>
+    <div><h3 class="font-bold">🧱 Bloqueados (esperan otro documento)</h3><div id="estBlk"></div></div></div></section>
+  <section class="bg-white rounded-2xl shadow p-5"><h3 class="font-bold">💤 Sin movimiento (5 o más días hábiles)</h3><p class="text-xs text-slate-500 mb-2">Trámites que nadie ha tocado en varios días y que no están esperando una fecha. Es el aviso para que no se te pase ninguno.</p><div id="estSin"></div></section>
 </main>
 <main id="mainNom" class="hidden max-w-7xl mx-auto px-4 py-6 space-y-6">
   <section id="nomSec" class="rounded-2xl p-5 border-2 border-violet-300 bg-violet-50">
@@ -388,6 +407,9 @@ details>summary{outline:none}
 <main id="mainCfg" class="hidden max-w-5xl mx-auto px-4 py-6 space-y-6">
   <section class="bg-white rounded-2xl shadow p-5"><h2 class="text-lg font-semibold mb-1">💾 Respaldo</h2><p class="text-xs text-slate-500 mb-3">Descarga una copia de todo tu panel. Guárdala de vez en cuando.</p>
     <div class="flex flex-wrap gap-2"><button id="btnResp" type="button" onclick="respaldo()" class="tb">💾 Respaldo completo</button><button id="btnCsv" type="button" onclick="respaldoCsv()" class="tb">📊 Excel (CSV)</button></div></section>
+  <section id="tmpSec" class="bg-white rounded-2xl shadow p-5"><h2 class="text-lg font-semibold">⏱️ Tiempos de espera por documento</h2>
+    <p class="text-xs text-slate-500 mb-2">Cuántos días naturales deben pasar, después de entregar el pago, para que el sistema te avise "ya toca pedir sello". Ajústalos con lo que veas en la práctica.</p>
+    <div class="overflow-x-auto"><table class="w-full text-sm"><thead class="text-left text-slate-500"><tr><th class="p-2">Documento</th><th class="p-2">Espera</th><th class="p-2"></th></tr></thead><tbody id="tmpBody"></tbody></table></div></section>
   <section id="inhSec" class="bg-white rounded-2xl shadow p-5">
     <h2 class="text-lg font-semibold">📆 Días inhábiles</h2>
     <p class="text-xs text-slate-500 mb-2">No cuentan como días hábiles en ningún cálculo. Los feriados oficiales ya vienen incluidos. Agrega los días que cierre cada dependencia (Semana Santa, puentes, etc.).</p>
@@ -502,7 +524,7 @@ async function entrar() {
   catch (e) { alert('No se pudo verificar: ' + (e.message || e.code)); }
 }
 function salir() { try { localStorage.removeItem('gest_pin'); } catch (e) {} location.reload(); }
-let INH = [], MES = null, selDia = null, cardOpen = null, HORS = {}, PAG = {visible: false, dias: []}, pagUltimo = null, pagWanted = null, AMES = null, FIN = {tarifa: 300, dias: {}, pagos: [], efec: [], comp: {}, proy: [], uma: 117.31}, CEROS = [], CPER = null, satUltimo = '';
+let INH = [], MES = null, selDia = null, cardOpen = null, flujoManual = false, TIEMPOS = {}, HORS = {}, PAG = {visible: false, dias: []}, pagUltimo = null, pagWanted = null, AMES = null, FIN = {tarifa: 300, dias: {}, pagos: [], efec: [], comp: {}, proy: [], uma: 117.31}, CEROS = [], CPER = null, satUltimo = '';
 const SATKEY = 'nomina-sat-db-v1';
 let NOMS = [], NOM = {activo: false}, NPER = null, TAB = 'panel'; const NOPEN = new Set(), NCOL = ['#7c3aed', '#0891b2', '#16a34a', '#d97706', '#db2777', '#2563eb', '#65a30d', '#dc2626']; const _fc = {};
 const FERN = ['Año Nuevo','Día de la Constitución','Natalicio de Benito Juárez','Día del Trabajo','Independencia de México','Transmisión del Poder Ejecutivo','Revolución Mexicana','Navidad'];
@@ -520,7 +542,8 @@ let T = [], DB = null, col = null, CAN = false, VISTA = false, SNAP = false, UID
 const puede = () => CAN && !VISTA;
 const localLoad = () => { try { return JSON.parse(localStorage.getItem(K)) || []; } catch (e) { return []; } };
 const saveLocal = () => { try { localStorage.setItem(K, JSON.stringify(T)); } catch (e) {} };
-async function persist(t) {            // guardar o actualizar un trámite
+async function persist(t) {
+  t = {...t, mov: isoHoy()};            // guardar o actualizar un trámite
   if (!DB) { T = T.filter(x => x.id !== t.id).concat(t); saveLocal(); render(); return; }
   try { await col.doc(t.id).set(t); refrescar(); } catch (e) { alert('No se pudo guardar: ' + (e.message || e.code)); }
 }
@@ -601,7 +624,7 @@ function card(t) {
       <div><div class="font-semibold"><span style="color:${cliCol(t.cliente)}">●</span> ${esc(t.cliente)}</div><div class="text-xs text-slate-500">${ICO[c]} ${esc(t.tipo)} <span class="rounded px-1 text-white" style="background:${depCol(t.dep)}">${esc(t.dep || '')}</span>${t.negocio ? ' <span class="text-slate-700">🏬 ' + esc(t.negocio) + '</span>' : ''}${t.folio ? ' <span class="font-mono bg-amber-50 border border-amber-200 rounded px-1">🔖 ' + esc(t.folio) + '</span>' : ''}${!ent && cierraDe(t.dep || 'Otro') ? ' <span class="text-amber-700">🕑 cierra ' + cierraDe(t.dep || 'Otro') + '</span>' : ''}</div></div>
       ${puede() ? `<div class="flex gap-2 text-sm"><button onclick="editar('${t.id}')" title="Editar">✏️</button><button onclick="borrar('${t.id}')" title="Eliminar">🗑️</button></div>` : ''}
     </div>
-    ${pasoBanner(t)}<div class="text-sm mt-1">📅 ${lim ? 'Fecha límite: ' + fmt(lim) + ' · ' : ''}${estado}</div>
+    ${pasoBanner(t)}${flujoHtml(t)}<div class="text-sm mt-1">📅 ${lim ? 'Fecha límite: ' + fmt(lim) + ' · ' : ''}${estado}</div>
     <div class="text-xs text-slate-500 mt-1">${t.resp ? '👤 ' + esc(t.resp) : ''}${t.monto ? ' · 💲' + Number(t.monto).toLocaleString('es-MX') : ''}${t.repite ? ' · 🔁 mensual' : ''}</div>${lineaTiempo(t)}${extraBadges(t)}${planB ? `<div class="text-xs mt-1">${planB}</div>` : ''}
     ${firmas}${recB(t)}${lic}${alerta}${incB}${intB}${intHtml(t)}${cicloHtml(t)}${docsHtml(t)}${t.resuelto ? '<div class="mt-1 text-xs rounded px-2 py-1 bg-amber-50 text-amber-900 border border-amber-200">🛠️ ' + yo('Resuelto por mí', 'Resuelto por el gestor') + ': ' + esc(t.resuelto.nota || 'completado por el gestor') + '</div>' : ''}${t.espera ? '<div class="mt-1 text-xs rounded px-2 py-1 bg-orange-50 text-orange-900 border border-orange-200">⏳ En espera: ' + esc(t.espera.txt) + ' (' + esc(t.espera.dep || '') + ')</div>' : ''}
     
@@ -658,7 +681,7 @@ function borrar(id) { if (confirm('¿Eliminar este trámite?')) quitar(id); }
 function render() {
   document.getElementById('hoy').textContent = fmt(hoy());
   document.getElementById('formSec').style.display = puede() ? '' : 'none';
-  btnAdm.style.display = btnObl.style.display = btnInh.style.display = pagToggle.style.display = btnCob.style.display = btnWa.style.display = btnResp.style.display = btnCsv.style.display = puede() ? '' : 'none'; inhSec.classList.toggle('hidden', !puede()); horSec.classList.toggle('hidden', !puede()); renderBit(); renderHeat(); renderInh(); renderCob(); renderBanner(); renderNom(); renderCer(); renderTer(); renderGraf(); renderSeg(); renderHor(); renderPrio(); renderPag(); renderAct(); renderApe(); renderOrg(); renderDocs(); guiaFechas.style.display = puede() ? '' : 'none'; if (cardOpen && dlgCard.open) { const tt = find(cardOpen); if (tt) cardBox.innerHTML = card(tt); else dlgCard.close(); } if (pagWanted !== null && !!PAG.visible === pagWanted) pagWanted = null; pagChk.checked = pagWanted !== null ? pagWanted : !!PAG.visible; if (CAN && pagChk.checked) syncPagos(false); btnIn.textContent = CAN ? '🔓 Salir del modo dueño' : '🔑 Entrar como dueño'; btnUser.textContent = CAN ? '👤' : '🔑'; btnUser.className = CAN ? 'text-xl px-2 py-1 rounded-lg bg-white/15 hover:bg-white/25' : 'text-lg px-2 py-1 rounded-lg opacity-40 hover:opacity-100'; syncToggles(); admin.classList.toggle('hidden', !puede());
+  btnAdm.style.display = btnObl.style.display = btnInh.style.display = pagToggle.style.display = btnCob.style.display = btnWa.style.display = btnResp.style.display = btnCsv.style.display = puede() ? '' : 'none'; inhSec.classList.toggle('hidden', !puede()); horSec.classList.toggle('hidden', !puede()); renderBit(); renderHeat(); renderInh(); renderCob(); renderBanner(); renderNom(); renderCer(); renderTer(); renderGraf(); renderSeg(); renderHor(); renderPrio(); renderPag(); renderAct(); renderApe(); renderOrg(); renderDocs(); renderRiesgo(); renderEst(); renderTiempos(); guiaFechas.style.display = puede() ? '' : 'none'; if (cardOpen && dlgCard.open) { const tt = find(cardOpen); if (tt) cardBox.innerHTML = card(tt); else dlgCard.close(); } if (pagWanted !== null && !!PAG.visible === pagWanted) pagWanted = null; pagChk.checked = pagWanted !== null ? pagWanted : !!PAG.visible; if (CAN && pagChk.checked) syncPagos(false); btnIn.textContent = CAN ? '🔓 Salir del modo dueño' : '🔑 Entrar como dueño'; btnUser.textContent = CAN ? '👤' : '🔑'; btnUser.className = CAN ? 'text-xl px-2 py-1 rounded-lg bg-white/15 hover:bg-white/25' : 'text-lg px-2 py-1 rounded-lg opacity-40 hover:opacity-100'; syncToggles(); admin.classList.toggle('hidden', !puede());
   document.getElementById('btnVista').style.display = CAN ? '' : 'none';
   document.getElementById('btnVista').textContent = VISTA ? '↩ Volver a mi vista' : '👀 Ver como contadora';
   document.getElementById('modo').textContent = (SNAP ? '📅 Actualizado: ' + window.__SNAP.fecha : DB ? '☁️ Se actualiza solo' : '💾 Datos solo en este navegador') + (puede() ? '' : ' · 👀 Vista de solo lectura');
@@ -763,6 +786,7 @@ const DOCTPL = {
   rfc: {n: 'RFC / Constancia de Situación Fiscal', dep: 'SAT', fl: FL_SAT, ini: 'bajar', q: 'La constancia se descarga en el portal del SAT, sin costo.', req: ['RFC y contraseña o e.firma para entrar al portal']},
   sanitario: {n: 'Permiso / licencia sanitaria (alimentos, bebidas o salud)', dep: 'Otro', fl: flujoPermiso({dias: 15, pase: 'pase de caja'}), ini: 'ingresar', est: true, q: 'Solo aplica a giros con alimentos, bebidas o salud. Confirma la autoridad sanitaria y los requisitos de tu caso.', req: ['Según el giro: aviso o permiso ante la autoridad sanitaria']},
   alcohol: {n: 'Licencia de bebidas alcohólicas (con resello del año)', dep: 'Otro', fl: flujoPermiso({dias: 15, pase: 'pase de caja'}), ini: 'ingresar', est: true, q: 'Solo si el giro vende alcohol. Para renovar la licencia de funcionamiento el municipio pide copia de esta licencia con el resello actualizado y del comodato sellado, con las facturas de ambos pagos.', req: ['Licencia de bebidas alcohólicas del año con resello', 'Contrato de comodato sellado', 'Facturas de ambos pagos']},
+  ambiental: {n: 'Permiso ambiental de operación', dep: 'Medio Ambiente', fl: flujoPermiso({dias: 15, pase: 'pase de caja'}), ini: 'ingresar', est: true, q: 'Regula las condiciones ambientales del establecimiento (agua, suelo y, si hay música o equipos, ruido o emisiones). Se tramita ante la Secretaría de Medio Ambiente municipal antes de operar y se renueva. Confirma requisitos y costo.', req: ['Constancia de uso de suelo', 'Datos de la actividad y de los equipos', 'Comprobante de pago de derechos']},
   otro: {n: 'Otro documento', dep: 'Otro', fl: flujoPermiso({dias: 30, pase: 'pase de caja'}), ini: 'ingresar', est: true, q: 'Documento a la medida: sigue el recorrido de ingresar, pase de caja, pago, espera y sello.', req: []}
 };
 const DOCOPEN = new Set();
@@ -776,7 +800,7 @@ const HOR_DEF = {
  'Tesorería (Ingresos)': {dir: 'Dirección de Ingresos (licencias de funcionamiento) · Palacio Municipal', abre: '09:00', cierra: '17:00', nota: 'L–V 9:00–17:00. La renovación de licencias es en enero y febrero.'}
 };
 const optDeps = DEPS.map(d => `<option>${d}</option>`).join('');
-dep.innerHTML = optDeps; fDep.innerHTML += optDeps; espDep.innerHTML = optDeps;
+dep.innerHTML = optDeps; fDep.innerHTML += optDeps; espDep.innerHTML = optDeps; flujoSel.innerHTML = '<option value="">Ninguno</option>' + Object.entries(DOCTPL).map(([k, v]) => '<option value="' + k + '">' + v.n + '</option>').join(''); estDepSel.innerHTML = '<option value="">Todas las dependencias</option>' + optDeps;
 function sugerir() {
   sug.innerHTML = [...(SUG[dep.value] || []), ...Object.keys(OVR).filter(k => !DEF[k])].map(x => `<option value="${esc(x)}">`).join('');
   adL.innerHTML = [...new Set([...Object.keys(DEF), ...Object.keys(OVR)])].map(x => `<option value="${esc(x)}">`).join('');
@@ -832,11 +856,11 @@ function filtrados() {
   return T.filter(t => (!fDep.value || t.dep === fDep.value) && (!x || (t.cliente + ' ' + t.tipo + ' ' + (t.folio || '') + ' ' + (t.negocio || '')).toLowerCase().includes(x)));
 }
 let editId = null;
-function limpiarForm() { f.reset(); formDet.open = false; recibido.value = isoHoy(); asig.value = isoD(sumaHabiles(hoy(), 1)); renderReq(); editId = null; dias.value = 3; sugerir(); claseChange(); btnG.textContent = 'Guardar'; btnC.classList.add('hidden'); }
+function limpiarForm() { f.reset(); flujoManual = false; formDet.open = false; recibido.value = isoHoy(); asig.value = isoD(sumaHabiles(hoy(), 1)); renderReq(); editId = null; dias.value = 3; sugerir(); claseChange(); btnG.textContent = 'Guardar'; btnC.classList.add('hidden'); }
 function editar(id) {
   const t = find(id); if (!t) return;
   editId = id; dep.value = t.dep || 'Otro'; sugerir(); clase.value = t.clase || 'tramite'; claseChange();
-  cliente.value = t.cliente; recibido.value = t.recibido || ''; asig.value = t.asignado || ''; folio.value = t.folio || ''; perIni.value = t.periodoIni || ''; perFin.value = t.periodoFin || ''; negocio.value = t.negocio || ''; tipo.value = t.tipo; limite.value = t.limite; dias.value = t.dias; vence.value = t.vence || '';
+  cliente.value = t.cliente; recibido.value = t.recibido || ''; asig.value = t.asignado || ''; folio.value = t.folio || ''; flujoSel.value = t.flujo ? t.flujo.tpl : ''; flujoManual = true; perIni.value = t.periodoIni || ''; perFin.value = t.periodoFin || ''; negocio.value = t.negocio || ''; tipo.value = t.tipo; limite.value = t.limite; dias.value = t.dias; vence.value = t.vence || '';
   monto.value = t.monto || ''; repite.checked = !!t.repite;
   renderReq(t.reqs);
   btnG.textContent = 'Guardar cambios'; formDet.open = true; btnC.classList.remove('hidden'); formSec.scrollIntoView({behavior: 'smooth'});
@@ -852,12 +876,12 @@ f.addEventListener('submit', e => {
     reqs: [...document.querySelectorAll('.rq')].map(c => ({n: c.dataset.n, ok: c.checked})),
     estado: o ? o.estado : 'proceso', firmaInicio: o ? o.firmaInicio : '',
     pagado: o ? !!o.pagado : false, entregado: o ? !!o.entregado : false,
-    recibido: recibido.value, intentos: o ? (o.intentos || []) : [], incompleto: o ? !!o.incompleto : false, falta: o ? (o.falta || '') : '', plan: o ? (o.plan || '') : '', asignado: asig.value, folio: folio.value.trim(), negocio: negocio.value.trim(), resuelto: o ? (o.resuelto || null) : null, espera: o ? (o.espera || null) : null, periodoIni: perIni.value, periodoFin: perFin.value, cancelado: o ? !!o.cancelado : false, docsFolio: o ? (o.docsFolio || []) : [], ciclo: o ? (o.ciclo || []) : [], cicloTipo: o ? (o.cicloTipo || '') : '', recogidoEn: o ? (o.recogidoEn || '') : '', previo: o ? (o.previo || '') : '', cerradoEn: o ? (o.cerradoEn || '') : '', fechaEntrega: o ? (o.fechaEntrega || '') : '', fechaRecoger: o ? (o.fechaRecoger || '') : ''
+    recibido: recibido.value, intentos: o ? (o.intentos || []) : [], incompleto: o ? !!o.incompleto : false, falta: o ? (o.falta || '') : '', plan: o ? (o.plan || '') : '', asignado: asig.value, folio: folio.value.trim(), negocio: negocio.value.trim(), resuelto: o ? (o.resuelto || null) : null, espera: o ? (o.espera || null) : null, periodoIni: perIni.value, periodoFin: perFin.value, cancelado: o ? !!o.cancelado : false, docsFolio: o ? (o.docsFolio || []) : [], flujo: flujoSel.value ? ((o && o.flujo && o.flujo.tpl === flujoSel.value) ? o.flujo : {tpl: flujoSel.value, paso: DOCTPL[flujoSel.value].ini, desde: isoHoy(), hist: []}) : null, ciclo: o ? (o.ciclo || []) : [], cicloTipo: o ? (o.cicloTipo || '') : '', recogidoEn: o ? (o.recogidoEn || '') : '', previo: o ? (o.previo || '') : '', cerradoEn: o ? (o.cerradoEn || '') : '', fechaEntrega: o ? (o.fechaEntrega || '') : '', fechaRecoger: o ? (o.fechaRecoger || '') : ''
   });
   limpiarForm();
 });
 sugerir(); claseChange(); recibido.value = isoHoy(); asig.value = isoD(sumaHabiles(hoy(), 1));
-tab({'#nominas': 'nom', '#ceros': 'cer', '#reportes': 'rep', '#cobranza': 'cob', '#registro': 'sat', '#aperturas': 'ape', '#config': 'cfg'}[location.hash] || 'panel');
+tab({'#estatus': 'est', '#nominas': 'nom', '#ceros': 'cer', '#reportes': 'rep', '#cobranza': 'cob', '#registro': 'sat', '#aperturas': 'ape', '#config': 'cfg'}[location.hash] || 'panel');
 render();
 
 let intId = null;
@@ -926,11 +950,11 @@ function renderCob() {
   hoyCobro.textContent = hd && hd.cobra ? '· 💵 hoy ya es día cobrable' : asig ? '· 💵 hoy aún no cobra (te faltan ' + asig + ' asignado(s))' : '';
 }
 function resumenWa() {
-  const hy = isoHoy(), act = T.filter(t => t.estado !== 'listo' && t.clase !== 'vigencia');
+  const hy = isoHoy(), act = T.filter(t => t.estado !== 'listo' && t.clase !== 'vigencia'), rs = act.map(t => ({t, e: estatusT(t)})).filter(x => x.e.riesgo);
   const hechos = T.filter(t => fEnt(t) === hy), pend = act.filter(t => t.estado !== 'firmas' && (t.plan || t.asignado) && (t.plan || t.asignado) <= hy);
   const inc = act.filter(t => t.incompleto && t.estado !== 'firmas'), rec = act.filter(t => t.estado === 'firmas' && t.fechaRecoger && t.fechaRecoger <= hy);
   const li = (a, f) => a.length ? a.map(t => '• ' + t.cliente + ' – ' + t.tipo + (f ? f(t) : '')).join('\n') : '• (ninguno)';
-  const txt = '📋 Resumen del ' + fmt(hoy()) + '\n\n✅ Entregados hoy:\n' + li(hechos) + '\n\n⏳ Pendientes por entregar:\n' + li(pend) + '\n\n⚠️ Incompletos:\n' + li(inc, t => t.falta ? ' (falta: ' + t.falta + ')' : '') + '\n\n📥 Por recoger:\n' + li(rec);
+  const txt = '📋 Resumen del ' + fmt(hoy()) + '\n\n✅ Entregados hoy:\n' + li(hechos) + '\n\n⏳ Pendientes por entregar:\n' + li(pend) + '\n\n⚠️ Incompletos:\n' + li(inc, t => t.falta ? ' (falta: ' + t.falta + ')' : '') + '\n\n📥 Por recoger:\n' + li(rec) + '\n\n🚨 En riesgo:\n' + (rs.length ? rs.map(x => '• ' + x.t.cliente + (x.t.folio ? ' (' + x.t.folio + ')' : '') + ' – ' + x.e.riesgo).join('\n') : '• (ninguno)');
   window.open('https://wa.me/?text=' + encodeURIComponent(txt), '_blank');
 }
 
@@ -1290,13 +1314,13 @@ async function apeNuevo() {
   await finSave({id: 'Y' + Date.now(), t: 'proy', cliente: apCli.value.trim(), negocio: apNeg.value.trim(), tpl: apTpl.value, inicio: apIni.value || isoHoy(), etapas: {}});
   apCli.value = ''; apNeg.value = '';
 }
-function apeSet(pid, eid, patch) { const p = FIN.proy.find(x => x.id === pid); if (!p) return; const et = {...(p.etapas || {})}; et[eid] = {...(et[eid] || {}), ...patch}; finSave({...p, etapas: et}); }
+function apeSet(pid, eid, patch) { const p = FIN.proy.find(x => x.id === pid); if (!p) return; const et = {...(p.etapas || {})}; et[eid] = {...(et[eid] || {}), ...patch}; finSave({...p, etapas: et}); apeSync({...p, etapas: et}); }
 function apeUma() { finSave({id: 'uma', t: 'uma', v: parseFloat(apUma.value) || 117.31}); }
 function apeCrear(pid, eid) {
   const p = FIN.proy.find(x => x.id === pid), e = apeEtapa(p.tpl, eid); if (!p || !e) return;
   const id = 'T' + Date.now();
-  persist({id, clase: 'tramite', dep: e.dep, cliente: p.cliente, negocio: p.negocio || '', tipo: e.n, folio: '', limite: '', dias: e.d, vence: '', monto: 0, repite: false, estado: 'proceso', firmaInicio: '', pagado: false, entregado: false, recibido: isoHoy(), asignado: '', plan: '', intentos: [], incompleto: false, falta: '', reqs: (CAT()[e.n] || []).map(n => ({n, ok: false})), resuelto: null, espera: null});
-  apeSet(pid, eid, {e: 'tram', ini: (((p.etapas || {})[eid] || {}).ini) || isoHoy()});
+  persist({id, clase: 'tramite', dep: e.dep, cliente: p.cliente, negocio: p.negocio || '', tipo: e.n, folio: '', limite: '', dias: e.d, vence: '', monto: 0, repite: false, estado: 'proceso', firmaInicio: '', pagado: false, entregado: false, recibido: isoHoy(), asignado: '', plan: '', intentos: [], incompleto: false, falta: '', reqs: (CAT()[e.n] || []).map(n => ({n, ok: false})), resuelto: null, espera: apeEspera(p, e, p.etapas || {}), flujo: APEFL[eid] ? {tpl: APEFL[eid], paso: DOCTPL[APEFL[eid]].ini, desde: isoHoy(), hist: []} : null});
+  apeSet(pid, eid, {e: 'tram', ini: (((p.etapas || {})[eid] || {}).ini) || isoHoy(), tr: id});
   toast('✅ Se creó el trámite "' + e.n + '" en tu panel');
 }
 function renderApe() {
@@ -1361,12 +1385,12 @@ function cicloHtml(t) {
 function tab(t) {
   if (t === 'cer') { t = 'nom'; setTimeout(() => { const e = document.getElementById('cerSec'); if (e) e.scrollIntoView({behavior: 'smooth'}); }, 50); }
   TAB = t;
-  [['panel', 'mainP', 'tabP', 'bg-slate-900'], ['nom', 'mainNom', 'tabN', 'bg-violet-700'], ['rep', 'mainRep', 'tabR', 'bg-sky-700'], ['cob', 'mainCob', 'tabB', 'bg-emerald-700'], ['sat', 'mainSat', 'tabS', 'bg-emerald-700'], ['ape', 'mainApe', 'tabA', 'bg-rose-700'], ['cfg', 'mainCfg', 'tabG', 'bg-slate-600']].forEach(([k, m, b, c]) => {
+  [['panel', 'mainP', 'tabP', 'bg-slate-900'], ['est', 'mainEst', 'tabE', 'bg-blue-700'], ['nom', 'mainNom', 'tabN', 'bg-violet-700'], ['rep', 'mainRep', 'tabR', 'bg-sky-700'], ['cob', 'mainCob', 'tabB', 'bg-emerald-700'], ['sat', 'mainSat', 'tabS', 'bg-emerald-700'], ['ape', 'mainApe', 'tabA', 'bg-rose-700'], ['cfg', 'mainCfg', 'tabG', 'bg-slate-600']].forEach(([k, m, b, c]) => {
     document.getElementById(m).classList.toggle('hidden', t !== k);
     document.getElementById(b).className = 'px-4 py-2 rounded-lg font-semibold ' + (t === k ? c + ' text-white' : 'bg-white border');
   });
   if (t === 'sat') { if (!satFrame.getAttribute('src')) satFrame.src = 'nomina-sat.html'; syncSat(); }
-  const h = {nom: '#nominas', rep: '#reportes', cob: '#cobranza', sat: '#registro', ape: '#aperturas', cfg: '#config'}[t];
+  const h = {est: '#estatus', nom: '#nominas', rep: '#reportes', cob: '#cobranza', sat: '#registro', ape: '#aperturas', cfg: '#config'}[t];
   try { history.replaceState(null, '', h || location.pathname + location.search); } catch (e) {}
   window.scrollTo(0, 0);
 }
@@ -1462,7 +1486,8 @@ function diasCobro() {
 // ---------- Seguimiento de documentos del folio ----------
 function docEfect(d) {
   const tp = DOCTPL[d.tpl] || DOCTPL.otro, fl = tp.fl, st = fl[d.paso] || fl[tp.ini], dias = Math.floor((hoy() - pd(d.desde)) / 864e5);
-  if (st.auto && dias >= st.auto.dias) { const sg = fl[st.auto.ir]; return {...sg, id: st.auto.ir, auto: true, t: 'Ya pasaron ' + dias + ' días: ' + sg.t.toLowerCase()}; }
+  const lim = st.auto ? (TIEMPOS[d.tpl] != null ? TIEMPOS[d.tpl] : st.auto.dias) : 0;
+  if (st.auto && dias >= lim) { const sg = fl[st.auto.ir]; return {...sg, id: st.auto.ir, auto: true, t: 'Ya pasaron ' + dias + ' días: ' + sg.t.toLowerCase()}; }
   return {...st, id: d.paso, auto: false};
 }
 function docsPend(t) { return (t.docsFolio || []).filter(d => !d.cancelado).map(d => ({n: d.n, ...docEfect(d)})).filter(e => !e.fin).map(e => ({n: e.n, titulo: e.t})); }
@@ -1495,11 +1520,121 @@ async function guardarDoc() {
 function renderDocs() {
   const hacer = [], esp = [];
   T.filter(t => t.estado !== 'listo').forEach(t => (t.docsFolio || []).forEach(d => { if (d.cancelado) return; const e = docEfect(d); if (e.fin) return; (e.q === 'yo' ? hacer : esp).push({t, d, e}); }));
+  T.filter(t => t.estado !== 'listo' && t.flujo && t.dep !== 'Fiscalización').forEach(t => { const e = docEfect(t.flujo); if (e.fin) return; (e.q === 'yo' ? hacer : esp).push({t, d: {n: (DOCTPL[t.flujo.tpl] || DOCTPL.otro).n, desde: t.flujo.desde}, e}); });
   const fila = x => `<div onclick="verCard('${x.t.id}')" class="cursor-pointer text-sm border-b py-1.5"><span style="color:${depCol(x.t.dep)}">●</span> <b>${esc(x.t.cliente)}</b>${x.t.negocio ? ' › ' + esc(x.t.negocio) : ''}${x.t.folio ? ' · 🔖 ' + esc(x.t.folio) : ''} — ${esc(x.d.n)}<div class="text-xs ${x.e.auto ? 'text-red-700 font-semibold' : 'text-slate-600'}">${x.e.auto ? '⏰ ' : ''}${esc(x.e.t)} <span class="text-slate-500">· desde ${fmt(pd(x.d.desde))}</span></div></div>`;
   docHacer.innerHTML = hacer.map(fila).join('') || '<p class="text-xs text-slate-400">Nada por hacer 🎉</p>';
   docEsp.innerHTML = esp.map(fila).join('') || '<p class="text-xs text-slate-400">Nada en espera.</p>';
   nDoc.textContent = hacer.length + esp.length; docSec.classList.toggle('hidden', !(hacer.length + esp.length));
   docTit1.textContent = yo('Te toca hacer ahora', 'Le toca al gestor');
+}
+
+// ---------- Parte C: estatus de todos los trámites, riesgos y falta de movimiento ----------
+// Última vez que se tocó el trámite (si no hay marca, se deduce de la fecha en que se creó)
+function ultMov(t) {
+  if (t.mov) return t.mov;
+  const m = String(t.id).match(/^T(\d{13})/);
+  return m ? isoD(new Date(+m[1])) : (t.recibido || t.firmaInicio || isoHoy());
+}
+function diasSin(t) { const f = ultMov(t); return f ? habiles(pd(f), hoy()) : 0; }
+// Quién tiene la pelota, qué paso es, por qué no termina y si hay riesgo
+function estatusT(t) {
+  const hy = isoHoy(), lim = t.limite ? pd(t.limite) : null, hl = lim ? habiles(hoy(), lim) : 999, ent = t.estado === 'firmas', fis = t.dep === 'Fiscalización';
+  const falt = (t.reqs || []).filter(r => !r.ok).map(r => rn(r.n)), docs = docsPend(t).map(d => d.n + ': ' + d.titulo.toLowerCase());
+  const porque = [...falt.map(x => 'falta ' + x), ...docs].join(' · ');
+  let r = {q: 'yo', titulo: 'Por entregar', porque, desde: ultMov(t), fut: false, riesgo: ''};
+  if (fis) { const p = pasoFis(t); r.titulo = p.t; r.porque = p.s; }
+  const fe = (t.flujo && !fis) ? docEfect(t.flujo) : null;
+  if (fe && !fe.fin) { r.titulo = fe.t; r.q = fe.q === 'dep' ? 'dep' : 'yo'; r.porque = (fe.auto ? 'Ya pasó el tiempo esperado · ' : '') + (DOCTPL[t.flujo.tpl] || DOCTPL.otro).n + (porque ? ' · ' + porque : ''); r.desde = t.flujo.desde; }
+  const dpend = (t.docsFolio || []).filter(d => !d.cancelado).map(d => ({d, e: docEfect(d)})).filter(x => !x.e.fin);
+  if (t.espera) r = {...r, q: 'blk', titulo: 'En espera: ' + t.espera.txt, porque: 'Depende de ' + (t.espera.dep || 'otra dependencia') + (porque ? ' · ' + porque : ''), desde: t.espera.desde};
+  else if (!ent && dpend.length && dpend.every(x => x.e.q === 'dep')) r = {...r, q: 'blk', titulo: 'Bloqueado: esperando documento de otra dependencia', porque: dpend.map(x => x.d.n + ' (' + x.e.t.toLowerCase() + ')').join(' · '), desde: dpend.map(x => x.d.desde).sort()[0]};
+  else if (ent) {
+    const f = t.fechaRecoger;
+    if (f && f <= hy) r = {...r, q: 'rec', titulo: 'Recoger ' + (fis ? (t.cicloTipo === 'prorroga' ? 'prórroga' : 'hoja de solventación') : 'el documento'), porque: 'Ya llegó la fecha de recogida (' + fmt(pd(f)) + ')', desde: f};
+    else r = {...r, q: 'dep', titulo: fis ? r.titulo : 'Entregado: esperando respuesta de la dependencia', porque: f ? 'Se recoge el ' + fmt(pd(f)) : 'Falta anotar la fecha para recoger', desde: fEnt(t) || r.desde, fut: !!f};
+  } else if (t.incompleto) r.porque = 'Incompleto: falta ' + (t.falta || 'algo') + (porque ? ' · ' + porque : '');
+  if (!ent && lim) {
+    if (hl < 0) r.riesgo = fis ? 'Vencido: riesgo de multa' : 'Fecha límite vencida';
+    else if (hl <= 3) r.riesgo = 'Vence ' + (hl === 0 ? 'hoy' : 'en ' + hl + ' día(s) hábil(es)') + (fis ? ': ingresa prórroga o solventa para evitar multa' : '');
+  }
+  return r;
+}
+function tocar(id) { const o = find(id); if (o) { persist({...o}); toast('👁️ Marcado como revisado hoy'); } }
+function renderRiesgo() {
+  const r = T.filter(t => t.estado !== 'listo' && t.clase !== 'vigencia').map(t => ({t, e: estatusT(t)})).filter(x => x.e.riesgo);
+  riesgoBanner.className = r.length ? 'rounded-2xl p-4 bg-red-100 border border-red-300 text-red-900 cursor-pointer' : 'hidden';
+  riesgoBanner.innerHTML = r.length ? `<div class="font-bold">🚨 ${r.length} trámite(s) en riesgo</div><div class="text-sm">${r.slice(0, 4).map(x => esc(x.t.cliente) + (x.t.folio ? ' (' + esc(x.t.folio) + ')' : '') + ': ' + esc(x.e.riesgo)).join(' · ')}${r.length > 4 ? ' · …' : ''}</div><div class="text-xs mt-1">Toca para ver el detalle en Estatus</div>` : '';
+}
+function renderEst() {
+  const sel = estDepSel.value, act = T.filter(t => t.estado !== 'listo' && t.clase !== 'vigencia' && (!sel || dd(t) === sel));
+  const L = act.map(t => ({t, e: estatusT(t)})).sort((a, b) => (a.t.limite || '9999').localeCompare(b.t.limite || '9999'));
+  const g = {yo: [], dep: [], rec: [], blk: []}; L.forEach(x => g[x.e.q].push(x));
+  const risk = L.filter(x => x.e.riesgo), sin = L.filter(x => !x.e.fut && x.e.q !== 'rec' && diasSin(x.t) >= 5).sort((a, b) => diasSin(b.t) - diasSin(a.t));
+  const COL = {yo: 'text-amber-700', dep: 'text-blue-700', rec: 'text-amber-700', blk: 'text-orange-700'}, ICON = {yo: '👉', dep: '⏳', rec: '📥', blk: '🧱'};
+  const fila = (x, extra) => `<div onclick="verCard('${x.t.id}')" class="cursor-pointer border-b py-2 text-sm"><div><span style="color:${cliCol(x.t.cliente)}">●</span> <b>${esc(x.t.cliente)}</b>${x.t.negocio ? ' › ' + esc(x.t.negocio) : ''} · ${esc(x.t.tipo)}${x.t.folio ? ' · 🔖 ' + esc(x.t.folio) : ''} <span class="rounded px-1 text-xs text-white" style="background:${depCol(x.t.dep)}">${esc(x.t.dep || '')}</span></div><div class="text-xs font-semibold ${COL[x.e.q]}">${ICON[x.e.q]} ${esc(x.e.titulo)}</div>${x.e.porque ? `<div class="text-xs text-slate-500">${esc(x.e.porque)}</div>` : ''}${extra || ''}</div>`;
+  const lst = (a, f) => a.length ? a.map(f || (x => fila(x))).join('') : '<p class="text-xs text-slate-400">Nada aquí.</p>';
+  estYo.innerHTML = lst(g.yo, x => fila(x, x.e.desde ? `<div class="text-[11px] text-slate-500">desde ${fmt(pd(x.e.desde))}</div>` : ''));
+  estDepL.innerHTML = lst(g.dep); estRec.innerHTML = lst(g.rec); estBlk.innerHTML = lst(g.blk);
+  estRisk.innerHTML = lst(risk, x => fila(x, `<div class="text-xs font-bold text-red-700">🚨 ${esc(x.e.riesgo)}</div>`));
+  estSin.innerHTML = lst(sin, x => fila(x, `<div class="text-xs text-slate-500">💤 ${diasSin(x.t)} día(s) hábil(es) sin cambios${puede() ? ` · <button onclick="event.stopPropagation();tocar('${x.t.id}')" class="underline">👁️ Ya lo revisé hoy</button>` : ''}</div>`));
+  estYoT.textContent = yo('👉 Me toca a mí', '👉 Le toca al gestor');
+  estRiskSec.classList.toggle('hidden', !risk.length);
+  const caja = (v, l, c) => `<div class="bg-white rounded-lg p-2"><div class="text-xl font-bold ${c}">${v}</div><div class="text-xs text-slate-500">${l}</div></div>`;
+  estRes.innerHTML = caja(g.yo.length, yo('Me tocan', 'Le tocan al gestor'), 'text-amber-600') + caja(g.dep.length, 'Esperando dependencia', 'text-blue-600') + caja(g.rec.length, 'Ya toca recoger', 'text-amber-600') + caja(g.blk.length, 'Bloqueados', 'text-orange-600') + caja(risk.length, 'En riesgo', 'text-red-600') + caja(sin.length, 'Sin movimiento', 'text-slate-500');
+}
+
+// ---------- Parte D: recorridos para cualquier trámite, bloqueos automáticos y tiempos editables ----------
+function flujoPara(s) {
+  s = (s || '').toLowerCase();
+  return s.includes('anuncio') ? 'anuncio' : s.includes('uso de suelo') ? 'uso' : (s.includes('protección civil') || s.includes('anuencia') || s.includes('dictamen')) ? 'pc' : s.includes('licencia de funcionamiento') ? 'licfun' : s.includes('ambiental') ? 'ambiental' : s.includes('sanitari') ? 'sanitario' : s.includes('alcohol') ? 'alcohol' : s.includes('basura') ? 'basura' : (s.includes('constancia de situación') || s.includes('rfc')) ? 'rfc' : '';
+}
+function sugFlujo() { if (!flujoManual) flujoSel.value = dep.value === 'Fiscalización' ? '' : flujoPara(tipo.value); }
+function flujoHtml(t) {
+  if (!t.flujo || t.dep === 'Fiscalización') return '';
+  const e = docEfect(t.flujo), tp = DOCTPL[t.flujo.tpl] || DOCTPL.otro, ed = puede();
+  const col = e.fin ? 'bg-emerald-100 text-emerald-900' : e.auto ? 'bg-red-100 text-red-900' : e.q === 'yo' ? 'bg-amber-100 text-amber-900' : 'bg-blue-100 text-blue-900';
+  return `<div class="mt-2 rounded-lg px-2 py-1.5 ${col}"><div class="font-bold text-sm">${e.fin ? '✅' : e.auto ? '⏰' : e.q === 'yo' ? '👉' : '⏳'} ${esc(e.t)}</div><div class="text-xs">${esc(tp.n)} · desde ${fmt(pd(t.flujo.desde))}${tp.est && !e.fin ? ' · tiempos estimados' : ''}</div>`
+    + (ed && !e.fin ? `<div class="flex flex-wrap gap-1 mt-1">${e.ac.map(([lb, ir]) => `<button onclick="flujoIr('${t.id}','${ir}')" class="border rounded px-2 py-0.5 text-xs">${lb}</button>`).join('')}</div>` : '')
+    + (ed ? `<div class="text-xs mt-0.5"><button onclick="flujoAtras('${t.id}')" class="underline">⏪ paso anterior</button> · <button onclick="flujoQuitar('${t.id}')" class="underline">quitar recorrido</button></div>` : '')
+    + `<details class="mt-1"><summary class="cursor-pointer text-xs">¿Qué piden?</summary><div class="text-xs">${esc(tp.q)}<ul class="list-disc pl-4">${(tp.req || []).map(r => '<li>' + esc(r) + '</li>').join('')}</ul></div></details></div>`;
+}
+function flujoIr(id, ir) {
+  const o = find(id); if (!o || !o.flujo) return;
+  const f = {...o.flujo, hist: [...(o.flujo.hist || []), {paso: o.flujo.paso, desde: o.flujo.desde}], paso: ir, desde: isoHoy()}, fin = ((DOCTPL[f.tpl] || DOCTPL.otro).fl[ir] || {}).fin;
+  persist(fin ? {...o, flujo: f, estado: 'listo', previo: o.estado, cerradoEn: isoHoy(), fechaEntrega: o.fechaEntrega || isoHoy()} : {...o, flujo: f});
+  toast(fin ? '✅ Trámite terminado' : '👉 Paso guardado', o);
+}
+function flujoAtras(id) {
+  const o = find(id); if (!o || !o.flujo) return; const h = o.flujo.hist || [];
+  if (!h.length) return alert('Ya está en el primer paso.');
+  const a = h[h.length - 1];
+  persist({...o, flujo: {...o.flujo, paso: a.paso, desde: a.desde, hist: h.slice(0, -1)}, estado: o.estado === 'listo' ? (o.previo || 'proceso') : o.estado, cerradoEn: o.estado === 'listo' ? '' : o.cerradoEn});
+}
+function flujoQuitar(id) { const o = find(id); if (o && confirm('¿Quitar el recorrido de este trámite?')) persist({...o, flujo: null}); }
+// Aperturas: cada etapa crea su trámite con el recorrido que le toca y queda "en espera" mientras falten sus requisitos
+const APEFL = {uso: 'uso', pc: 'pc', amb: 'ambiental', lic: 'licfun', anu: 'anuncio', rfc: 'rfc'};
+function apeEspera(p, e, et) {
+  const pend = e.req.map(i => apeEtapa(p.tpl, i)).filter(x => x && (!x.opc || (et[x.id] || {}).inc) && (et[x.id] || {}).e !== 'listo');
+  return pend.length ? {txt: 'Falta: ' + pend.map(x => x.n).join(', '), dep: pend[0].dep, desde: isoHoy()} : null;
+}
+function apeSync(p) {
+  const et = p.etapas || {};
+  TPL[p.tpl].etapas.forEach(e => {
+    const s0 = et[e.id] || {}, t = s0.tr ? find(s0.tr) : null; if (!t || t.estado === 'listo') return;
+    const esp = apeEspera(p, e, et);
+    if (esp && !t.espera) persist({...t, espera: esp});
+    else if (!esp && t.espera && String(t.espera.txt).startsWith('Falta:')) persist({...t, espera: null});
+  });
+}
+// Tiempos de espera editables (días naturales antes de "pedir sello")
+function renderTiempos() {
+  const sig = JSON.stringify(TIEMPOS); if (tmpBody.dataset.sig === sig && tmpBody.innerHTML) return; tmpBody.dataset.sig = sig;
+  tmpBody.innerHTML = Object.entries(DOCTPL).filter(([k, v]) => v.fl.esp_exp).map(([k, v]) => `<tr class="border-t"><td class="p-2">${esc(v.n)}<div class="text-xs text-slate-500">${esc(v.dep)}${v.est ? ' · estimado' : ''}</div></td><td class="p-2"><input id="tm_${k}" type="number" min="1" value="${TIEMPOS[k] != null ? TIEMPOS[k] : v.fl.esp_exp.auto.dias}" class="border rounded px-2 py-1 w-20"> días</td><td class="p-2"><button onclick="tiempoSave('${k}')" class="border rounded px-2 py-0.5 text-xs">Guardar</button></td></tr>`).join('');
+}
+async function tiempoSave(k) {
+  const v = parseInt(document.getElementById('tm_' + k).value); if (!v || v < 1) return alert('Escribe un número de días.');
+  const o = {...TIEMPOS, [k]: v};
+  try { await sb('rpc/guardar_ajuste', {p_pin: PIN, p_key: 'tiempos', p_items: o}); TIEMPOS = o; refrescar(); render(); toast('⏱️ Tiempo guardado'); } catch (e) { alert('No se pudo guardar: ' + (e.message || e.code)); }
 }
 
 function mesNav(d) { MES = new Date(MES.getFullYear(), MES.getMonth() + d, 1); selDia = null; renderHeat(); }
@@ -1553,6 +1688,7 @@ function inhDel(f) { inhGuardar(INH.filter(x => x.f !== f)); }
   DB.doc().onSnapshot(s => { const it = (s.exists && s.data().items) || []; OVR = Object.fromEntries(it.map(x => [x.c, x.l])); sugerir(); }, e => console.error(e));
   if (CAN) { syncSat(); setInterval(syncSat, 20000); window.addEventListener('storage', e => { if (e.key === SATKEY) syncSat(); }); }
   poll(() => sb('config?key=eq.pagos&select=data'), rows => { PAG = (rows[0] && rows[0].data.items) || {visible: false, dias: []}; render(); }, e => console.error(e));
+  poll(() => sb('config?key=eq.tiempos&select=data'), rows => { TIEMPOS = (rows[0] && rows[0].data.items) || {}; render(); }, e => console.error(e));
   poll(() => sb('config?key=eq.horarios&select=data'), rows => { HORS = (rows[0] && rows[0].data.items) || {}; render(); }, e => console.error(e));
   poll(() => sb('nominas?select=data'), rows => { const all = rows.map(r => r.data); NOMS = all.filter(x => x.kind !== 'cero' && x.src === 'app').sort((a, b) => a.patron.localeCompare(b.patron)); CEROS = all.filter(x => x.kind === 'cero').sort((a, b) => a.alias.localeCompare(b.alias)); render(); }, e => console.error(e));
   poll(() => sb('config?key=eq.nominas&select=data'), rows => { NOM = (rows[0] && rows[0].data.items) || {activo: false}; render(); }, e => console.error(e));
