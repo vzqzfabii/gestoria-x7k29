@@ -308,6 +308,7 @@ details>summary{outline:none}
     </div>
     <div class="hidden"><button id="btnBit"></button><button id="btnTer"></button><button id="btnInh"></button><button id="btnCob"></button><button id="btnAdm"></button><button id="btnHor"></button></div>
   </section>
+  <div id="folioRes" class="hidden"></div>
   <section class="bg-white rounded-2xl shadow p-5">
     <h3 class="font-bold mb-3">📂 Todos los trámites activos</h3>
     <div id="todos" class="grid md:grid-cols-2 lg:grid-cols-3 gap-3"></div>
@@ -379,7 +380,7 @@ details>summary{outline:none}
   <section id="pagSec" class="hidden bg-white rounded-2xl shadow p-5"><h2 class="text-lg font-semibold">💵 Días por pagar al gestor <span id="pagRes" class="text-sm font-normal text-slate-600"></span></h2><p class="text-xs text-slate-500 mb-2">Informativo: cada día en que entregó documentos y si ya está liquidado.</p><div id="pagLista" class="max-h-80 overflow-auto"></div></section>
   <section id="bitSec" class="bg-white rounded-2xl shadow p-5"><h2 class="text-lg font-semibold">📜 Historial de intentos de entrega</h2>
     <p class="text-xs text-slate-500">Lo ven el dueño y la contadora. <span id="bitRes"></span></p><div id="bitList" class="mt-2"></div></section>
-  <section id="terSec" class="bg-white rounded-2xl shadow p-5"><h2 class="text-lg font-semibold">✔ Historial de terminados</h2><p class="text-xs text-slate-500 mb-2">Si marcaste uno por error, ábrelo otra vez con ↩ Reabrir. Los más recientes salen primero.</p><div id="terList" class="text-sm"></div></section>
+  <section id="terSec" class="bg-white rounded-2xl shadow p-5"><h2 class="text-lg font-semibold">✔ Historial de terminados</h2><p class="text-xs text-slate-500 mb-2">Si marcaste uno por error, ábrelo otra vez con ↩ Reabrir. Los más recientes salen primero.</p><input id="terQ" oninput="renderTer()" placeholder="🔎 Buscar en terminados (cliente, folio o trámite)" class="border rounded-lg px-3 py-2 w-full mb-2"><div id="terList" class="text-sm"></div></section>
 </main>
 <main id="mainCob" class="hidden max-w-5xl mx-auto px-4 py-6 space-y-4">
   <section class="bg-white rounded-2xl shadow p-5"><h2 class="text-lg font-semibold mb-1">👁️ Qué ve la contadora</h2><p class="text-xs text-slate-500 mb-3">Estos interruptores controlan lo que ella puede ver. Nada se muestra hasta que lo enciendas.</p>
@@ -407,6 +408,13 @@ details>summary{outline:none}
 <main id="mainCfg" class="hidden max-w-5xl mx-auto px-4 py-6 space-y-6">
   <section class="bg-white rounded-2xl shadow p-5"><h2 class="text-lg font-semibold mb-1">💾 Respaldo</h2><p class="text-xs text-slate-500 mb-3">Descarga una copia de todo tu panel. Guárdala de vez en cuando.</p>
     <div class="flex flex-wrap gap-2"><button id="btnResp" type="button" onclick="respaldo()" class="tb">💾 Respaldo completo</button><button id="btnCsv" type="button" onclick="respaldoCsv()" class="tb">📊 Excel (CSV)</button></div></section>
+  <section id="avisoSec" class="bg-white rounded-2xl shadow p-5"><h2 class="text-lg font-semibold">🔔 Avisos y recordatorios</h2>
+    <p class="text-xs text-slate-500 mb-3">Te llegan solos al celular, aunque la página esté cerrada: a las 7:30 de la mañana lo de hoy y a las 8:00 de la noche lo de mañana (hora de Cancún).</p>
+    <div class="flex flex-wrap gap-2 mb-3"><label class="tb sw"><input type="checkbox" id="avActivo" onchange="avGuardar()"> <span>Avisos activos</span></label><label class="tb sw"><input type="checkbox" id="avNombres" onchange="avGuardar()"> <span>Incluir nombres de clientes</span></label><button type="button" onclick="avProbar()" class="tb">📨 Enviar aviso de prueba</button></div>
+    <div class="text-sm rounded-xl p-3 border"><b>Cómo recibirlos (solo una vez)</b>
+      <ol class="list-decimal pl-5 mt-1"><li>Instala la app gratuita <b>ntfy</b> (Android: Play Store · iPhone: App Store).</li><li>Ábrela, pulsa <b>+</b> y suscríbete a este tema: <code id="avTema" class="select-all font-mono"></code> <button type="button" onclick="avCopiar()" class="underline">copiar</button></li><li>Aquí arriba pulsa <b>Enviar aviso de prueba</b>.</li></ol>
+      <p class="text-xs text-slate-500 mt-1">El tema funciona como contraseña: no lo compartas. Por privacidad, los avisos no traen nombres de clientes a menos que lo actives (pasan por el servicio gratuito ntfy.sh).</p></div>
+    <h3 class="font-semibold text-sm mt-4 mb-1">Próximos avisos (7 días)</h3><div id="avLista" class="text-sm max-h-60 overflow-auto"></div></section>
   <section id="tmpSec" class="bg-white rounded-2xl shadow p-5"><h2 class="text-lg font-semibold">⏱️ Tiempos de espera por documento</h2>
     <p class="text-xs text-slate-500 mb-2">Cuántos días naturales deben pasar, después de entregar el pago, para que el sistema te avise "ya toca pedir sello". Ajústalos con lo que veas en la práctica.</p>
     <div class="overflow-x-auto"><table class="w-full text-sm"><thead class="text-left text-slate-500"><tr><th class="p-2">Documento</th><th class="p-2">Espera</th><th class="p-2"></th></tr></thead><tbody id="tmpBody"></tbody></table></div></section>
@@ -524,7 +532,7 @@ async function entrar() {
   catch (e) { alert('No se pudo verificar: ' + (e.message || e.code)); }
 }
 function salir() { try { localStorage.removeItem('gest_pin'); } catch (e) {} location.reload(); }
-let INH = [], MES = null, selDia = null, cardOpen = null, flujoManual = false, TIEMPOS = {}, HORS = {}, PAG = {visible: false, dias: []}, pagUltimo = null, pagWanted = null, AMES = null, FIN = {tarifa: 300, dias: {}, pagos: [], efec: [], comp: {}, proy: [], uma: 117.31}, CEROS = [], CPER = null, satUltimo = '';
+let INH = [], MES = null, selDia = null, cardOpen = null, flujoManual = false, TIEMPOS = {}, TLOADED = false, AVISO = {topic: '', activo: true, nombres: false}, recSig = '', HORS = {}, PAG = {visible: false, dias: []}, pagUltimo = null, pagWanted = null, AMES = null, FIN = {tarifa: 300, dias: {}, pagos: [], efec: [], comp: {}, proy: [], uma: 117.31}, CEROS = [], CPER = null, satUltimo = '';
 const SATKEY = 'nomina-sat-db-v1';
 let NOMS = [], NOM = {activo: false}, NPER = null, TAB = 'panel'; const NOPEN = new Set(), NCOL = ['#7c3aed', '#0891b2', '#16a34a', '#d97706', '#db2777', '#2563eb', '#65a30d', '#dc2626']; const _fc = {};
 const FERN = ['Año Nuevo','Día de la Constitución','Natalicio de Benito Juárez','Día del Trabajo','Independencia de México','Transmisión del Poder Ejecutivo','Revolución Mexicana','Navidad'];
@@ -626,7 +634,7 @@ function card(t) {
     </div>
     ${pasoBanner(t)}${flujoHtml(t)}<div class="text-sm mt-1">📅 ${lim ? 'Fecha límite: ' + fmt(lim) + ' · ' : ''}${estado}</div>
     <div class="text-xs text-slate-500 mt-1">${t.resp ? '👤 ' + esc(t.resp) : ''}${t.monto ? ' · 💲' + Number(t.monto).toLocaleString('es-MX') : ''}${t.repite ? ' · 🔁 mensual' : ''}</div>${lineaTiempo(t)}${extraBadges(t)}${planB ? `<div class="text-xs mt-1">${planB}</div>` : ''}
-    ${firmas}${recB(t)}${lic}${alerta}${incB}${intB}${intHtml(t)}${cicloHtml(t)}${docsHtml(t)}${t.resuelto ? '<div class="mt-1 text-xs rounded px-2 py-1 bg-amber-50 text-amber-900 border border-amber-200">🛠️ ' + yo('Resuelto por mí', 'Resuelto por el gestor') + ': ' + esc(t.resuelto.nota || 'completado por el gestor') + '</div>' : ''}${t.espera ? '<div class="mt-1 text-xs rounded px-2 py-1 bg-orange-50 text-orange-900 border border-orange-200">⏳ En espera: ' + esc(t.espera.txt) + ' (' + esc(t.espera.dep || '') + ')</div>' : ''}
+    ${firmas}${recB(t)}${lic}${alerta}${incB}${intB}${intHtml(t)}${cicloHtml(t)}${docsHtml(t)}${historiaDet(t)}${t.resuelto ? '<div class="mt-1 text-xs rounded px-2 py-1 bg-amber-50 text-amber-900 border border-amber-200">🛠️ ' + yo('Resuelto por mí', 'Resuelto por el gestor') + ': ' + esc(t.resuelto.nota || 'completado por el gestor') + '</div>' : ''}${t.espera ? '<div class="mt-1 text-xs rounded px-2 py-1 bg-orange-50 text-orange-900 border border-orange-200">⏳ En espera: ' + esc(t.espera.txt) + ' (' + esc(t.espera.dep || '') + ')</div>' : ''}
     
     ${reqHtml(t)}
     ${puede() ? `<div class="flex flex-wrap gap-2 mt-3">
@@ -681,7 +689,7 @@ function borrar(id) { if (confirm('¿Eliminar este trámite?')) quitar(id); }
 function render() {
   document.getElementById('hoy').textContent = fmt(hoy());
   document.getElementById('formSec').style.display = puede() ? '' : 'none';
-  btnAdm.style.display = btnObl.style.display = btnInh.style.display = pagToggle.style.display = btnCob.style.display = btnWa.style.display = btnResp.style.display = btnCsv.style.display = puede() ? '' : 'none'; inhSec.classList.toggle('hidden', !puede()); horSec.classList.toggle('hidden', !puede()); renderBit(); renderHeat(); renderInh(); renderCob(); renderBanner(); renderNom(); renderCer(); renderTer(); renderGraf(); renderSeg(); renderHor(); renderPrio(); renderPag(); renderAct(); renderApe(); renderOrg(); renderDocs(); renderRiesgo(); renderEst(); renderTiempos(); guiaFechas.style.display = puede() ? '' : 'none'; if (cardOpen && dlgCard.open) { const tt = find(cardOpen); if (tt) cardBox.innerHTML = card(tt); else dlgCard.close(); } if (pagWanted !== null && !!PAG.visible === pagWanted) pagWanted = null; pagChk.checked = pagWanted !== null ? pagWanted : !!PAG.visible; if (CAN && pagChk.checked) syncPagos(false); btnIn.textContent = CAN ? '🔓 Salir del modo dueño' : '🔑 Entrar como dueño'; btnUser.textContent = CAN ? '👤' : '🔑'; btnUser.className = CAN ? 'text-xl px-2 py-1 rounded-lg bg-white/15 hover:bg-white/25' : 'text-lg px-2 py-1 rounded-lg opacity-40 hover:opacity-100'; syncToggles(); admin.classList.toggle('hidden', !puede());
+  btnAdm.style.display = btnObl.style.display = btnInh.style.display = pagToggle.style.display = btnCob.style.display = btnWa.style.display = btnResp.style.display = btnCsv.style.display = puede() ? '' : 'none'; inhSec.classList.toggle('hidden', !puede()); horSec.classList.toggle('hidden', !puede()); renderBit(); renderHeat(); renderInh(); renderCob(); renderBanner(); renderNom(); renderCer(); renderTer(); renderGraf(); renderSeg(); renderHor(); renderPrio(); renderPag(); renderAct(); renderApe(); renderOrg(); renderDocs(); renderRiesgo(); renderEst(); renderTiempos(); renderFolio(); renderAviso(); if (CAN && TLOADED) syncRec(); guiaFechas.style.display = puede() ? '' : 'none'; if (cardOpen && dlgCard.open) { const tt = find(cardOpen); if (tt) cardBox.innerHTML = card(tt); else dlgCard.close(); } if (pagWanted !== null && !!PAG.visible === pagWanted) pagWanted = null; pagChk.checked = pagWanted !== null ? pagWanted : !!PAG.visible; if (CAN && pagChk.checked) syncPagos(false); btnIn.textContent = CAN ? '🔓 Salir del modo dueño' : '🔑 Entrar como dueño'; btnUser.textContent = CAN ? '👤' : '🔑'; btnUser.className = CAN ? 'text-xl px-2 py-1 rounded-lg bg-white/15 hover:bg-white/25' : 'text-lg px-2 py-1 rounded-lg opacity-40 hover:opacity-100'; syncToggles(); admin.classList.toggle('hidden', !puede());
   document.getElementById('btnVista').style.display = CAN ? '' : 'none';
   document.getElementById('btnVista').textContent = VISTA ? '↩ Volver a mi vista' : '👀 Ver como contadora';
   document.getElementById('modo').textContent = (SNAP ? '📅 Actualizado: ' + window.__SNAP.fecha : DB ? '☁️ Se actualiza solo' : '💾 Datos solo en este navegador') + (puede() ? '' : ' · 👀 Vista de solo lectura');
@@ -1119,7 +1127,7 @@ function donut(p, c) { return `<svg viewBox="0 0 42 42" class="w-24 h-24 shrink-
 
 // ---------- Terminados, reabrir y respaldo ----------
 function renderTer() {
-  const l = T.filter(t => t.estado === 'listo').sort((a, b) => (b.cerradoEn || b.firmaInicio || b.limite || '').localeCompare(a.cerradoEn || a.firmaInicio || a.limite || '')).slice(0, 80);
+  const l = T.filter(t => t.estado === 'listo' && (!terQ.value.trim() || (t.cliente + ' ' + t.tipo + ' ' + (t.folio || '') + ' ' + (t.negocio || '')).toLowerCase().includes(terQ.value.trim().toLowerCase()))).sort((a, b) => (b.cerradoEn || b.firmaInicio || b.limite || '').localeCompare(a.cerradoEn || a.firmaInicio || a.limite || '')).slice(0, 80);
   terList.innerHTML = l.map(t => `<div class="border-b py-2 flex flex-wrap items-center gap-2"><b>${esc(t.cliente)}</b><span class="text-slate-600">${ICO[t.clase || 'tramite'] || ''} ${esc(t.tipo)}</span><span class="bg-slate-100 rounded px-1 text-xs">${esc(t.dep || '')}</span><span class="text-xs text-slate-500">· cerrado ${t.cerradoEn ? fmt(pd(t.cerradoEn)) : 'sin fecha registrada'}${t.cancelado ? ' · 🚫 cancelado' : ''}</span>${puede() ? `<button onclick="reabrir('${t.id}')" class="ml-auto border rounded px-2 py-0.5 text-xs">↩ Reabrir</button>` : ''}</div>`).join('') || '<p class="text-xs text-slate-400">Aún no hay terminados.</p>';
 }
 function reabrir(id) { const o = find(id); if (!o || !confirm('¿Reabrir este trámite? Volverá a salir como pendiente.')) return; persist({...o, estado: o.previo || (o.firmaInicio ? 'firmas' : 'proceso'), cerradoEn: '', pagado: false, entregado: false}); }
@@ -1637,6 +1645,69 @@ async function tiempoSave(k) {
   try { await sb('rpc/guardar_ajuste', {p_pin: PIN, p_key: 'tiempos', p_items: o}); TIEMPOS = o; refrescar(); render(); toast('⏱️ Tiempo guardado'); } catch (e) { alert('No se pudo guardar: ' + (e.message || e.code)); }
 }
 
+// ---------- Historia de cada folio y búsqueda ----------
+function pasoTitulo(tpl, paso) { const st = (DOCTPL[tpl] || DOCTPL.otro).fl[paso]; return st ? st.t : paso; }
+function historiaFolio(t) {
+  const ev = [], add = (f, x) => { if (f) ev.push([f, x]); }, fis = t.dep === 'Fiscalización';
+  add(t.recibido, yo('📥 Te lo dio ella', '📥 Entregado al gestor'));
+  (t.intentos || []).forEach(i => add(i.fecha, '⚠️ Intento #' + i.n + (i.res === 'incompleto' ? ': incompleto' : ': no se alcanzó a entregar') + (i.nota ? ' — ' + i.nota : '')));
+  (t.ciclo || []).forEach(c => { add(c.ingreso, (c.tipo === 'prorroga' ? '🔁 Prórroga ingresada' : '✅ Solventación ingresada') + (c.recoger ? ' (se recoge el ' + fmt(pd(c.recoger)) + ')' : '')); add(c.recogido, (c.tipo === 'prorroga' ? '📥 Prórroga recogida' : '📥 Hoja de solventación recogida') + (c.nuevaLimite ? ' · vigencia hasta ' + fmt(pd(c.nuevaLimite)) : '')); });
+  (t.docsFolio || []).forEach(d => { (d.hist || []).forEach(h => add(h.desde, '📑 ' + d.n + ': ' + pasoTitulo(d.tpl, h.paso))); add(d.desde, '📑 ' + d.n + ': ' + (d.cancelado ? 'ya no se pide' : pasoTitulo(d.tpl, d.paso))); });
+  if (t.flujo) { (t.flujo.hist || []).forEach(h => add(h.desde, '🧭 ' + pasoTitulo(t.flujo.tpl, h.paso))); add(t.flujo.desde, '🧭 ' + pasoTitulo(t.flujo.tpl, t.flujo.paso)); }
+  if (!fis && fEnt(t)) add(fEnt(t), yo('📤 Lo entregaste', '📤 El gestor lo entregó'));
+  if (!fis && t.recogidoEn) add(t.recogidoEn, '📥 Recogido');
+  add(t.cerradoEn, t.cancelado ? '🚫 Cancelado' : '✔ Terminado');
+  ev.sort((a, b) => a[0].localeCompare(b[0]));
+  return ev.length ? ev.map(([f, x]) => `<div class="text-xs"><b>${fmt(pd(f))}</b> · ${esc(x)}</div>`).join('') : '<div class="text-xs text-slate-400">Sin movimientos registrados.</div>';
+}
+function historiaDet(t) {
+  if (!(t.folio || (t.ciclo || []).length || (t.docsFolio || []).length || t.flujo)) return '';
+  return `<details class="mt-1"><summary class="cursor-pointer text-xs text-slate-600">🕘 Historia completa</summary><div class="mt-1 space-y-0.5">${historiaFolio(t)}</div></details>`;
+}
+function renderFolio() {
+  const qv = (q.value || '').trim().toLowerCase(), hits = qv.length >= 2 ? T.filter(t => (t.folio || '').toLowerCase().includes(qv)) : [];
+  folioRes.className = hits.length ? 'bg-white rounded-2xl shadow p-4' : 'hidden';
+  folioRes.innerHTML = hits.length ? `<h3 class="font-bold mb-2">${hits.length > 1 ? '🔖 Folios encontrados (' + hits.length + ')' : '🔖 Folio encontrado'}</h3>` + hits.map(t => `<div class="border-t py-2"><div class="text-sm font-semibold"><span style="color:${cliCol(t.cliente)}">●</span> ${esc(t.cliente)}${t.negocio ? ' › ' + esc(t.negocio) : ''} · ${esc(t.tipo)} · 🔖 ${esc(t.folio)} <span class="text-xs font-normal">${t.estado === 'listo' ? '✔ terminado' : esc(estatusT(t).titulo)}</span></div>${historiaFolio(t)}<button onclick="verCard('${t.id}')" class="mt-1 text-xs underline">Abrir tarjeta</button></div>`).join('') : '';
+}
+// ---------- Avisos y recordatorios automáticos ----------
+function evNom(t) { return t.cliente + (t.negocio ? ' › ' + t.negocio : '') + (t.folio ? ' (' + t.folio + ')' : ''); }
+// Lista de fechas importantes: el servidor la lee cada mañana y cada noche y te manda el aviso, aunque la página esté cerrada
+function construirEventos() {
+  const ev = [], act = T.filter(t => t.estado !== 'listo');
+  const espera = (t, d, nombre, tp, desde, auto) => { const lim = TIEMPOS[d.tpl] != null ? TIEMPOS[d.tpl] : auto.dias, f = isoD(new Date(pd(desde).getTime() + lim * 864e5)); ev.push({f, txt: '🔏 Ya toca pedir un sello (' + tp.dep + ')', nom: '🔏 Pedir sello: ' + nombre + ' — ' + evNom(t), of: [0], pend: true}); };
+  act.forEach(t => {
+    const fis = t.dep === 'Fiscalización';
+    if (t.estado === 'firmas' && t.fechaRecoger) { const que = fis ? (t.cicloTipo === 'prorroga' ? 'una prórroga' : 'una hoja de solventación') : 'un documento'; ev.push({f: t.fechaRecoger, txt: '📥 Recoger ' + que + ' (' + dd(t) + ')', nom: '📥 Recoger ' + que + ': ' + evNom(t), of: [0, 1], pend: true}); }
+    if (t.estado !== 'firmas' && t.limite && t.clase !== 'vigencia') ev.push({f: t.limite, txt: '⏳ Se acaba un límite (' + dd(t) + ')', nom: '⏳ Límite: ' + evNom(t) + ' — ' + t.tipo, of: [0, 1, 2, 3], pend: true});
+    if (t.vence && (t.clase === 'vigencia' || !fis)) ev.push({f: t.vence, txt: '🔔 Vence una vigencia o licencia', nom: '🔔 Vence: ' + evNom(t) + ' — ' + t.tipo, of: [0, 7, 30], pend: true});
+    (t.docsFolio || []).forEach(d => { if (d.cancelado) return; const tp = DOCTPL[d.tpl] || DOCTPL.otro, st = tp.fl[d.paso]; if (st && st.auto) espera(t, d, d.n, tp, d.desde, st.auto); });
+    if (t.flujo && !fis) { const tp = DOCTPL[t.flujo.tpl] || DOCTPL.otro, st = tp.fl[t.flujo.paso]; if (st && st.auto) espera(t, t.flujo, tp.n, tp, t.flujo.desde, st.auto); }
+  });
+  const g = {};
+  act.filter(t => t.estado !== 'firmas' && !t.espera && t.clase !== 'vigencia' && (t.plan || t.asignado) && !fEnt(t)).forEach(t => { const f = t.plan || t.asignado; (g[f] = g[f] || []).push(t); });
+  Object.entries(g).forEach(([f, l]) => ev.push({f, txt: '📤 Por entregar: ' + l.length + ' documento(s)', nom: '📤 Por entregar: ' + l.map(evNom).join('; '), of: [0, 1], pend: true}));
+  const hy = hoy();
+  for (let i = 0; i <= 45; i++) { const d = new Date(hy.getFullYear(), hy.getMonth(), hy.getDate() + i), n = nombreInh(d); if (n) ev.push({f: isoD(d), txt: '📆 No se trabaja: ' + n, nom: '📆 No se trabaja: ' + n, of: [2], pend: false}); }
+  return ev.sort((a, b) => a.f.localeCompare(b.f)).slice(0, 300);
+}
+async function syncRec() {
+  if (!CAN || !TLOADED) return;
+  const ev = construirEventos(), sig = JSON.stringify(ev);
+  if (sig === recSig) return; recSig = sig;
+  try { await sb('rpc/guardar_finanzas', {p_pin: PIN, p_doc: {id: 'recordatorios', t: 'rec', gen: isoHoy(), eventos: ev}}); } catch (e) { recSig = ''; console.error(e); }
+}
+function renderAviso() {
+  if (!puede()) return;
+  if (document.activeElement !== avActivo) avActivo.checked = !!AVISO.activo;
+  if (document.activeElement !== avNombres) avNombres.checked = !!AVISO.nombres;
+  avTema.textContent = AVISO.topic || '(cargando…)';
+  const ev = construirEventos().filter(e => { const d = Math.round((pd(e.f) - hoy()) / 864e5); return d >= 0 && d <= 7; });
+  avLista.innerHTML = ev.map(e => `<div class="py-0.5"><b>${fmt(pd(e.f))}</b> · ${esc(AVISO.nombres ? e.nom : e.txt)} <span class="text-xs text-slate-500">(aviso ${e.of.map(o => o === 0 ? 'el mismo día' : o + ' día(s) antes').join(', ')})</span></div>`).join('') || '<p class="text-xs text-slate-400">Nada programado en los próximos 7 días.</p>';
+}
+async function avGuardar() { try { await sb('rpc/guardar_aviso', {p_pin: PIN, p_activo: avActivo.checked, p_nombres: avNombres.checked}); AVISO = {...AVISO, activo: avActivo.checked, nombres: avNombres.checked}; toast('🔔 Avisos guardados'); } catch (e) { alert('No se pudo guardar: ' + (e.message || e.code)); } }
+async function avProbar() { await syncRec(); try { const r = await sb('rpc/probar_aviso', {p_pin: PIN}); toast(r === 'enviado' ? '📨 Aviso de prueba enviado: revisa tu celular' : 'Resultado: ' + r); } catch (e) { alert('No se pudo enviar: ' + (e.message || e.code)); } }
+function avCopiar() { if (navigator.clipboard) navigator.clipboard.writeText(AVISO.topic || '').then(() => toast('📋 Tema copiado')); }
+
 function mesNav(d) { MES = new Date(MES.getFullYear(), MES.getMonth() + d, 1); selDia = null; renderHeat(); }
 function evDia(f) { return T.flatMap(t => (t.intentos || []).filter(x => x.fecha === f).map(x => ({...x, cliente: t.cliente, tipo: t.tipo}))); }
 function diaHeat(k) {
@@ -1684,8 +1755,9 @@ function inhDel(f) { inhGuardar(INH.filter(x => x.f !== f)); }
 (async () => {
   DB = SB; col = DB.collection();
   if (PIN) { try { CAN = await sb('rpc/verificar', {p_pin: PIN}) === true; if (!CAN) salir(); } catch (e) {} }
-  col.onSnapshot(snap => { T = snap.docs.map(d => ({clase: 'tramite', dep: 'Otro', otros: [], ...d.data()})); render(); }, e => console.error(e));
+  col.onSnapshot(snap => { T = snap.docs.map(d => ({clase: 'tramite', dep: 'Otro', otros: [], ...d.data()})); TLOADED = true; render(); }, e => console.error(e));
   DB.doc().onSnapshot(s => { const it = (s.exists && s.data().items) || []; OVR = Object.fromEntries(it.map(x => [x.c, x.l])); sugerir(); }, e => console.error(e));
+  if (CAN) sb('rpc/leer_aviso', {p_pin: PIN}).then(a => { AVISO = {...AVISO, ...a}; render(); }).catch(e => console.error(e));
   if (CAN) { syncSat(); setInterval(syncSat, 20000); window.addEventListener('storage', e => { if (e.key === SATKEY) syncSat(); }); }
   poll(() => sb('config?key=eq.pagos&select=data'), rows => { PAG = (rows[0] && rows[0].data.items) || {visible: false, dias: []}; render(); }, e => console.error(e));
   poll(() => sb('config?key=eq.tiempos&select=data'), rows => { TIEMPOS = (rows[0] && rows[0].data.items) || {}; render(); }, e => console.error(e));
