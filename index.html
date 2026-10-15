@@ -95,6 +95,7 @@ details>summary{outline:none}
 .bg-red-100{background:rgba(239,68,68,.19)!important}
 .bg-red-50{background:rgba(239,68,68,.13)!important}
 .bg-rose-50{background:rgba(244,63,94,.13)!important}
+.bg-sky-50{background:rgba(14,165,233,.13)!important}
 .bg-slate-100{background:rgba(255,255,255,.08)!important}
 .bg-slate-200{background:rgba(255,255,255,.14)!important}
 .bg-slate-50{background:rgba(255,255,255,.05)!important}
@@ -114,6 +115,7 @@ details>summary{outline:none}
 .border-red-300{border-color:rgba(239,68,68,.38)!important}
 .border-rose-200{border-color:rgba(244,63,94,.38)!important}
 .border-rose-300{border-color:rgba(244,63,94,.38)!important}
+.border-sky-300{border-color:rgba(14,165,233,.38)!important}
 .border-slate-200{border-color:rgba(255,255,255,.16)!important}
 .border-slate-300{border-color:rgba(255,255,255,.16)!important}
 .border-slate-400{border-color:rgba(255,255,255,.16)!important}
@@ -148,6 +150,7 @@ details>summary{outline:none}
 .text-rose-700{color:#fda4af!important}
 .text-rose-900{color:#fda4af!important}
 .text-sky-700{color:#7dd3fc!important}
+.text-sky-900{color:#7dd3fc!important}
 .text-slate-400{color:#8fa0bd!important}
 .text-slate-500{color:#a9b8d2!important}
 .text-slate-600{color:#c3cee3!important}
@@ -324,6 +327,11 @@ details>summary{outline:none}
   <section class="bg-white rounded-2xl shadow p-5"><h3 class="font-bold mb-2">🗓️ Próximos 8 días</h3><div id="c6"></div></section>
 </main>
 <main id="mainEst" class="hidden max-w-7xl mx-auto px-4 py-6 space-y-5">
+  <section id="darSec" class="hidden rounded-2xl p-5 border-2 border-sky-300 bg-sky-50">
+    <div class="flex flex-wrap items-center justify-between gap-2"><h2 class="font-bold text-sky-900">📨 Lo que debe llegar al gestor para mañana y pasado mañana</h2><span id="darAviso" class="text-xs text-slate-500"></span></div>
+    <p class="text-xs text-slate-700 mt-1">Se entrega un día antes: lo de mañana debió llegar hoy, y lo de pasado mañana se prepara desde hoy.</p>
+    <div id="darBody"></div>
+  </section>
   <section class="bg-white rounded-2xl shadow p-5"><div class="flex flex-wrap items-center justify-between gap-2"><h2 class="text-lg font-semibold">🧭 Estatus de trámites</h2><select id="estDepSel" onchange="renderEst()" class="border rounded-lg px-3 py-2 bg-white"></select></div>
     <p class="text-xs text-slate-500">En qué paso va cada trámite, por qué no ha terminado y quién tiene la pelota. Toca uno para abrirlo.</p><div id="estRes" class="grid grid-cols-2 md:grid-cols-6 gap-2 mt-3 text-center"></div></section>
   <section id="estRiskSec" class="rounded-2xl p-5 border-2 border-red-300 bg-red-50"><h3 class="font-bold text-red-900 mb-1">🚨 En riesgo</h3><div id="estRisk"></div></section>
@@ -690,7 +698,7 @@ function borrar(id) { if (confirm('¿Eliminar este trámite?')) quitar(id); }
 function render() {
   document.getElementById('hoy').textContent = fmt(hoy());
   document.getElementById('formSec').style.display = puede() ? '' : 'none';
-  btnAdm.style.display = btnObl.style.display = btnInh.style.display = pagToggle.style.display = btnCob.style.display = btnWa.style.display = btnResp.style.display = btnCsv.style.display = puede() ? '' : 'none'; inhSec.classList.toggle('hidden', !puede()); horSec.classList.toggle('hidden', !puede()); renderBit(); renderHeat(); renderInh(); renderCob(); renderBanner(); renderNom(); renderCer(); renderTer(); renderGraf(); renderSeg(); renderHor(); renderPrio(); renderPag(); renderAct(); renderApe(); renderOrg(); renderDocs(); renderRiesgo(); renderEst(); nuevoBar.style.display = puede() ? '' : 'none'; renderProx(); renderTiempos(); renderFolio(); renderAviso(); if (CAN && TLOADED) syncRec(); guiaFechas.style.display = puede() ? '' : 'none'; if (cardOpen && dlgCard.open) { const tt = find(cardOpen); if (tt) cardBox.innerHTML = card(tt); else dlgCard.close(); } if (pagWanted !== null && !!PAG.visible === pagWanted) pagWanted = null; pagChk.checked = pagWanted !== null ? pagWanted : !!PAG.visible; if (CAN && pagChk.checked) syncPagos(false); btnIn.textContent = CAN ? '🔓 Salir del modo dueño' : '🔑 Entrar como dueño'; btnUser.textContent = CAN ? '👤' : '🔑'; btnUser.className = CAN ? 'text-xl px-2 py-1 rounded-lg bg-white/15 hover:bg-white/25' : 'text-lg px-2 py-1 rounded-lg opacity-40 hover:opacity-100'; syncToggles(); admin.classList.toggle('hidden', !puede());
+  btnAdm.style.display = btnObl.style.display = btnInh.style.display = pagToggle.style.display = btnCob.style.display = btnWa.style.display = btnResp.style.display = btnCsv.style.display = puede() ? '' : 'none'; inhSec.classList.toggle('hidden', !puede()); horSec.classList.toggle('hidden', !puede()); renderBit(); renderHeat(); renderInh(); renderCob(); renderBanner(); renderNom(); renderCer(); renderTer(); renderGraf(); renderSeg(); renderHor(); renderPrio(); renderPag(); renderAct(); renderApe(); renderOrg(); renderDocs(); renderRiesgo(); renderEst(); nuevoBar.style.display = puede() ? '' : 'none'; renderProx(); renderDar(); renderTiempos(); renderFolio(); renderAviso(); if (CAN && TLOADED) syncRec(); guiaFechas.style.display = puede() ? '' : 'none'; if (cardOpen && dlgCard.open) { const tt = find(cardOpen); if (tt) cardBox.innerHTML = card(tt); else dlgCard.close(); } if (pagWanted !== null && !!PAG.visible === pagWanted) pagWanted = null; pagChk.checked = pagWanted !== null ? pagWanted : !!PAG.visible; if (CAN && pagChk.checked) syncPagos(false); btnIn.textContent = CAN ? '🔓 Salir del modo dueño' : '🔑 Entrar como dueño'; btnUser.textContent = CAN ? '👤' : '🔑'; btnUser.className = CAN ? 'text-xl px-2 py-1 rounded-lg bg-white/15 hover:bg-white/25' : 'text-lg px-2 py-1 rounded-lg opacity-40 hover:opacity-100'; syncToggles(); admin.classList.toggle('hidden', !puede());
   document.getElementById('btnVista').style.display = CAN ? '' : 'none';
   document.getElementById('btnVista').textContent = VISTA ? '↩ Volver a mi vista' : '👀 Ver como contadora';
   document.getElementById('modo').textContent = (SNAP ? '📅 Actualizado: ' + window.__SNAP.fecha : DB ? '☁️ Se actualiza solo' : '💾 Datos solo en este navegador') + (puede() ? '' : ' · 👀 Vista de solo lectura');
@@ -1817,6 +1825,37 @@ async function proxMarcar(id) {
   const o = find(id); if (!o) return;
   await persist({...o, recibido: isoHoy()});
   toast('📥 Marcado: ya lo tienes');
+}
+
+// ---------- Lo que debe llegar al gestor (vista para ella, desde las 5 pm) ----------
+function horaCancun() { return parseInt(new Intl.DateTimeFormat('en-US', {timeZone: 'America/Cancun', hour: 'numeric', hour12: false}).format(new Date()), 10) % 24; }
+function diaMas(n) { return isoD(new Date(hoy().getFullYear(), hoy().getMonth(), hoy().getDate() + n)); }
+function estDar(t, man) {
+  if (t.recibido) return (t.incompleto || t.falta) ? ['⚠️', 'Llegó incompleto' + (t.falta ? ': falta ' + t.falta : '')] : ['✅', 'Llegó completo'];
+  if (t.asignado < man) return ['🚨', 'Atrasado: debió llegar antes'];
+  if (t.asignado === man) return ['🚨', 'Debió llegar hoy y todavía no llega'];
+  return ['🟡', 'Hay que prepararlo hoy'];
+}
+function darItems() {
+  const man = diaMas(1), pas = diaMas(2);
+  return T.filter(t => t.estado !== 'listo' && t.clase !== 'vigencia' && t.asignado && t.asignado <= pas && !fEnt(t))
+    .map(t => ({t, f: t.asignado, e: estDar(t, man)}))
+    .sort((a, b) => a.f.localeCompare(b.f) || a.t.cliente.localeCompare(b.t.cliente));
+}
+function renderDar() {
+  const visible = puede() || horaCancun() >= 17;
+  darSec.classList.toggle('hidden', !visible);
+  darAviso.textContent = puede() ? '👀 Así lo ve ella: se muestra desde las 5 pm' : '';
+  if (!visible) return;
+  const man = diaMas(1), pas = diaMas(2), L = darItems();
+  const grupo = (titulo, arr) => arr.length ? `<div class="mt-3"><div class="font-semibold text-sm mb-1">${titulo}</div>${arr.map(x => `<div class="flex flex-wrap items-center gap-2 border-b py-2 text-sm"><div class="flex-1 min-w-[180px]"><span style="color:${cliCol(x.t.cliente)}">●</span> <b>${esc(x.t.cliente)}</b>${x.t.negocio ? ' › ' + esc(x.t.negocio) : ''}<div class="text-xs text-slate-600">${esc(x.t.tipo)}${x.t.folio ? ' · 🔖 ' + esc(x.t.folio) : ''} · <span class="rounded px-1 text-white" style="background:${depCol(x.t.dep)}">${esc(x.t.dep || '')}</span></div></div><div class="text-xs font-semibold whitespace-nowrap">${x.e[0]} ${esc(x.e[1])}</div>${puede() && !x.t.recibido ? `<button onclick="proxMarcar('${x.t.id}')" class="text-xs border border-emerald-500 text-emerald-700 px-2 py-0.5 rounded-md">✅ Ya me lo dio</button>` : ''}</div>`).join('')}</div>` : '';
+  const atras = L.filter(x => x.f < man), delMan = L.filter(x => x.f === man), delPas = L.filter(x => x.f === pas);
+  const resumen = `<div class="text-sm"><b>${L.filter(x => !x.t.recibido).length}</b> documento(s) por darle · <b>${L.filter(x => x.t.recibido && !x.t.incompleto && !x.t.falta).length}</b> ya completos</div>`;
+  darBody.innerHTML = resumen
+    + grupo('🚨 Atrasados', atras)
+    + grupo(`📅 Para mañana, ${fmt(pd(man))} (debió llegar hoy)`, delMan)
+    + grupo(`📅 Para pasado mañana, ${fmt(pd(pas))} (empieza a prepararse hoy)`, delPas)
+    + (L.length ? '' : '<p class="text-sm text-slate-500 mt-2">No hay documentos para estos dos días. 🎉</p>');
 }
 
 function mesNav(d) { MES = new Date(MES.getFullYear(), MES.getMonth() + d, 1); selDia = null; renderHeat(); }
