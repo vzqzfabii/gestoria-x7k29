@@ -195,6 +195,7 @@ details>summary{outline:none}
 
   <div id="bannerInh" class="hidden"></div>
   <div id="riesgoBanner" class="hidden" onclick="tab('est')"></div>
+  <div id="nuevoBar"><button id="btnNuevo" type="button" onclick="abrirNuevo()" class="tb wa" style="font-size:1rem;padding:.7rem 1.3rem">➕ Nuevo trámite, pago o entrega</button></div>
   <button id="nomChip" type="button" onclick="tab('nom')" class="hidden w-full text-left rounded-2xl p-4 bg-violet-50 border border-violet-300"></button>
   <details id="guiaFechas" class="bg-white rounded-2xl shadow p-3 text-sm"><summary class="cursor-pointer font-semibold">❓ ¿Qué significan las fechas de las tarjetas?</summary>
     <ul class="mt-2 space-y-1 text-slate-700">
@@ -249,7 +250,7 @@ details>summary{outline:none}
   <section id="docSec" class="hidden bg-white rounded-2xl shadow p-5"><h3 class="font-bold">🔔 Seguimiento de documentos <span id="nDoc" class="ml-1 text-xs bg-indigo-600 text-white rounded-full px-2 py-0.5"></span></h3>
     <p class="text-xs text-slate-500 mb-2">Los documentos que piden los folios y en qué paso va cada uno. Toca uno para abrir su trámite.</p>
     <div class="grid lg:grid-cols-2 gap-6"><div><div id="docTit1" class="font-semibold text-sm">Te toca hacer ahora</div><div id="docHacer"></div></div><div><div class="font-semibold text-sm">Esperando a una dependencia</div><div id="docEsp"></div></div></div></section>
-  <section id="formSec" class="bg-white rounded-2xl shadow p-5"><details id="formDet"><summary class="cursor-pointer text-lg font-semibold">➕ Registrar trámite, pago o entrega <span class="text-xs font-normal text-slate-500">(toca para abrir)</span></summary><div class="mt-4">
+  <section id="formSec" class="hidden bg-white rounded-2xl shadow p-5"><details id="formDet"><summary class="cursor-pointer text-lg font-semibold">✏️ Editar (opciones avanzadas)</summary><div class="mt-4">
     <form id="f" class="grid md:grid-cols-3 gap-4">
       <label class="block text-sm font-medium">Cliente
         <input id="cliente" list="clL" required class="mt-1 w-full border rounded-lg px-3 py-2" placeholder="Nombre del cliente">
@@ -324,11 +325,13 @@ details>summary{outline:none}
   <section class="bg-white rounded-2xl shadow p-5"><div class="flex flex-wrap items-center justify-between gap-2"><h2 class="text-lg font-semibold">🧭 Estatus de trámites</h2><select id="estDepSel" onchange="renderEst()" class="border rounded-lg px-3 py-2 bg-white"></select></div>
     <p class="text-xs text-slate-500">En qué paso va cada trámite, por qué no ha terminado y quién tiene la pelota. Toca uno para abrirlo.</p><div id="estRes" class="grid grid-cols-2 md:grid-cols-6 gap-2 mt-3 text-center"></div></section>
   <section id="estRiskSec" class="rounded-2xl p-5 border-2 border-red-300 bg-red-50"><h3 class="font-bold text-red-900 mb-1">🚨 En riesgo</h3><div id="estRisk"></div></section>
-  <section class="bg-white rounded-2xl shadow p-5"><div class="grid lg:grid-cols-2 gap-6">
-    <div><h3 id="estYoT" class="font-bold">👉 Me toca a mí</h3><div id="estYo"></div></div>
-    <div><h3 class="font-bold">⏳ Esperando a una dependencia</h3><div id="estDepL"></div></div>
-    <div><h3 class="font-bold">📥 Ya toca recoger</h3><div id="estRec"></div></div>
-    <div><h3 class="font-bold">🧱 Bloqueados (esperan otro documento)</h3><div id="estBlk"></div></div></div></section>
+  <section class="bg-white rounded-2xl shadow p-5"><h3 class="font-bold mb-1">📍 ¿Dónde está cada documento?</h3><p class="text-xs text-slate-500 mb-3">Todo lo que sigue abierto, separado por el lugar donde está ahora.</p>
+    <div class="grid lg:grid-cols-2 gap-6">
+      <div><h4 class="font-semibold">📥 Ya toca recoger</h4><div id="estRec"></div></div>
+      <div><h4 class="font-semibold">🏢 En las dependencias</h4><div id="estDepL"></div></div>
+      <div><h4 id="estYoT" class="font-semibold">👉 Con el gestor</h4><div id="estYo"></div></div>
+      <div><h4 class="font-semibold">🧱 Detenidos (esperan otro documento)</h4><div id="estBlk"></div></div>
+    </div></section>
   <section class="bg-white rounded-2xl shadow p-5"><h3 class="font-bold">💤 Sin movimiento (5 o más días hábiles)</h3><p class="text-xs text-slate-500 mb-2">Trámites que nadie ha tocado en varios días y que no están esperando una fecha. Es el aviso para que no se te pase ninguno.</p><div id="estSin"></div></section>
 </main>
 <main id="mainNom" class="hidden max-w-7xl mx-auto px-4 py-6 space-y-6">
@@ -489,6 +492,11 @@ details>summary{outline:none}
   <label class="text-sm block">¿Cuál?<select id="docTpl" class="border rounded-lg px-3 py-2 w-full mt-1 bg-white"></select></label>
   <label class="text-sm block mt-2">Nombre propio <span class="text-slate-400">(opcional, ej. "Anuncio de la fachada")</span><input id="docNom" class="border rounded-lg px-3 py-2 w-full mt-1"></label>
   <div class="mt-3 flex gap-2"><button onclick="guardarDoc()" class="bg-indigo-600 text-white px-4 py-2 rounded-lg">Agregar</button><button onclick="dlgDoc.close()" class="border px-4 py-2 rounded-lg">Cancelar</button></div></dialog>
+<dialog id="dlgNuevo" class="rounded-2xl p-5 w-[min(96vw,560px)]">
+  <div class="flex items-center justify-between mb-3"><h3 class="font-semibold">➕ Nuevo</h3><div id="wDots" class="flex gap-1.5"></div></div>
+  <div id="wBody" style="min-height:280px"></div>
+  <div class="mt-3 flex justify-between gap-2"><button id="wBack" type="button" onclick="wIr(-1)" class="border px-4 py-2 rounded-lg">← Atrás</button><button type="button" onclick="dlgNuevo.close()" class="text-sm underline text-slate-500">Cancelar</button><button id="wNext" type="button" onclick="wIr(1)" class="bg-indigo-600 text-white px-4 py-2 rounded-lg">Siguiente →</button></div>
+</dialog>
 <dialog id="dlgEnt" class="rounded-2xl p-5 w-[min(92vw,420px)]">
   <h3 class="font-semibold mb-2">Entregado en dependencia</h3>
   <label class="text-sm">¿Qué día te dijeron que regreses a recoger? <span class="text-slate-400">(opcional)</span><input id="entRec" type="date" class="border rounded-lg px-3 py-2 w-full mt-1"></label>
@@ -637,17 +645,7 @@ function card(t) {
     ${firmas}${recB(t)}${lic}${alerta}${incB}${intB}${intHtml(t)}${cicloHtml(t)}${docsHtml(t)}${historiaDet(t)}${t.resuelto ? '<div class="mt-1 text-xs rounded px-2 py-1 bg-amber-50 text-amber-900 border border-amber-200">🛠️ ' + yo('Resuelto por mí', 'Resuelto por el gestor') + ': ' + esc(t.resuelto.nota || 'completado por el gestor') + '</div>' : ''}${t.espera ? '<div class="mt-1 text-xs rounded px-2 py-1 bg-orange-50 text-orange-900 border border-orange-200">⏳ En espera: ' + esc(t.espera.txt) + ' (' + esc(t.espera.dep || '') + ')</div>' : ''}
     
     ${reqHtml(t)}
-    ${puede() ? `<div class="flex flex-wrap gap-2 mt-3">
-      ${t.estado !== 'firmas' && c === 'tramite' && t.dep === 'Fiscalización' ? `<button onclick="abrirFis('${t.id}','prorroga')" class="text-xs bg-blue-600 text-white px-2.5 py-1 rounded-md">🔁 Ingresé prórroga</button><button onclick="abrirFis('${t.id}','solventacion')" class="text-xs bg-emerald-700 text-white px-2.5 py-1 rounded-md">✅ Ingresé solventación</button><button onclick="cancelarFis('${t.id}')" class="text-xs border border-slate-400 px-2.5 py-1 rounded-md">🚫 Ya no es necesario</button>` : ''}${t.estado !== 'firmas' && c === 'tramite' && t.dep !== 'Fiscalización' ? `<button onclick="aFirmas('${t.id}')" class="text-xs bg-blue-600 text-white px-2.5 py-1 rounded-md">📥 Entregado en dependencia</button>` : ''}
-      <button onclick="${t.dep === 'Fiscalización' && t.estado === 'firmas' ? 'recogerFis' : 'terminar'}('${t.id}')" class="text-xs bg-green-600 text-white px-2.5 py-1 rounded-md">${lblTer(t, c)}</button>
-      <button onclick="abrirInt('${t.id}')" class="text-xs border border-orange-400 text-orange-700 px-2.5 py-1 rounded-md">⚠️ Registrar intento</button>
-      ${t.incompleto ? `<button onclick="resolver('${t.id}')" class="text-xs border border-slate-300 px-2.5 py-1 rounded-md">✅ Ya está completo</button>` : ''}
-      ${ent ? `<button onclick="fechaRec('${t.id}')" class="text-xs border border-amber-400 text-amber-800 px-2.5 py-1 rounded-md">📅 Fecha de recogida</button>` : ''}
-      ${!ent && !t.espera ? `<button onclick="abrirEsp('${t.id}')" class="text-xs border border-orange-300 text-orange-800 px-2.5 py-1 rounded-md">⏳ En espera</button>` : ''}${t.espera ? `<button onclick="quitarEsp('${t.id}')" class="text-xs border border-slate-300 px-2.5 py-1 rounded-md">✅ Ya llegó lo que esperaba</button>` : ''}
-      <button onclick="resueltoPorMi('${t.id}')" class="text-xs border ${t.resuelto ? 'bg-amber-100 border-amber-400' : 'border-slate-300'} text-slate-700 px-2.5 py-1 rounded-md">🛠️ Resuelto por mí${t.resuelto ? ' ✔' : ''}</button>
-      ${c === 'entrega' ? `<button onclick="cobrarEfectivo('${t.id}')" class="text-xs border border-emerald-500 text-emerald-700 px-2.5 py-1 rounded-md">💵 Cobré en efectivo</button>` : ''}
-      ${t.plan === hy0 ? `<button onclick="quitarPlan('${t.id}')" class="text-xs border border-slate-300 px-2.5 py-1 rounded-md">Quitar de hoy</button>` : `<button onclick="plan('${t.id}','hoy')" class="text-xs border border-indigo-300 text-indigo-700 px-2.5 py-1 rounded-md">📅 Para hoy</button><button onclick="plan('${t.id}','man')" class="text-xs border border-indigo-300 text-indigo-700 px-2.5 py-1 rounded-md">📅 Mañana</button>`}
-    </div>` : ''}</div>`;
+    ${accionesHtml(t, c, ent)}</div>`;
 }
 const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
@@ -689,7 +687,7 @@ function borrar(id) { if (confirm('¿Eliminar este trámite?')) quitar(id); }
 function render() {
   document.getElementById('hoy').textContent = fmt(hoy());
   document.getElementById('formSec').style.display = puede() ? '' : 'none';
-  btnAdm.style.display = btnObl.style.display = btnInh.style.display = pagToggle.style.display = btnCob.style.display = btnWa.style.display = btnResp.style.display = btnCsv.style.display = puede() ? '' : 'none'; inhSec.classList.toggle('hidden', !puede()); horSec.classList.toggle('hidden', !puede()); renderBit(); renderHeat(); renderInh(); renderCob(); renderBanner(); renderNom(); renderCer(); renderTer(); renderGraf(); renderSeg(); renderHor(); renderPrio(); renderPag(); renderAct(); renderApe(); renderOrg(); renderDocs(); renderRiesgo(); renderEst(); renderTiempos(); renderFolio(); renderAviso(); if (CAN && TLOADED) syncRec(); guiaFechas.style.display = puede() ? '' : 'none'; if (cardOpen && dlgCard.open) { const tt = find(cardOpen); if (tt) cardBox.innerHTML = card(tt); else dlgCard.close(); } if (pagWanted !== null && !!PAG.visible === pagWanted) pagWanted = null; pagChk.checked = pagWanted !== null ? pagWanted : !!PAG.visible; if (CAN && pagChk.checked) syncPagos(false); btnIn.textContent = CAN ? '🔓 Salir del modo dueño' : '🔑 Entrar como dueño'; btnUser.textContent = CAN ? '👤' : '🔑'; btnUser.className = CAN ? 'text-xl px-2 py-1 rounded-lg bg-white/15 hover:bg-white/25' : 'text-lg px-2 py-1 rounded-lg opacity-40 hover:opacity-100'; syncToggles(); admin.classList.toggle('hidden', !puede());
+  btnAdm.style.display = btnObl.style.display = btnInh.style.display = pagToggle.style.display = btnCob.style.display = btnWa.style.display = btnResp.style.display = btnCsv.style.display = puede() ? '' : 'none'; inhSec.classList.toggle('hidden', !puede()); horSec.classList.toggle('hidden', !puede()); renderBit(); renderHeat(); renderInh(); renderCob(); renderBanner(); renderNom(); renderCer(); renderTer(); renderGraf(); renderSeg(); renderHor(); renderPrio(); renderPag(); renderAct(); renderApe(); renderOrg(); renderDocs(); renderRiesgo(); renderEst(); nuevoBar.style.display = puede() ? '' : 'none'; renderTiempos(); renderFolio(); renderAviso(); if (CAN && TLOADED) syncRec(); guiaFechas.style.display = puede() ? '' : 'none'; if (cardOpen && dlgCard.open) { const tt = find(cardOpen); if (tt) cardBox.innerHTML = card(tt); else dlgCard.close(); } if (pagWanted !== null && !!PAG.visible === pagWanted) pagWanted = null; pagChk.checked = pagWanted !== null ? pagWanted : !!PAG.visible; if (CAN && pagChk.checked) syncPagos(false); btnIn.textContent = CAN ? '🔓 Salir del modo dueño' : '🔑 Entrar como dueño'; btnUser.textContent = CAN ? '👤' : '🔑'; btnUser.className = CAN ? 'text-xl px-2 py-1 rounded-lg bg-white/15 hover:bg-white/25' : 'text-lg px-2 py-1 rounded-lg opacity-40 hover:opacity-100'; syncToggles(); admin.classList.toggle('hidden', !puede());
   document.getElementById('btnVista').style.display = CAN ? '' : 'none';
   document.getElementById('btnVista').textContent = VISTA ? '↩ Volver a mi vista' : '👀 Ver como contadora';
   document.getElementById('modo').textContent = (SNAP ? '📅 Actualizado: ' + window.__SNAP.fecha : DB ? '☁️ Se actualiza solo' : '💾 Datos solo en este navegador') + (puede() ? '' : ' · 👀 Vista de solo lectura');
@@ -778,7 +776,7 @@ function flujoPermiso(o) {
     ingresar: {t: 'Por ingresar la solicitud', q: 'yo', ac: [['📥 Ya la ingresé', 'esp_pase']]},
     esp_pase: {t: 'Esperando ' + o.pase, q: 'dep', ac: [['💳 Ya salió: ' + o.pase, 'pagar']]},
     pagar: {t: 'Pagar en caja (' + o.pase + ')', q: 'yo', ac: [['✅ Ya pagué y entregué el comprobante', 'esp_exp']]},
-    esp_exp: {t: 'Pago entregado: esperando que lo expidan', q: 'dep', auto: {dias: o.dias, ir: 'sello'}, ac: [['📄 Ya me lo entregaron', 'listo'], ['🔏 Pedir sello para la prórroga', 'sello']]},
+    esp_exp: {t: 'Pago entregado: esperando que lo expidan', q: 'dep', auto: {dias: o.dias, ir: 'sello', finMes: true}, ac: [['📄 Ya me lo entregaron', 'listo'], ['🔏 Pedir sello para la prórroga', 'sello']]},
     sello: {t: 'Pedir sello para la prórroga', q: 'yo', ac: [['🔏 Ya lo sellaron', 'listo'], ['📄 Ya estaba listo: me lo entregaron', 'listo']]},
     listo: {t: 'Listo para la prórroga o la solventación', q: null, fin: true, ac: []}
   };
@@ -864,14 +862,14 @@ function filtrados() {
   return T.filter(t => (!fDep.value || t.dep === fDep.value) && (!x || (t.cliente + ' ' + t.tipo + ' ' + (t.folio || '') + ' ' + (t.negocio || '')).toLowerCase().includes(x)));
 }
 let editId = null;
-function limpiarForm() { f.reset(); flujoManual = false; formDet.open = false; recibido.value = isoHoy(); asig.value = isoD(sumaHabiles(hoy(), 1)); renderReq(); editId = null; dias.value = 3; sugerir(); claseChange(); btnG.textContent = 'Guardar'; btnC.classList.add('hidden'); }
+function limpiarForm() { f.reset(); flujoManual = false; formDet.open = false; formSec.classList.add('hidden'); recibido.value = isoHoy(); asig.value = isoD(sumaHabiles(hoy(), 1)); renderReq(); editId = null; dias.value = 3; sugerir(); claseChange(); btnG.textContent = 'Guardar'; btnC.classList.add('hidden'); }
 function editar(id) {
   const t = find(id); if (!t) return;
   editId = id; dep.value = t.dep || 'Otro'; sugerir(); clase.value = t.clase || 'tramite'; claseChange();
   cliente.value = t.cliente; recibido.value = t.recibido || ''; asig.value = t.asignado || ''; folio.value = t.folio || ''; flujoSel.value = t.flujo ? t.flujo.tpl : ''; flujoManual = true; perIni.value = t.periodoIni || ''; perFin.value = t.periodoFin || ''; negocio.value = t.negocio || ''; tipo.value = t.tipo; limite.value = t.limite; dias.value = t.dias; vence.value = t.vence || '';
   monto.value = t.monto || ''; repite.checked = !!t.repite;
   renderReq(t.reqs);
-  btnG.textContent = 'Guardar cambios'; formDet.open = true; btnC.classList.remove('hidden'); formSec.scrollIntoView({behavior: 'smooth'});
+  btnG.textContent = 'Guardar cambios'; formDet.open = true; formSec.classList.remove('hidden'); btnC.classList.remove('hidden'); formSec.scrollIntoView({behavior: 'smooth'});
 }
 f.addEventListener('submit', e => {
   e.preventDefault();
@@ -1011,7 +1009,7 @@ function renderNom() {
   const vis = NOM.activo || puede();
   const visTab = vis || CEROS.length > 0; nomSec.classList.toggle('hidden', !vis);
   tabN.style.display = visTab ? '' : 'none'; if (!visTab && TAB === 'nom') tab('panel'); chipNom(vis);
-  [tabS, tabA, tabB, tabG].forEach(b => b.style.display = puede() ? '' : 'none');
+  [tabS, tabA, tabB, tabG].forEach(b => b.style.display = puede() ? '' : 'none'); tabE.style.order = puede() ? '0' : '-1';
   if (!puede() && ['sat', 'ape', 'cob', 'cfg'].includes(TAB)) tab('panel');
   nomToggle.style.display = puede() ? '' : 'none'; nomChk.checked = !!NOM.activo; nomForm.style.display = 'none';
   if (!vis) return;
@@ -1495,7 +1493,8 @@ function diasCobro() {
 function docEfect(d) {
   const tp = DOCTPL[d.tpl] || DOCTPL.otro, fl = tp.fl, st = fl[d.paso] || fl[tp.ini], dias = Math.floor((hoy() - pd(d.desde)) / 864e5);
   const lim = st.auto ? (TIEMPOS[d.tpl] != null ? TIEMPOS[d.tpl] : st.auto.dias) : 0;
-  if (st.auto && dias >= lim) { const sg = fl[st.auto.ir]; return {...sg, id: st.auto.ir, auto: true, t: 'Ya pasaron ' + dias + ' días: ' + sg.t.toLowerCase()}; }
+  const vencido = st.auto && dias >= lim, fm = st.auto && st.auto.finMes && finDeMes();
+  if (vencido || fm) { const sg = fl[st.auto.ir]; return {...sg, id: st.auto.ir, auto: true, t: vencido ? 'Ya pasaron ' + dias + ' días: ' + sg.t.toLowerCase() : 'Fin de mes: pedir sello del comprobante (se necesita para la prórroga o la solventación)'}; }
   return {...st, id: d.paso, auto: false};
 }
 function docsPend(t) { return (t.docsFolio || []).filter(d => !d.cancelado).map(d => ({n: d.n, ...docEfect(d)})).filter(e => !e.fin).map(e => ({n: e.n, titulo: e.t})); }
@@ -1582,10 +1581,10 @@ function renderEst() {
   const fila = (x, extra) => `<div onclick="verCard('${x.t.id}')" class="cursor-pointer border-b py-2 text-sm"><div><span style="color:${cliCol(x.t.cliente)}">●</span> <b>${esc(x.t.cliente)}</b>${x.t.negocio ? ' › ' + esc(x.t.negocio) : ''} · ${esc(x.t.tipo)}${x.t.folio ? ' · 🔖 ' + esc(x.t.folio) : ''} <span class="rounded px-1 text-xs text-white" style="background:${depCol(x.t.dep)}">${esc(x.t.dep || '')}</span></div><div class="text-xs font-semibold ${COL[x.e.q]}">${ICON[x.e.q]} ${esc(x.e.titulo)}</div>${x.e.porque ? `<div class="text-xs text-slate-500">${esc(x.e.porque)}</div>` : ''}${extra || ''}</div>`;
   const lst = (a, f) => a.length ? a.map(f || (x => fila(x))).join('') : '<p class="text-xs text-slate-400">Nada aquí.</p>';
   estYo.innerHTML = lst(g.yo, x => fila(x, x.e.desde ? `<div class="text-[11px] text-slate-500">desde ${fmt(pd(x.e.desde))}</div>` : ''));
-  estDepL.innerHTML = lst(g.dep); estRec.innerHTML = lst(g.rec); estBlk.innerHTML = lst(g.blk);
+  const gd = {}; g.dep.forEach(x => (gd[dd(x.t)] = gd[dd(x.t)] || []).push(x)); estDepL.innerHTML = Object.keys(gd).sort(ordenDep).map(k => `<div class="font-semibold text-sm mt-2"><span style="color:${depCol(k)}">●</span> ${esc(k)}${cierraDe(k) ? ' <span class="text-xs font-normal text-slate-500">· cierra ' + cierraDe(k) + '</span>' : ''} <span class="text-xs font-normal text-slate-500">(${gd[k].length})</span></div>` + gd[k].map(x => fila(x)).join('')).join('') || '<p class="text-xs text-slate-400">Nada aquí.</p>'; estRec.innerHTML = lst(g.rec); estBlk.innerHTML = lst(g.blk);
   estRisk.innerHTML = lst(risk, x => fila(x, `<div class="text-xs font-bold text-red-700">🚨 ${esc(x.e.riesgo)}</div>`));
   estSin.innerHTML = lst(sin, x => fila(x, `<div class="text-xs text-slate-500">💤 ${diasSin(x.t)} día(s) hábil(es) sin cambios${puede() ? ` · <button onclick="event.stopPropagation();tocar('${x.t.id}')" class="underline">👁️ Ya lo revisé hoy</button>` : ''}</div>`));
-  estYoT.textContent = yo('👉 Me toca a mí', '👉 Le toca al gestor');
+  estYoT.textContent = yo('👉 Conmigo: por hacer', '👉 Con el gestor: por hacer');
   estRiskSec.classList.toggle('hidden', !risk.length);
   const caja = (v, l, c) => `<div class="bg-white rounded-lg p-2"><div class="text-xl font-bold ${c}">${v}</div><div class="text-xs text-slate-500">${l}</div></div>`;
   estRes.innerHTML = caja(g.yo.length, yo('Me tocan', 'Le tocan al gestor'), 'text-amber-600') + caja(g.dep.length, 'Esperando dependencia', 'text-blue-600') + caja(g.rec.length, 'Ya toca recoger', 'text-amber-600') + caja(g.blk.length, 'Bloqueados', 'text-orange-600') + caja(risk.length, 'En riesgo', 'text-red-600') + caja(sin.length, 'Sin movimiento', 'text-slate-500');
@@ -1674,7 +1673,7 @@ function evNom(t) { return t.cliente + (t.negocio ? ' › ' + t.negocio : '') + 
 // Lista de fechas importantes: el servidor la lee cada mañana y cada noche y te manda el aviso, aunque la página esté cerrada
 function construirEventos() {
   const ev = [], act = T.filter(t => t.estado !== 'listo');
-  const espera = (t, d, nombre, tp, desde, auto) => { const lim = TIEMPOS[d.tpl] != null ? TIEMPOS[d.tpl] : auto.dias, f = isoD(new Date(pd(desde).getTime() + lim * 864e5)); ev.push({f, txt: '🔏 Ya toca pedir un sello (' + tp.dep + ')', nom: '🔏 Pedir sello: ' + nombre + ' — ' + evNom(t), of: [0], pend: true}); };
+  const espera = (t, d, nombre, tp, desde, auto) => { const lim = TIEMPOS[d.tpl] != null ? TIEMPOS[d.tpl] : auto.dias, f = isoD(new Date(pd(desde).getTime() + lim * 864e5)); ev.push({f, txt: '🔏 Ya toca pedir un sello (' + tp.dep + ')', nom: '🔏 Pedir sello: ' + nombre + ' — ' + evNom(t), of: [0], pend: true}); if (auto.finMes) ev.push({f: isoD(ultimoHabilMes()), txt: '🔏 Fin de mes: sellar el comprobante (' + tp.dep + ')', nom: '🔏 Fin de mes, sellar: ' + nombre + ' — ' + evNom(t), of: [0, 1], pend: true}); };
   act.forEach(t => {
     const fis = t.dep === 'Fiscalización';
     if (t.estado === 'firmas' && t.fechaRecoger) { const que = fis ? (t.cicloTipo === 'prorroga' ? 'una prórroga' : 'una hoja de solventación') : 'un documento'; ev.push({f: t.fechaRecoger, txt: '📥 Recoger ' + que + ' (' + dd(t) + ')', nom: '📥 Recoger ' + que + ': ' + evNom(t), of: [0, 1], pend: true}); }
@@ -1707,6 +1706,89 @@ function renderAviso() {
 async function avGuardar() { try { await sb('rpc/guardar_aviso', {p_pin: PIN, p_activo: avActivo.checked, p_nombres: avNombres.checked}); AVISO = {...AVISO, activo: avActivo.checked, nombres: avNombres.checked}; toast('🔔 Avisos guardados'); } catch (e) { alert('No se pudo guardar: ' + (e.message || e.code)); } }
 async function avProbar() { await syncRec(); try { const r = await sb('rpc/probar_aviso', {p_pin: PIN}); toast(r === 'enviado' ? '📨 Aviso de prueba enviado: revisa tu celular' : 'Resultado: ' + r); } catch (e) { alert('No se pudo enviar: ' + (e.message || e.code)); } }
 function avCopiar() { if (navigator.clipboard) navigator.clipboard.writeText(AVISO.topic || '').then(() => toast('📋 Tema copiado')); }
+
+// ---------- Creador paso a paso ----------
+const WT = [['tramite', '📄', 'Trámite o documento', 'Un permiso, licencia, prórroga o folio que se atiende ante una dependencia.'], ['pago', '💰', 'Pago', 'Un pago al SAT, IMSS u otra oficina.'], ['entrega', '📤', 'Entrega de documentos', 'Llevar documentos o acuses a algún lugar.'], ['recoger', '📥', 'Recoger un documento', 'Ir por algo que ya dejaron listo.'], ['vigencia', '🔔', 'Vigencia', 'Una fecha que vence: e.firma, licencia, poder…']];
+let W = {}, wPaso = 0;
+function wPasos() { return W.tipo === 'vigencia' ? ['tipo', 'quien', 'detalle', 'resumen'] : ['tipo', 'quien', 'detalle', 'cuando', 'resumen']; }
+function abrirNuevo() { W = {tipo: '', dep: '', cliente: '', negocio: '', concepto: '', otro: '', folio: '', limite: '', vence: '', monto: '', repite: false, perIni: '', perFin: '', recibido: isoHoy(), asignado: isoD(sumaHabiles(hoy(), 1)), sinCobro: false}; wPaso = 0; wDibuja(); dlgNuevo.showModal(); }
+function wv(id) { const e = document.getElementById(id); return e && e.value ? String(e.value).trim() : ''; }
+function wLee() {
+  const p = wPasos()[wPaso];
+  if (p === 'quien') { W.cliente = wv('w_cli'); W.negocio = wv('w_neg'); W.concepto = wv('w_con') || W.concepto; W.otro = wv('w_otro'); }
+  if (p === 'detalle') { W.folio = wv('w_fol'); W.limite = wv('w_lim'); W.vence = wv('w_ven'); W.monto = wv('w_mon'); W.perIni = wv('w_pi'); W.perFin = wv('w_pf'); const r = document.getElementById('w_rep'); if (r) W.repite = !!r.checked; }
+  if (p === 'cuando') { W.recibido = wv('w_rec') || W.recibido; W.asignado = wv('w_asi') || W.asignado; const s = document.getElementById('w_sin'); if (s) W.sinCobro = !!s.checked; }
+}
+function wConcepto() { return W.concepto === '__otro' ? W.otro : W.concepto; }
+function wValida(p) {
+  if (p === 'tipo') return W.tipo ? true : (alert('Elige qué vas a crear.'), false);
+  if (p === 'quien') return (W.cliente && W.dep && wConcepto()) ? true : (alert('Falta el cliente, la dependencia o el concepto.'), false);
+  if (p === 'detalle' && W.tipo === 'vigencia' && !W.vence) return (alert('Escribe cuándo vence.'), false);
+  return true;
+}
+function wIr(d) { wLee(); const ps = wPasos(); if (d > 0 && !wValida(ps[wPaso])) return; if (d > 0 && wPaso === ps.length - 1) return wCrear(); wPaso = Math.max(0, Math.min(ps.length - 1, wPaso + d)); wDibuja(); }
+function wTipo(k) { W.tipo = k; if (k === 'pago' && !W.dep) W.dep = 'SAT'; wPaso = 1; wDibuja(); }
+function wDep(k) { wLee(); W.dep = k; W.concepto = ''; wDibuja(); }
+function wCon() { wLee(); wDibuja(); }
+function wPer(v) {
+  const h = hoy(), y = h.getFullYear(), m = h.getMonth(); let a, b;
+  if (v === 'mesAnt') { a = new Date(y, m - 1, 1); b = new Date(y, m, 0); } else if (v === 'mes') { a = new Date(y, m, 1); b = new Date(y, m + 1, 0); }
+  else { const k = Math.floor(m / 2) * 2 - (v === 'bimAnt' ? 2 : 0); a = new Date(y, k, 1); b = new Date(y, k + 2, 0); }
+  document.getElementById('w_pi').value = isoD(a); document.getElementById('w_pf').value = isoD(b);
+}
+function wAvisoFecha() { const v = wv('w_asi'), el = document.getElementById('w_aviso'); if (!el) return; const d = v ? pd(v) : null; el.textContent = d && !esHabil(d) ? '🚫 Ese día no se trabaja (' + (nombreInh(d) || 'fin de semana') + '). Si lo entregas ese día cuenta como día extra.' : ''; }
+function wDibuja() {
+  const ps = wPasos(), p = ps[wPaso], inp = 'class="border rounded-lg px-3 py-2 w-full mt-1"', lab = (t, h) => `<label class="block text-sm mb-2">${t}${h}</label>`;
+  wDots.innerHTML = ps.map((x, i) => `<span class="inline-block w-2.5 h-2.5 rounded-full ${i === wPaso ? 'bg-indigo-400' : 'bg-slate-400/40'}"></span>`).join('');
+  wBack.style.visibility = wPaso === 0 ? 'hidden' : 'visible'; wNext.style.display = wPaso === 0 ? 'none' : ''; wNext.textContent = p === 'resumen' ? '✅ Crear' : 'Siguiente →';
+  let h = '';
+  if (p === 'tipo') h = '<div class="text-sm mb-2">¿Qué vas a crear?</div>' + WT.map(([k, ic, n, d]) => `<button type="button" onclick="wTipo('${k}')" class="w-full text-left border rounded-xl p-3 mb-2 hover:shadow ${W.tipo === k ? 'ring-2 ring-indigo-400' : ''}"><div class="font-semibold">${ic} ${n}</div><div class="text-xs text-slate-500">${d}</div></button>`).join('');
+  if (p === 'quien') {
+    const sug = SUG[W.dep] || [];
+    h = lab('Cliente', `<input id="w_cli" list="clL" value="${esc(W.cliente)}" ${inp} placeholder="Nombre del cliente">`) + lab('Negocio o sucursal <span class="text-slate-400">(si tiene varios)</span>', `<input id="w_neg" list="negL" value="${esc(W.negocio)}" ${inp}>`)
+      + '<div class="text-sm mb-1">¿Con qué dependencia?</div><div class="flex flex-wrap gap-1.5 mb-2">' + DEPS.map(k => `<button type="button" onclick="wDep('${k}')" class="tb ${W.dep === k ? 'on' : ''}" style="padding:.3rem .6rem">${esc(k)}</button>`).join('') + '</div>'
+      + (W.dep ? lab('¿Qué es?', `<select id="w_con" onchange="wCon()" ${inp.replace('w-full', 'w-full bg-white')}><option value="">— elige —</option>${sug.map(x => `<option ${W.concepto === x ? 'selected' : ''}>${esc(x)}</option>`).join('')}<option value="__otro" ${W.concepto === '__otro' ? 'selected' : ''}>Otro (escribir)</option></select>`) : '')
+      + (W.concepto === '__otro' ? `<input id="w_otro" value="${esc(W.otro)}" ${inp} placeholder="Escribe el nombre">` : '');
+  }
+  if (p === 'detalle') {
+    const c = wConcepto(), fis = W.dep === 'Fiscalización', fl = (W.tipo === 'tramite' && !fis) ? flujoPara(c) : '';
+    if (W.tipo === 'tramite') h = (fis ? lab('Folio del fiscal', `<input id="w_fol" value="${esc(W.folio)}" ${inp} placeholder="Ej. F-1234">`) + lab('Fecha límite que dice el folio', `<input id="w_lim" type="date" value="${W.limite}" ${inp}>`) : lab('Folio u oficio <span class="text-slate-400">(si lo hay)</span>', `<input id="w_fol" value="${esc(W.folio)}" ${inp}>`) + lab('¿Tiene fecha límite? <span class="text-slate-400">(opcional)</span>', `<input id="w_lim" type="date" value="${W.limite}" ${inp}>`))
+      + `<div class="rounded-xl border p-2 text-xs">🧭 ${fis ? 'Seguirá el recorrido del folio: prórroga, solventación y los documentos que pida.' : fl ? 'Seguirá el recorrido: ' + esc(DOCTPL[fl].n) + '. Solo irás marcando cada paso.' : 'Sin recorrido especial: lo marcarás como entregado en la dependencia y luego como recogido.'}${(CAT()[c] || []).length ? '<br>📋 Se agregarán ' + CAT()[c].length + ' requisitos para palomear.' : ''}</div>`;
+    if (W.tipo === 'pago') h = lab('Monto <span class="text-slate-400">(opcional)</span>', `<input id="w_mon" type="number" value="${W.monto}" ${inp}>`) + '<div class="text-sm">Periodo que abarca</div><div class="flex gap-2"><input id="w_pi" type="date" value="' + W.perIni + '" ' + inp + '><input id="w_pf" type="date" value="' + W.perFin + '" ' + inp + '></div><div class="flex flex-wrap gap-1.5 my-2">' + [['mesAnt', 'Mes anterior'], ['mes', 'Este mes'], ['bimAnt', 'Bimestre anterior'], ['bim', 'Bimestre actual']].map(([k, n]) => `<button type="button" onclick="wPer('${k}')" class="tb" style="padding:.25rem .6rem">${n}</button>`).join('') + '</div>' + lab('Fecha límite <span class="text-slate-400">(opcional)</span>', `<input id="w_lim" type="date" value="${W.limite}" ${inp}>`) + `<label class="text-sm"><input id="w_rep" type="checkbox" ${W.repite ? 'checked' : ''}> Se repite cada mes</label>`;
+    if (W.tipo === 'entrega' || W.tipo === 'recoger') h = lab('¿Tiene fecha límite? <span class="text-slate-400">(opcional)</span>', `<input id="w_lim" type="date" value="${W.limite}" ${inp}>`) + '<p class="text-xs text-slate-500">Si no la tiene, no saldrá como urgente.</p>';
+    if (W.tipo === 'vigencia') h = lab('¿Cuándo vence?', `<input id="w_ven" type="date" value="${W.vence}" ${inp}>`) + '<p class="text-xs text-slate-500">Te avisaremos 30 y 7 días antes.</p>';
+  }
+  if (p === 'cuando') h = lab('¿Cuándo te lo dio ella?', `<input id="w_rec" type="date" value="${W.recibido}" ${inp}>`) + lab('¿Para qué día lo vas a entregar?', `<input id="w_asi" type="date" value="${W.asignado}" onchange="wAvisoFecha()" ${inp}>`) + '<div id="w_aviso" class="text-sm text-red-700 font-semibold"></div>' + `<label class="text-sm"><input id="w_sin" type="checkbox" ${W.sinCobro ? 'checked' : ''}> No se lo cobro a ella (es un encargo mío)</label>`;
+  if (p === 'resumen') { const c = wConcepto(), f = W.tipo === 'vigencia' ? [] : []; h = `<div class="text-sm space-y-1"><div><b>${(WT.find(x => x[0] === W.tipo) || [])[1] || ''} ${(WT.find(x => x[0] === W.tipo) || [])[2] || ''}</b></div><div>👤 ${esc(W.cliente)}${W.negocio ? ' › ' + esc(W.negocio) : ''}</div><div>🏢 ${esc(W.dep)} · ${esc(c)}</div>${W.folio ? '<div>🔖 Folio ' + esc(W.folio) + '</div>' : ''}${W.limite ? '<div>⏳ Fecha límite ' + fmt(pd(W.limite)) + '</div>' : ''}${W.vence ? '<div>🔔 Vence ' + fmt(pd(W.vence)) + '</div>' : ''}${W.monto ? '<div>💲 ' + peso(+W.monto) + '</div>' : ''}${W.perIni || W.perFin ? '<div>🗓️ Periodo ' + (W.perIni ? fmt(pd(W.perIni)) : '…') + ' – ' + (W.perFin ? fmt(pd(W.perFin)) : '…') + '</div>' : ''}${W.tipo !== 'vigencia' ? '<div>📥 Te lo dio ' + fmt(pd(W.recibido)) + (W.sinCobro ? ' · sin cobro' : ' · para entregar ' + fmt(pd(W.asignado))) + '</div>' : ''}</div><p class="text-xs text-slate-500 mt-3">Pulsa Crear. Después todo se sigue desde la tarjeta y la pestaña Estatus.</p>`; }
+  wBody.innerHTML = h; wAvisoFecha();
+}
+async function wCrear() {
+  const c = W.tipo, concepto = wConcepto(), fis = W.dep === 'Fiscalización', fl = (c === 'tramite' && !fis) ? flujoPara(concepto) : '';
+  const rec = {id: 'T' + Date.now(), clase: c, dep: W.dep, cliente: W.cliente, negocio: W.negocio, tipo: concepto, folio: W.folio, limite: W.limite || (c === 'vigencia' ? W.vence : ''), dias: 3, vence: c === 'vigencia' ? W.vence : '', monto: parseFloat(W.monto) || 0, repite: !!W.repite, estado: 'proceso', firmaInicio: '', pagado: false, entregado: false, recibido: c === 'vigencia' ? '' : W.recibido, asignado: (c === 'vigencia' || W.sinCobro) ? '' : W.asignado, plan: '', intentos: [], incompleto: false, falta: '', reqs: (CAT()[concepto] || []).map(n => ({n, ok: false})), resuelto: null, espera: null, ciclo: [], cicloTipo: '', docsFolio: [], periodoIni: W.perIni, periodoFin: W.perFin, cancelado: false, fechaEntrega: '', fechaRecoger: '', flujo: fl ? {tpl: fl, paso: DOCTPL[fl].ini, desde: isoHoy(), hist: []} : null};
+  await persist(rec); dlgNuevo.close(); toast('✅ Creado: ' + concepto + ' — ' + W.cliente);
+}
+// ---------- Botones de la tarjeta: lo principal a la vista, lo demás en "Más acciones" ----------
+function accionesHtml(t, c, ent) {
+  if (!puede()) return '';
+  const B = (f, txt, cls) => `<button onclick="${f}" class="text-xs ${cls} px-2.5 py-1 rounded-md">${txt}</button>`;
+  const fis = t.dep === 'Fiscalización', conFlujo = !!t.flujo && !fis;
+  let main = '', mas = '';
+  if (c === 'tramite' && !ent && fis) main += B(`abrirFis('${t.id}','prorroga')`, '🔁 Ingresé prórroga', 'bg-blue-600 text-white') + B(`abrirFis('${t.id}','solventacion')`, '✅ Ingresé solventación', 'bg-emerald-700 text-white');
+  else if (c === 'tramite' && !ent && !conFlujo) main += B(`aFirmas('${t.id}')`, '📥 Entregado en dependencia', 'bg-blue-600 text-white');
+  if (ent || c !== 'tramite') main += B(`${fis && ent ? 'recogerFis' : 'terminar'}('${t.id}')`, lblTer(t, c), 'bg-green-600 text-white');
+  main += B(`abrirInt('${t.id}')`, '⚠️ Intento de entrega', 'border border-orange-400 text-orange-700');
+  if (t.incompleto) mas += B(`resolver('${t.id}')`, '✅ Ya está completo', 'border border-slate-300');
+  if (ent) mas += B(`fechaRec('${t.id}')`, '📅 Cambiar fecha de recogida', 'border border-amber-400 text-amber-800');
+  mas += t.espera ? B(`quitarEsp('${t.id}')`, '✅ Ya llegó lo que esperaba', 'border border-slate-300') : (!ent ? B(`abrirEsp('${t.id}')`, '⏳ Poner en espera', 'border border-orange-300 text-orange-800') : '');
+  mas += B(`resueltoPorMi('${t.id}')`, '🛠️ Resuelto por mí' + (t.resuelto ? ' ✔' : ''), 'border ' + (t.resuelto ? 'bg-amber-100 border-amber-400' : 'border-slate-300') + ' text-slate-700');
+  if (c === 'entrega') mas += B(`cobrarEfectivo('${t.id}')`, '💵 Cobré en efectivo', 'border border-emerald-500 text-emerald-700');
+  if (fis && !ent && c === 'tramite') mas += B(`cancelarFis('${t.id}')`, '🚫 Ya no es necesario', 'border border-slate-400');
+  if (c === 'tramite' && !ent && (conFlujo || fis)) mas += B(`terminar('${t.id}')`, '✔ Cerrar ahora', 'border border-slate-300');
+  if (c === 'tramite' && !ent && !conFlujo && !fis) mas += B(`terminar('${t.id}')`, '✔ Terminado sin entrega', 'border border-slate-300');
+  return `<div class="flex flex-wrap gap-2 mt-3">${main}</div><details class="mt-2"><summary class="cursor-pointer text-xs text-slate-500">⋯ Más acciones</summary><div class="flex flex-wrap gap-2 mt-2">${mas}</div></details>`;
+}
+function finDeMes() { return habiles(hoy(), new Date(hoy().getFullYear(), hoy().getMonth() + 1, 0)) <= 2; }
+function ultimoHabilMes() { const d = new Date(hoy().getFullYear(), hoy().getMonth() + 1, 0); while (!esHabil(d)) d.setDate(d.getDate() - 1); return d; }
 
 function mesNav(d) { MES = new Date(MES.getFullYear(), MES.getMonth() + d, 1); selDia = null; renderHeat(); }
 function evDia(f) { return T.flatMap(t => (t.intentos || []).filter(x => x.fecha === f).map(x => ({...x, cliente: t.cliente, tipo: t.tipo}))); }
@@ -1766,6 +1848,7 @@ function inhDel(f) { inhGuardar(INH.filter(x => x.f !== f)); }
   poll(() => sb('config?key=eq.nominas&select=data'), rows => { NOM = (rows[0] && rows[0].data.items) || {activo: false}; render(); }, e => console.error(e));
   if (CAN) poll(() => sb('rpc/leer_finanzas', {p_pin: PIN}), rows => { FIN = finArmar(rows); render(); }, e => console.error(e));
   poll(() => sb('config?key=eq.inhabiles&select=data'), rows => { INH = (rows[0] && rows[0].data.items) || []; render(); }, e => console.error(e));
+  if (!CAN && !location.hash) tab('est');
   render();
 })();
 </script>
