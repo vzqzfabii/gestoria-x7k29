@@ -163,6 +163,9 @@ details>summary{outline:none}
 .text-violet-700{color:#c4b5fd!important}
 .text-violet-800{color:#c4b5fd!important}
 .text-violet-900{color:#c4b5fd!important}
+/* Pestañas en la misma línea del título */
+#tabs button{white-space:nowrap;padding:.4rem .7rem!important;font-size:.875rem}
+#tabs{scrollbar-width:none}
 /* Símbolos contables que caen suavemente */
 .fx-layer{position:fixed;inset:0;z-index:-2;pointer-events:none;overflow:hidden}
 .fx{position:absolute;top:-12%;color:rgba(167,243,208,.16);font-family:'IBM Plex Sans',ui-monospace,monospace;font-weight:600;user-select:none;animation-name:fxFall;animation-timing-function:linear;animation-iteration-count:infinite}
@@ -180,6 +183,16 @@ details>summary{outline:none}
   <div class="max-w-7xl mx-auto px-4 py-4 flex items-start justify-between gap-3">
     <div><h1 class="text-2xl font-bold">📋 Panel de Gestoría</h1><p id="saludo" class="text-amber-200 font-semibold text-sm mb-0.5 transition-opacity duration-700 opacity-0"></p>
     <p class="text-slate-300 text-sm mt-0.5">Hoy es <span id="hoy"></span></p></div>
+    <nav id="tabs" class="flex flex-nowrap gap-2 items-center overflow-x-auto min-w-0 flex-1 justify-center">
+  <button id="tabP" type="button" onclick="tab('panel')" class="px-4 py-2 rounded-lg font-semibold">📋 Entregas</button>
+  <button id="tabE" type="button" onclick="tab('est')" class="px-4 py-2 rounded-lg font-semibold">🧭 Estatus</button>
+  <button id="tabN" type="button" onclick="tab('nom')" class="px-4 py-2 rounded-lg font-semibold">💼 Nóminas y ceros <span id="tabNb" class="text-xs font-normal"></span></button>
+  <button id="tabR" type="button" onclick="tab('rep')" class="px-4 py-2 rounded-lg font-semibold">📊 Reportes</button>
+  <button id="tabB" type="button" onclick="tab('cob')" class="px-4 py-2 rounded-lg font-semibold">💵 Mi cobranza</button>
+  <button id="tabS" type="button" onclick="tab('sat')" class="px-4 py-2 rounded-lg font-semibold">🧾 Mi registro SAT</button>
+  <button id="tabA" type="button" onclick="tab('ape')" class="px-4 py-2 rounded-lg font-semibold">🏪 Aperturas</button>
+  <button id="tabG" type="button" onclick="tab('cfg')" class="px-4 py-2 rounded-lg font-semibold">⚙️ Configuración</button>
+</nav>
     <div id="userBox" class="relative">
       <button id="btnUser" type="button" onclick="menuUser()" title="Acceso"></button>
       <div id="userMenu" class="hidden absolute right-0 mt-2 w-60 bg-white text-slate-800 rounded-xl shadow-lg p-2 text-sm z-30">
@@ -191,16 +204,7 @@ details>summary{outline:none}
     </div>
   </div>
 </header>
-<nav id="tabs" class="max-w-7xl mx-auto px-4 pt-4 flex flex-wrap gap-2">
-  <button id="tabP" type="button" onclick="tab('panel')" class="px-4 py-2 rounded-lg font-semibold">📋 Entregas</button>
-  <button id="tabE" type="button" onclick="tab('est')" class="px-4 py-2 rounded-lg font-semibold">🧭 Estatus</button>
-  <button id="tabN" type="button" onclick="tab('nom')" class="px-4 py-2 rounded-lg font-semibold">💼 Nóminas y ceros <span id="tabNb" class="text-xs font-normal"></span></button>
-  <button id="tabR" type="button" onclick="tab('rep')" class="px-4 py-2 rounded-lg font-semibold">📊 Reportes</button>
-  <button id="tabB" type="button" onclick="tab('cob')" class="px-4 py-2 rounded-lg font-semibold">💵 Mi cobranza</button>
-  <button id="tabS" type="button" onclick="tab('sat')" class="px-4 py-2 rounded-lg font-semibold">🧾 Mi registro SAT</button>
-  <button id="tabA" type="button" onclick="tab('ape')" class="px-4 py-2 rounded-lg font-semibold">🏪 Aperturas</button>
-  <button id="tabG" type="button" onclick="tab('cfg')" class="px-4 py-2 rounded-lg font-semibold">⚙️ Configuración</button>
-</nav>
+
 
 <main id="mainP" class="max-w-7xl mx-auto px-4 py-6 space-y-6">
 
