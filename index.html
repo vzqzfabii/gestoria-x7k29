@@ -229,16 +229,7 @@ body.pb-bot{padding-bottom:7rem}
   <div id="riesgoBanner" class="hidden" onclick="tab('est')"></div>
   <div id="nuevoBar"><button id="btnNuevo" type="button" onclick="abrirNuevo()" class="tb wa" style="font-size:1rem;padding:.7rem 1.3rem">➕ Nuevo trámite, pago o entrega</button></div>
   <button id="nomChip" type="button" onclick="tab('nom')" class="hidden w-full text-left rounded-2xl p-4 bg-violet-50 border border-violet-300"></button>
-  <details id="guiaFechas" class="bg-white rounded-2xl shadow p-3 text-sm"><summary class="cursor-pointer font-semibold">❓ ¿Qué significan las fechas de las tarjetas?</summary>
-    <ul class="mt-2 space-y-1 text-slate-700">
-      <li>📅 <b>Fecha límite:</b> el último día para tener el trámite listo. "Quedan N días hábiles" no cuenta fines de semana, feriados ni días inhábiles.</li>
-      <li>📥 <b>Te lo dio ella:</b> el día que la contadora te entregó el documento.</li>
-      <li>📤 <b>Entregado:</b> el día que lo llevaste a la dependencia.</li>
-      <li>⏳ <b>La dependencia debería responder:</b> la fecha de entrega más los días hábiles de espera que calculaste.</li>
-      <li>⚠️ <b>Cuidado:</b> avisa si esa respuesta estimada cae después de tu fecha límite.</li>
-      <li>📥 <b>Te dijeron que regreses a recoger:</b> el día que la dependencia te dio para volver por el papel.</li>
-      <li>✅ <b>Recogido:</b> el día que lo recogiste y quedó cerrado. Arriba de cada tarjeta ves la línea completa: te lo dio → entregado → recogido.</li>
-    </ul></details>
+  
   <!-- Resumen -->
   
 
@@ -362,8 +353,7 @@ body.pb-bot{padding-bottom:7rem}
 </main>
 <main id="mainEst" class="hidden max-w-7xl mx-auto px-4 py-6 space-y-5">
   <section id="darSec" class="hidden rounded-2xl p-5 border-2 border-sky-300 bg-sky-50">
-    <div class="flex flex-wrap items-center justify-between gap-2"><h2 class="font-bold text-sky-900">📨 Lo que debe llegar al gestor para mañana y pasado mañana</h2><span id="darAviso" class="text-xs text-slate-500"></span></div>
-    <p class="text-xs text-slate-700 mt-1">Se entrega un día antes: lo de mañana debió llegar hoy, y lo de pasado mañana se prepara desde hoy.</p>
+    <div class="flex flex-wrap items-center justify-between gap-2"><h2 class="font-bold text-sky-900">📨 Lo que debe llegar al gestor para mañana y pasado mañana</h2></div>
     <div id="darBody"></div>
   </section>
   <section class="bg-white rounded-2xl shadow p-5"><div class="flex flex-wrap items-center justify-between gap-2"><h2 class="text-lg font-semibold">🧭 Estatus de trámites</h2><select id="estDepSel" onchange="renderEst()" class="border rounded-lg px-3 py-2 bg-white"></select></div>
@@ -549,6 +539,7 @@ body.pb-bot{padding-bottom:7rem}
   <input id="fichaCli" list="clL" oninput="fichaRender()" placeholder="Escribe o elige el cliente" class="border rounded-lg px-3 py-2 w-full mb-3">
   <div id="fichaBody"></div>
 </dialog>
+<div id="guardaEst" class="hidden"></div>
 <nav id="botNav" class="hidden fixed bottom-3 left-1/2 -translate-x-1/2 w-[min(94vw,460px)] z-[70] rounded-2xl bg-white/10 backdrop-blur-xl border border-white/20 shadow-2xl p-1.5">
   <div class="relative flex justify-around items-stretch gap-1">
     <span id="bnPill" class="absolute top-0 bottom-0 left-0 w-0 rounded-xl bg-white/20 shadow-inner pointer-events-none transition-all duration-300 ease-out"></span>
@@ -561,6 +552,7 @@ body.pb-bot{padding-bottom:7rem}
 <div id="masSheet" class="hidden fixed bottom-20 left-1/2 -translate-x-1/2 w-[min(94vw,460px)] z-[75] rounded-2xl bg-slate-900/90 backdrop-blur-xl border border-white/20 shadow-2xl p-3">
   <div class="text-xs text-slate-400 mb-2">Más opciones</div>
   <div class="grid grid-cols-2 gap-2">
+    <button type="button" onclick="dlgEnfoque.close();enfoqueAbrir()" class="border border-white/15 rounded-xl px-3 py-3 text-left col-span-2">🎯 Modo enfoque</button>
     <button type="button" onclick="irMas('nom')" class="border border-white/15 rounded-xl px-3 py-3 text-left">💼 Nóminas</button>
     <button type="button" onclick="irMas('cob')" class="border border-white/15 rounded-xl px-3 py-3 text-left">💵 Mi cobranza</button>
     <button type="button" onclick="irMas('sat')" class="border border-white/15 rounded-xl px-3 py-3 text-left">🧾 Mi registro SAT</button>
@@ -568,6 +560,10 @@ body.pb-bot{padding-bottom:7rem}
     <button type="button" onclick="irMas('cfg')" class="border border-white/15 rounded-xl px-3 py-3 text-left col-span-2">⚙️ Configuración</button>
   </div>
 </div>
+<dialog id="dlgEnfoque" class="fixed inset-0 m-0 w-screen h-screen max-w-none max-h-none rounded-none bg-slate-950/95 text-slate-100 p-5 overflow-auto">
+  <div class="flex items-center justify-between mb-4"><div class="text-xl font-bold">🎯 Hoy</div><button type="button" onclick="dlgEnfoque.close()" class="border border-white/30 rounded-lg px-3 py-2 text-sm">Cerrar</button></div>
+  <div id="enfoqueBody"></div>
+</dialog>
 <dialog id="dlgEnt" class="rounded-2xl p-5 w-[min(92vw,420px)]">
   <h3 class="font-semibold mb-2">Entregado en dependencia</h3>
   <label class="text-sm">¿Qué día te dijeron que regreses a recoger? <span class="text-slate-400">(opcional)</span><input id="entRec" type="date" class="border rounded-lg px-3 py-2 w-full mt-1"></label>
@@ -584,10 +580,23 @@ body.pb-bot{padding-bottom:7rem}
 const SBU = 'https://pdpkykpvztfzhyrspnou.supabase.co', SBK = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBkcGt5a3B2enRmemh5cnNwbm91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE0MTY0NzMsImV4cCI6MjEwNjk5MjQ3M30.IOH8MCHvRe9-tN0_IqkHUZ511Mzt0SHMyi6iwICPGSs';
 const H = {apikey: SBK, Authorization: 'Bearer ' + SBK, 'Content-Type': 'application/json'};
 let PIN = ''; try { PIN = localStorage.getItem('gest_pin') || ''; } catch (e) {}
-async function sb(path, body) {
+async function sbRaw(path, body) {
   const r = await fetch(SBU + '/rest/v1/' + path, body ? {method: 'POST', headers: H, body: JSON.stringify(body)} : {headers: H});
   if (!r.ok) throw {code: r.status, message: await r.text()};
   const t = await r.text(); return t ? JSON.parse(t) : null;
+}
+async function sb(path, body) {
+  if (!/^rpc\/(guardar|borrar)/.test(path)) return sbRaw(path, body);
+  pendientes++; guardaMostrar('⏳ Guardando…', 'text-amber-200');
+  try { const out = await sbRaw(path, body); pendientes--; if (pendientes === 0) guardaMostrar('✓ Guardado', 'text-emerald-300'); return out; }
+  catch (e) { pendientes--; guardaMostrar('⚠️ No se guardó', 'text-red-300'); throw e; }
+}
+let pendientes = 0, guardaT = null;
+function guardaMostrar(txt, cls) {
+  const el = document.getElementById('guardaEst'); if (!el) return;
+  el.textContent = txt; el.className = 'fixed top-3 right-3 z-[80] text-xs rounded-full px-3 py-1 border border-white/20 bg-slate-900/85 ' + cls;
+  clearTimeout(guardaT);
+  if (txt.startsWith('✓')) guardaT = setTimeout(() => { el.className = 'hidden'; }, 2000);
 }
 const RUNS = []; const refrescar = () => RUNS.forEach(f => f());
 function poll(fn, cb, err) {
@@ -760,7 +769,7 @@ function borrar(id) { if (confirm('¿Eliminar este trámite?')) quitar(id); }
 function render() {
   document.getElementById('hoy').textContent = fmt(hoy());
   document.getElementById('formSec').style.display = puede() ? '' : 'none';
-  btnAdm.style.display = btnObl.style.display = btnInh.style.display = pagToggle.style.display = btnCob.style.display = btnWa.style.display = btnResp.style.display = btnCsv.style.display = puede() ? '' : 'none'; inhSec.classList.toggle('hidden', !puede()); horSec.classList.toggle('hidden', !puede()); renderBit(); renderHeat(); renderInh(); renderCob(); renderBanner(); renderNom(); renderCer(); renderTer(); renderGraf(); renderSeg(); renderHor(); renderPrio(); renderPag(); renderAct(); renderApe(); renderOrg(); renderDocs(); renderRiesgo(); renderEst(); nuevoBar.style.display = puede() ? '' : 'none'; renderProx(); renderDar(); renderRuta(); btnFicha.style.display = puede() ? '' : 'none'; botNavUpdate(); renderTiempos(); renderFolio(); renderAviso(); if (CAN && TLOADED) syncRec(); guiaFechas.style.display = puede() ? '' : 'none'; if (cardOpen && dlgCard.open) { const tt = find(cardOpen); if (tt) cardBox.innerHTML = card(tt); else dlgCard.close(); } if (pagWanted !== null && !!PAG.visible === pagWanted) pagWanted = null; pagChk.checked = pagWanted !== null ? pagWanted : !!PAG.visible; if (CAN && pagChk.checked) syncPagos(false); btnIn.textContent = CAN ? '🔓 Salir del modo dueño' : '🔑 Entrar como dueño'; btnUser.textContent = CAN ? '👤' : '🔑'; btnUser.className = CAN ? 'text-xl px-2 py-1 rounded-lg bg-white/15 hover:bg-white/25' : 'text-lg px-2 py-1 rounded-lg opacity-40 hover:opacity-100'; syncToggles(); admin.classList.toggle('hidden', !puede());
+  btnAdm.style.display = btnObl.style.display = btnInh.style.display = pagToggle.style.display = btnCob.style.display = btnWa.style.display = btnResp.style.display = btnCsv.style.display = puede() ? '' : 'none'; inhSec.classList.toggle('hidden', !puede()); horSec.classList.toggle('hidden', !puede()); renderBit(); renderHeat(); renderInh(); renderCob(); renderBanner(); renderNom(); renderCer(); renderTer(); renderGraf(); renderSeg(); renderHor(); renderPrio(); renderPag(); renderAct(); renderApe(); renderOrg(); renderDocs(); renderRiesgo(); renderEst(); nuevoBar.style.display = puede() ? '' : 'none'; renderProx(); renderDar(); renderRuta(); btnFicha.style.display = puede() ? '' : 'none'; botNavUpdate(); renderTiempos(); renderFolio(); renderAviso(); if (CAN && TLOADED) syncRec(); if (cardOpen && dlgCard.open) { const tt = find(cardOpen); if (tt) cardBox.innerHTML = card(tt); else dlgCard.close(); } if (pagWanted !== null && !!PAG.visible === pagWanted) pagWanted = null; pagChk.checked = pagWanted !== null ? pagWanted : !!PAG.visible; if (CAN && pagChk.checked) syncPagos(false); btnIn.textContent = CAN ? '🔓 Salir del modo dueño' : '🔑 Entrar como dueño'; btnUser.textContent = CAN ? '👤' : '🔑'; btnUser.className = CAN ? 'text-xl px-2 py-1 rounded-lg bg-white/15 hover:bg-white/25' : 'text-lg px-2 py-1 rounded-lg opacity-40 hover:opacity-100'; syncToggles(); admin.classList.toggle('hidden', !puede());
   document.getElementById('btnVista').style.display = CAN ? '' : 'none';
   document.getElementById('btnVista').textContent = VISTA ? '↩ Volver a mi vista' : '👀 Ver como contadora';
   document.getElementById('modo').textContent = (SNAP ? '📅 Actualizado: ' + window.__SNAP.fecha : DB ? '☁️ Se actualiza solo' : '💾 Datos solo en este navegador') + (puede() ? '' : ' · 👀 Vista de solo lectura');
@@ -1909,12 +1918,11 @@ function darItems() {
 function renderDar() {
   const visible = puede() || horaCancun() >= 17;
   darSec.classList.toggle('hidden', !visible);
-  darAviso.textContent = puede() ? '👀 Así lo ve ella: se muestra desde las 5 pm' : '';
   if (!visible) return;
   const man = diaMas(1), pas = diaMas(2), L = darItems();
   const grupo = (titulo, arr) => arr.length ? `<div class="mt-3"><div class="font-semibold text-sm mb-1">${titulo}</div>${arr.map(x => `<div class="flex flex-wrap items-center gap-2 border-b py-2 text-sm"><div class="flex-1 min-w-[180px]"><span style="color:${cliCol(x.t.cliente)}">●</span> <b>${esc(x.t.cliente)}</b>${x.t.negocio ? ' › ' + esc(x.t.negocio) : ''}<div class="text-xs text-slate-600">${esc(x.t.tipo)}${x.t.folio ? ' · 🔖 ' + esc(x.t.folio) : ''} · <span class="rounded px-1 text-white" style="background:${depCol(x.t.dep)}">${esc(x.t.dep || '')}</span></div></div><div class="text-xs font-semibold whitespace-nowrap">${x.e[0]} ${esc(x.e[1])}</div>${puede() && !x.t.recibido ? `<button onclick="proxMarcar('${x.t.id}')" class="text-xs border border-emerald-500 text-emerald-700 px-2 py-0.5 rounded-md">✅ Ya me lo dio</button>` : ''}</div>`).join('')}</div>` : '';
   const atras = L.filter(x => x.f < man), delMan = L.filter(x => x.f === man), delPas = L.filter(x => x.f === pas);
-  const resumen = `<div class="text-sm"><b>${L.filter(x => !x.t.recibido).length}</b> documento(s) por darle · <b>${L.filter(x => x.t.recibido && !x.t.incompleto && !x.t.falta).length}</b> ya completos</div>`;
+  const resumen = `<div class="text-sm">Pendientes de llegar: <b>${L.filter(x => !x.t.recibido).length}</b> · Ya completos: <b>${L.filter(x => x.t.recibido && !x.t.incompleto && !x.t.falta).length}</b></div>`;
   darBody.innerHTML = resumen
     + grupo('🚨 Atrasados', atras)
     + grupo(`📅 Para mañana, ${fmt(pd(man))} (debió llegar hoy)`, delMan)
@@ -2025,6 +2033,20 @@ function saludoInit() {
 // ---------- Menú de abajo (solo tú) ----------
 function masToggle() { document.getElementById('masSheet').classList.toggle('hidden'); }
 function irRuta() { tab('panel'); setTimeout(() => { const r = document.getElementById('rutaSec'); if (r) r.scrollIntoView({behavior: 'smooth', block: 'start'}); }, 80); }
+// ---------- Modo enfoque (solo tú): lo de hoy, en una sola pantalla ----------
+function enfoqueAbrir() {
+  const r = rutaItems(), hy = isoHoy();
+  const lleva = r.filter(x => x.tipo === 'entregar'), rec = r.filter(x => x.tipo === 'recoger');
+  const pronto = T.filter(t => t.estado !== 'listo' && t.estado !== 'firmas' && t.clase !== 'vigencia' && t.limite && t.limite <= diaMas(2))
+    .concat(T.filter(t => t.estado !== 'listo' && t.clase === 'vigencia' && t.vence && t.vence <= diaMas(7)));
+  const fila = (t, extra) => `<div class="border-b border-white/10 py-3"><div class="font-semibold"><span style="color:${cliCol(t.cliente)}">●</span> ${esc(t.cliente)}${t.negocio ? ' › ' + esc(t.negocio) : ''}</div><div class="text-sm text-slate-300">${esc(t.tipo)}${t.folio ? ' · 🔖 ' + esc(t.folio) : ''} <span class="rounded px-1 text-white text-xs" style="background:${depCol(t.dep)}">${esc(t.dep || '')}</span></div>${extra ? `<div class="text-xs text-slate-400">${extra}</div>` : ''}</div>`;
+  const bloque = (titulo, arr, f) => `<section class="mb-5"><h3 class="text-lg font-bold mb-1">${titulo} <span class="text-sm font-normal text-slate-400">(${arr.length})</span></h3>${arr.map(f).join('') || '<p class="text-sm text-slate-400">Nada por ahora.</p>'}</section>`;
+  enfoqueBody.innerHTML =
+    bloque('📤 Llevar hoy', lleva, x => fila(x.t))
+    + bloque('📥 Recoger', rec, x => fila(x.t, x.t.fechaRecoger ? 'Desde el ' + fmt(pd(x.t.fechaRecoger)) : ''))
+    + bloque('⏰ Se vence pronto', pronto, t => fila(t, t.vence && t.clase === 'vigencia' ? 'Vence el ' + fmt(pd(t.vence)) : (t.limite ? 'Límite: ' + fmt(pd(t.limite)) : '')));
+  dlgEnfoque.showModal();
+}
 function irMas(t) { document.getElementById('masSheet').classList.add('hidden'); tab(t); }
 function botNavUpdate() {
   const own = puede(), g = id => document.getElementById(id);
