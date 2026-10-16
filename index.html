@@ -166,6 +166,17 @@ details>summary{outline:none}
 /* El encabezado y su menú de acceso van por encima de las tarjetas */
 header{position:relative;z-index:50}
 #userMenu{background:rgba(12,18,44,.97)!important;border:1px solid rgba(255,255,255,.18);z-index:60}
+/* Teléfono: título compacto y pestañas más chicas en su propia fila */
+@media (max-width:640px){
+  header .max-w-7xl{flex-wrap:wrap;row-gap:.5rem}
+  header h1{font-size:1.05rem;line-height:1.2}
+  #tabs{order:3;width:100%;justify-content:center;flex-wrap:wrap;overflow:visible;padding:0 .25rem}
+  #tabs button{padding:.25rem .5rem!important;font-size:.7rem!important;white-space:nowrap}
+}
+/* Barra de abajo: rebote del ícono activo */
+@keyframes bnPop{0%{transform:scale(.7)}55%{transform:scale(1.22)}100%{transform:scale(1)}}
+#botNav .bn:active span:first-child{transform:scale(.9)}
+#botNav .bn span:first-child{transition:transform .2s}
 /* Menú de abajo: espacio para que no tape el contenido */
 body.pb-bot{padding-bottom:7rem}
 #botNav .bn{transition:background .2s,color .2s,transform .15s}
@@ -539,17 +550,18 @@ body.pb-bot{padding-bottom:7rem}
   <div id="fichaBody"></div>
 </dialog>
 <nav id="botNav" class="hidden fixed bottom-3 left-1/2 -translate-x-1/2 w-[min(94vw,460px)] z-[70] rounded-2xl bg-white/10 backdrop-blur-xl border border-white/20 shadow-2xl p-1.5">
-  <div class="flex justify-around items-stretch gap-1">
-    <button id="bn_panel" type="button" onclick="tab('panel')" class="bn flex-1 flex flex-col items-center gap-0.5 py-2 rounded-xl text-slate-300"><span class="text-xl">🏠</span><span class="text-[11px]">Inicio</span></button>
-    <button id="bn_est" type="button" onclick="tab('est')" class="bn flex-1 flex flex-col items-center gap-0.5 py-2 rounded-xl text-slate-300"><span class="text-xl">🧭</span><span class="text-[11px]">Estatus</span></button>
-    <button id="bn_nom" type="button" onclick="tab('nom')" class="bn flex-1 flex flex-col items-center gap-0.5 py-2 rounded-xl text-slate-300"><span class="text-xl">💼</span><span class="text-[11px]">Nóminas</span></button>
-    <button id="bn_mas" type="button" onclick="masToggle()" class="bn flex-1 flex flex-col items-center gap-0.5 py-2 rounded-xl text-slate-300"><span class="text-xl">⋯</span><span class="text-[11px]">Más</span></button>
+  <div class="relative flex justify-around items-stretch gap-1">
+    <span id="bnPill" class="absolute top-0 bottom-0 left-0 w-0 rounded-xl bg-white/20 shadow-inner pointer-events-none transition-all duration-300 ease-out"></span>
+    <button id="bn_panel" type="button" onclick="irRuta()" class="bn relative z-10 flex-1 flex flex-col items-center gap-0.5 py-2 rounded-xl text-slate-300"><span class="text-xl">🏍️</span><span class="text-[11px]">Ruta</span></button>
+    <button id="bn_est" type="button" onclick="tab('est')" class="bn relative z-10 flex-1 flex flex-col items-center gap-0.5 py-2 rounded-xl text-slate-300"><span class="text-xl">🧭</span><span class="text-[11px]">Estatus</span></button>
+    <button id="bn_nom" type="button" onclick="tab('rep')" class="bn relative z-10 flex-1 flex flex-col items-center gap-0.5 py-2 rounded-xl text-slate-300"><span class="text-xl">📊</span><span class="text-[11px]">Reportes</span></button>
+    <button id="bn_mas" type="button" onclick="masToggle()" class="bn relative z-10 flex-1 flex flex-col items-center gap-0.5 py-2 rounded-xl text-slate-300"><span class="text-xl">⋯</span><span class="text-[11px]">Más</span></button>
   </div>
 </nav>
 <div id="masSheet" class="hidden fixed bottom-20 left-1/2 -translate-x-1/2 w-[min(94vw,460px)] z-[75] rounded-2xl bg-slate-900/90 backdrop-blur-xl border border-white/20 shadow-2xl p-3">
   <div class="text-xs text-slate-400 mb-2">Más opciones</div>
   <div class="grid grid-cols-2 gap-2">
-    <button type="button" onclick="irMas('rep')" class="border border-white/15 rounded-xl px-3 py-3 text-left">📊 Reportes</button>
+    <button type="button" onclick="irMas('nom')" class="border border-white/15 rounded-xl px-3 py-3 text-left">💼 Nóminas</button>
     <button type="button" onclick="irMas('cob')" class="border border-white/15 rounded-xl px-3 py-3 text-left">💵 Mi cobranza</button>
     <button type="button" onclick="irMas('sat')" class="border border-white/15 rounded-xl px-3 py-3 text-left">🧾 Mi registro SAT</button>
     <button type="button" onclick="irMas('ape')" class="border border-white/15 rounded-xl px-3 py-3 text-left">🏪 Aperturas</button>
@@ -602,6 +614,7 @@ function salir() { try { localStorage.removeItem('gest_pin'); } catch (e) {} loc
 let INH = [], MES = null, selDia = null, cardOpen = null, flujoManual = false, TIEMPOS = {}, TLOADED = false, AVISO = {topic: '', activo: true, nombres: false}, recSig = '', HORS = {}, PAG = {visible: false, dias: []}, pagUltimo = null, pagWanted = null, AMES = null, FIN = {tarifa: 300, dias: {}, pagos: [], efec: [], comp: {}, proy: [], uma: 117.31}, CEROS = [], CPER = null, satUltimo = '';
 const SATKEY = 'nomina-sat-db-v1';
 let rangoDias = 3;
+let bnPrev = '';
 let NOMS = [], NOM = {activo: false}, NPER = null, TAB = 'panel'; const NOPEN = new Set(), NCOL = ['#7c3aed', '#0891b2', '#16a34a', '#d97706', '#db2777', '#2563eb', '#65a30d', '#dc2626']; const _fc = {};
 const FERN = ['Año Nuevo','Día de la Constitución','Natalicio de Benito Juárez','Día del Trabajo','Independencia de México','Transmisión del Poder Ejecutivo','Revolución Mexicana','Navidad'];
 function FER(y) {
@@ -1460,6 +1473,7 @@ function tab(t) {
   const h = {est: '#estatus', nom: '#nominas', rep: '#reportes', cob: '#cobranza', sat: '#registro', ape: '#aperturas', cfg: '#config'}[t];
   try { history.replaceState(null, '', h || location.pathname + location.search); } catch (e) {}
   window.scrollTo(0, 0);
+  botNavUpdate();
 }
 // En computadora el día de hoy usa tarjetas completas en filas; en celular, tarjetas compactas
 function lista(a) { return a.length ? `<div class="lg:hidden space-y-2">${a.map(mini).join('')}</div><div class="hidden lg:grid lg:grid-cols-2 xl:grid-cols-3 gap-3">${a.map(card).join('')}</div>` : ''; }
@@ -2010,16 +2024,25 @@ function saludoInit() {
 
 // ---------- Menú de abajo (solo tú) ----------
 function masToggle() { document.getElementById('masSheet').classList.toggle('hidden'); }
+function irRuta() { tab('panel'); setTimeout(() => { const r = document.getElementById('rutaSec'); if (r) r.scrollIntoView({behavior: 'smooth', block: 'start'}); }, 80); }
 function irMas(t) { document.getElementById('masSheet').classList.add('hidden'); tab(t); }
 function botNavUpdate() {
   const own = puede(), g = id => document.getElementById(id);
   g('botNav').classList.toggle('hidden', !own);
   g('tabs').style.display = own ? 'none' : '';
   document.body.classList.toggle('pb-bot', own);
-  const act = {panel: 'bn_panel', est: 'bn_est', nom: 'bn_nom'}[TAB] || 'bn_mas';
+  const act = {panel: 'bn_panel', est: 'bn_est', rep: 'bn_nom'}[TAB] || 'bn_mas';
   ['bn_panel', 'bn_est', 'bn_nom', 'bn_mas'].forEach(id => {
-    g(id).className = 'bn flex-1 flex flex-col items-center gap-0.5 py-2 rounded-xl ' + (id === act ? 'bg-white/20 text-white shadow-inner' : 'text-slate-300');
+    const b = g(id), on = id === act;
+    b.classList.toggle('text-white', on); b.classList.toggle('text-slate-300', !on);
   });
+  const b = g(act), pill = g('bnPill');
+  if (b && pill) { pill.style.left = b.offsetLeft + 'px'; pill.style.width = b.offsetWidth + 'px'; }
+  if (act !== bnPrev && b) {
+    const ic = b.querySelector('span');
+    if (ic) { ic.style.animation = 'none'; void ic.offsetWidth; ic.style.animation = 'bnPop .45s ease-out'; }
+    bnPrev = act;
+  }
   if (!own) g('masSheet').classList.add('hidden');
 }
 
