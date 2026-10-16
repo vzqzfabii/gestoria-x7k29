@@ -166,6 +166,10 @@ details>summary{outline:none}
 /* El encabezado y su menú de acceso van por encima de las tarjetas */
 header{position:relative;z-index:50}
 #userMenu{background:rgba(12,18,44,.97)!important;border:1px solid rgba(255,255,255,.18);z-index:60}
+/* Menú de abajo: espacio para que no tape el contenido */
+body.pb-bot{padding-bottom:7rem}
+#botNav .bn{transition:background .2s,color .2s,transform .15s}
+#botNav .bn:active{transform:scale(.96)}
 /* Pestañas en la misma línea del título */
 #tabs button{white-space:nowrap;padding:.4rem .7rem!important;font-size:.875rem}
 #tabs{scrollbar-width:none}
@@ -184,7 +188,7 @@ header{position:relative;z-index:50}
 <div class="fx-layer" aria-hidden="true"><span class="fx" style="left:19%;font-size:26px;animation-duration:29s;animation-delay:-2s">÷</span><span class="fx" style="left:68%;font-size:17px;animation-duration:49s;animation-delay:-37s">×</span><span class="fx" style="left:64%;font-size:20px;animation-duration:28s;animation-delay:-2s">$</span><span class="fx" style="left:53%;font-size:16px;animation-duration:41s;animation-delay:-5s">±</span><span class="fx" style="left:54%;font-size:15px;animation-duration:33s;animation-delay:-14s">Σ</span><span class="fx" style="left:80%;font-size:15px;animation-duration:51s;animation-delay:-3s">=</span><span class="fx" style="left:5%;font-size:18px;animation-duration:44s;animation-delay:-26s">#</span><span class="fx" style="left:69%;font-size:17px;animation-duration:45s;animation-delay:-35s">∑</span><span class="fx" style="left:87%;font-size:19px;animation-duration:32s;animation-delay:-12s">×</span><span class="fx" style="left:12%;font-size:16px;animation-duration:29s;animation-delay:-19s">÷</span><span class="fx" style="left:63%;font-size:27px;animation-duration:46s;animation-delay:-29s">#</span><span class="fx" style="left:58%;font-size:25px;animation-duration:45s;animation-delay:-15s">¢</span><span class="fx" style="left:23%;font-size:21px;animation-duration:31s;animation-delay:-19s">−</span><span class="fx" style="left:63%;font-size:24px;animation-duration:54s;animation-delay:-18s">Σ</span><span class="fx" style="left:9%;font-size:17px;animation-duration:58s;animation-delay:-26s">¢</span><span class="fx" style="left:96%;font-size:24px;animation-duration:35s;animation-delay:-31s">∑</span><span class="fx" style="left:5%;font-size:16px;animation-duration:46s;animation-delay:-21s">±</span><span class="fx" style="left:44%;font-size:29px;animation-duration:55s;animation-delay:-4s">+</span><span class="fx" style="left:11%;font-size:22px;animation-duration:56s;animation-delay:-44s">×</span><span class="fx" style="left:8%;font-size:15px;animation-duration:45s;animation-delay:-41s">=</span><span class="fx" style="left:87%;font-size:28px;animation-duration:44s;animation-delay:-24s">¢</span><span class="fx" style="left:44%;font-size:14px;animation-duration:55s;animation-delay:-22s">=</span></div>
 <header class="bg-slate-900 text-white border-b-4 border-indigo-500">
   <div class="max-w-7xl mx-auto px-4 py-4 flex items-start justify-between gap-3">
-    <div class="flex-1 min-w-0"><h1 class="text-2xl font-bold">📋 Panel de Gestoría</h1><div class="relative h-5 mt-0.5"><p class="absolute left-0 top-0 text-slate-300 text-sm whitespace-nowrap">Hoy es <span id="hoy"></span></p><p id="saludo" class="absolute left-0 right-0 top-0 text-center text-amber-200 font-semibold text-sm whitespace-nowrap opacity-0 transition-opacity duration-700 pointer-events-none"></p></div></div>
+    <div class="flex-1 min-w-0"><h1 class="text-2xl font-bold">📋 Panel de Gestoría</h1><div class="flex items-center gap-3 mt-0.5 min-w-0"><p class="text-slate-300 text-sm whitespace-nowrap">Hoy es <span id="hoy"></span></p><p id="saludo" class="flex-1 min-w-0 truncate text-center text-slate-300 text-sm opacity-0 transition-opacity duration-700 pointer-events-none"></p></div></div>
     <nav id="tabs" class="flex flex-nowrap gap-2 items-center overflow-x-auto flex-none">
   <button id="tabP" type="button" onclick="tab('panel')" class="px-4 py-2 rounded-lg font-semibold">📋 Entregas</button>
   <button id="tabE" type="button" onclick="tab('est')" class="px-4 py-2 rounded-lg font-semibold">🧭 Estatus</button>
@@ -534,6 +538,24 @@ header{position:relative;z-index:50}
   <input id="fichaCli" list="clL" oninput="fichaRender()" placeholder="Escribe o elige el cliente" class="border rounded-lg px-3 py-2 w-full mb-3">
   <div id="fichaBody"></div>
 </dialog>
+<nav id="botNav" class="hidden fixed bottom-3 left-1/2 -translate-x-1/2 w-[min(94vw,460px)] z-[70] rounded-2xl bg-white/10 backdrop-blur-xl border border-white/20 shadow-2xl p-1.5">
+  <div class="flex justify-around items-stretch gap-1">
+    <button id="bn_panel" type="button" onclick="tab('panel')" class="bn flex-1 flex flex-col items-center gap-0.5 py-2 rounded-xl text-slate-300"><span class="text-xl">🏠</span><span class="text-[11px]">Inicio</span></button>
+    <button id="bn_est" type="button" onclick="tab('est')" class="bn flex-1 flex flex-col items-center gap-0.5 py-2 rounded-xl text-slate-300"><span class="text-xl">🧭</span><span class="text-[11px]">Estatus</span></button>
+    <button id="bn_nom" type="button" onclick="tab('nom')" class="bn flex-1 flex flex-col items-center gap-0.5 py-2 rounded-xl text-slate-300"><span class="text-xl">💼</span><span class="text-[11px]">Nóminas</span></button>
+    <button id="bn_mas" type="button" onclick="masToggle()" class="bn flex-1 flex flex-col items-center gap-0.5 py-2 rounded-xl text-slate-300"><span class="text-xl">⋯</span><span class="text-[11px]">Más</span></button>
+  </div>
+</nav>
+<div id="masSheet" class="hidden fixed bottom-20 left-1/2 -translate-x-1/2 w-[min(94vw,460px)] z-[75] rounded-2xl bg-slate-900/90 backdrop-blur-xl border border-white/20 shadow-2xl p-3">
+  <div class="text-xs text-slate-400 mb-2">Más opciones</div>
+  <div class="grid grid-cols-2 gap-2">
+    <button type="button" onclick="irMas('rep')" class="border border-white/15 rounded-xl px-3 py-3 text-left">📊 Reportes</button>
+    <button type="button" onclick="irMas('cob')" class="border border-white/15 rounded-xl px-3 py-3 text-left">💵 Mi cobranza</button>
+    <button type="button" onclick="irMas('sat')" class="border border-white/15 rounded-xl px-3 py-3 text-left">🧾 Mi registro SAT</button>
+    <button type="button" onclick="irMas('ape')" class="border border-white/15 rounded-xl px-3 py-3 text-left">🏪 Aperturas</button>
+    <button type="button" onclick="irMas('cfg')" class="border border-white/15 rounded-xl px-3 py-3 text-left col-span-2">⚙️ Configuración</button>
+  </div>
+</div>
 <dialog id="dlgEnt" class="rounded-2xl p-5 w-[min(92vw,420px)]">
   <h3 class="font-semibold mb-2">Entregado en dependencia</h3>
   <label class="text-sm">¿Qué día te dijeron que regreses a recoger? <span class="text-slate-400">(opcional)</span><input id="entRec" type="date" class="border rounded-lg px-3 py-2 w-full mt-1"></label>
@@ -725,7 +747,7 @@ function borrar(id) { if (confirm('¿Eliminar este trámite?')) quitar(id); }
 function render() {
   document.getElementById('hoy').textContent = fmt(hoy());
   document.getElementById('formSec').style.display = puede() ? '' : 'none';
-  btnAdm.style.display = btnObl.style.display = btnInh.style.display = pagToggle.style.display = btnCob.style.display = btnWa.style.display = btnResp.style.display = btnCsv.style.display = puede() ? '' : 'none'; inhSec.classList.toggle('hidden', !puede()); horSec.classList.toggle('hidden', !puede()); renderBit(); renderHeat(); renderInh(); renderCob(); renderBanner(); renderNom(); renderCer(); renderTer(); renderGraf(); renderSeg(); renderHor(); renderPrio(); renderPag(); renderAct(); renderApe(); renderOrg(); renderDocs(); renderRiesgo(); renderEst(); nuevoBar.style.display = puede() ? '' : 'none'; renderProx(); renderDar(); renderRuta(); btnFicha.style.display = puede() ? '' : 'none'; renderTiempos(); renderFolio(); renderAviso(); if (CAN && TLOADED) syncRec(); guiaFechas.style.display = puede() ? '' : 'none'; if (cardOpen && dlgCard.open) { const tt = find(cardOpen); if (tt) cardBox.innerHTML = card(tt); else dlgCard.close(); } if (pagWanted !== null && !!PAG.visible === pagWanted) pagWanted = null; pagChk.checked = pagWanted !== null ? pagWanted : !!PAG.visible; if (CAN && pagChk.checked) syncPagos(false); btnIn.textContent = CAN ? '🔓 Salir del modo dueño' : '🔑 Entrar como dueño'; btnUser.textContent = CAN ? '👤' : '🔑'; btnUser.className = CAN ? 'text-xl px-2 py-1 rounded-lg bg-white/15 hover:bg-white/25' : 'text-lg px-2 py-1 rounded-lg opacity-40 hover:opacity-100'; syncToggles(); admin.classList.toggle('hidden', !puede());
+  btnAdm.style.display = btnObl.style.display = btnInh.style.display = pagToggle.style.display = btnCob.style.display = btnWa.style.display = btnResp.style.display = btnCsv.style.display = puede() ? '' : 'none'; inhSec.classList.toggle('hidden', !puede()); horSec.classList.toggle('hidden', !puede()); renderBit(); renderHeat(); renderInh(); renderCob(); renderBanner(); renderNom(); renderCer(); renderTer(); renderGraf(); renderSeg(); renderHor(); renderPrio(); renderPag(); renderAct(); renderApe(); renderOrg(); renderDocs(); renderRiesgo(); renderEst(); nuevoBar.style.display = puede() ? '' : 'none'; renderProx(); renderDar(); renderRuta(); btnFicha.style.display = puede() ? '' : 'none'; botNavUpdate(); renderTiempos(); renderFolio(); renderAviso(); if (CAN && TLOADED) syncRec(); guiaFechas.style.display = puede() ? '' : 'none'; if (cardOpen && dlgCard.open) { const tt = find(cardOpen); if (tt) cardBox.innerHTML = card(tt); else dlgCard.close(); } if (pagWanted !== null && !!PAG.visible === pagWanted) pagWanted = null; pagChk.checked = pagWanted !== null ? pagWanted : !!PAG.visible; if (CAN && pagChk.checked) syncPagos(false); btnIn.textContent = CAN ? '🔓 Salir del modo dueño' : '🔑 Entrar como dueño'; btnUser.textContent = CAN ? '👤' : '🔑'; btnUser.className = CAN ? 'text-xl px-2 py-1 rounded-lg bg-white/15 hover:bg-white/25' : 'text-lg px-2 py-1 rounded-lg opacity-40 hover:opacity-100'; syncToggles(); admin.classList.toggle('hidden', !puede());
   document.getElementById('btnVista').style.display = CAN ? '' : 'none';
   document.getElementById('btnVista').textContent = VISTA ? '↩ Volver a mi vista' : '👀 Ver como contadora';
   document.getElementById('modo').textContent = (SNAP ? '📅 Actualizado: ' + window.__SNAP.fecha : DB ? '☁️ Se actualiza solo' : '💾 Datos solo en este navegador') + (puede() ? '' : ' · 👀 Vista de solo lectura');
@@ -1984,6 +2006,21 @@ function saludoInit() {
   setTimeout(() => { saludo.style.opacity = '1'; }, 30);
   clearTimeout(saludo._t);
   saludo._t = setTimeout(() => { saludo.style.opacity = '0'; }, 7000);
+}
+
+// ---------- Menú de abajo (solo tú) ----------
+function masToggle() { document.getElementById('masSheet').classList.toggle('hidden'); }
+function irMas(t) { document.getElementById('masSheet').classList.add('hidden'); tab(t); }
+function botNavUpdate() {
+  const own = puede(), g = id => document.getElementById(id);
+  g('botNav').classList.toggle('hidden', !own);
+  g('tabs').style.display = own ? 'none' : '';
+  document.body.classList.toggle('pb-bot', own);
+  const act = {panel: 'bn_panel', est: 'bn_est', nom: 'bn_nom'}[TAB] || 'bn_mas';
+  ['bn_panel', 'bn_est', 'bn_nom', 'bn_mas'].forEach(id => {
+    g(id).className = 'bn flex-1 flex flex-col items-center gap-0.5 py-2 rounded-xl ' + (id === act ? 'bg-white/20 text-white shadow-inner' : 'text-slate-300');
+  });
+  if (!own) g('masSheet').classList.add('hidden');
 }
 
 function mesNav(d) { MES = new Date(MES.getFullYear(), MES.getMonth() + d, 1); selDia = null; renderHeat(); }
